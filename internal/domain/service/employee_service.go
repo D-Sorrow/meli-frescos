@@ -3,9 +3,8 @@ package service
 import (
 	"errors"
 
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/pkg/mappers"
 )
 
 type EmployeeService struct {
@@ -18,34 +17,31 @@ func NewEmployeeService(repository repository.EmployeeRepository) *EmployeeServi
 	}
 }
 
-func (service *EmployeeService) GetEmployees() (employeesDto []dto.EmployeeDTO, err error) {
+func (service *EmployeeService) GetEmployees() (employees []models.Employee, err error) {
 	//Mapper a DTO de respuesta
-	employees, err := service.repository.GetEmployees()
+	allEmployees, err := service.repository.GetEmployees()
 
 	if err != nil {
 		return nil, errors.New("employee-repo-error")
 	}
 
-	for _, employee := range employees {
-		employeeDto := mappers.EmployeeModelToDTO(employee)
-		employeesDto = append(employeesDto, *employeeDto)
+	for _, employee := range allEmployees {
+		employees = append(employees, employee)
 	}
 
 	return
 }
 
-func (service *EmployeeService) GetEmployeeById(employeeId int) (employee dto.EmployeeDTO, err error) {
-	employeeFound, err := service.repository.GetEmployeeById(employeeId)
+func (service *EmployeeService) GetEmployeeById(employeeId int) (employee models.Employee, err error) {
+	employee, err = service.repository.GetEmployeeById(employeeId)
 
 	if err != nil {
 		if err.Error() == "ENF-DB" {
-			return dto.EmployeeDTO{}, errors.New("employee-not-found")
+			return models.Employee{}, errors.New("employee-not-found")
 		} else {
-			return dto.EmployeeDTO{}, errors.New("internal server error")
+			return models.Employee{}, errors.New("internal server error")
 		}
 	}
-
-	employee = *mappers.EmployeeModelToDTO(employeeFound)
 
 	return
 }

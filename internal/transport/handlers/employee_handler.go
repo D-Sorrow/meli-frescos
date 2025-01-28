@@ -1,10 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
+	"github.com/bootcamp-go/web/response"
 )
 
 type EmployeeHandler struct {
@@ -18,24 +20,22 @@ func NewEmployeeHandler(service service.EmployeeService) *EmployeeHandler {
 func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		employees, err := handler.service.GetEmployees()
+
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			response.JSON(w, http.StatusInternalServerError, map[string]any{
+				"error": "Internal server error",
+			})
 			return
 		}
-		bytes, err := json.Marshal(employees)
-		if err != nil {
-			// default error
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		var employeesDto []dto.EmployeeDTO
+		for _, employee := range employees {
+			employeeDto := mappers.EmployeeModelToDTO(employee)
+			employeesDto = append(employeesDto, *employeeDto)
 		}
 
-		// set header (before code due to it sets by default "text/plain")
-		w.Header().Set("Content-Type", "application/json")
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": employeesDto,
+		})
 
-		// set status code
-		w.WriteHeader(http.StatusOK)
-
-		// write body
-		w.Write(bytes)
 	}
 }
