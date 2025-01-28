@@ -6,4 +6,5 @@ import (
 
 type ProductService interface {
 	GetProducts() map[int]models.Product
+	GetProductByID(id int) (models.Product, error)
 }

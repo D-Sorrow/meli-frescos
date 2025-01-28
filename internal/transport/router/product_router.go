@@ -24,6 +24,7 @@ func InitProductRouter(rt *chi.Mux) {
 
 	rt.Route("/product", func(rt chi.Router) {
 		rt.Get("/", handler.GetProducts())
+		rt.Get("/{id}", handler.GetProductByID())
 	})
 	return
 }
