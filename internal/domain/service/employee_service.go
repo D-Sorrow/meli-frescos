@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 
-	"github.com/D-Sorrow/meli-frescos/internal/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/pkg/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	"github.com/D-Sorrow/meli-frescos/pkg/mappers"
 )
 

@@ -1,10 +1,10 @@
 package router
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/service"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/D-Sorrow/meli-frescos/pkg/models"
 	"github.com/go-chi/chi/v5"
 )
 

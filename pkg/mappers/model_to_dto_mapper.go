@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"github.com/D-Sorrow/meli-frescos/pkg/dto"
-	"github.com/D-Sorrow/meli-frescos/pkg/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 )
 
 func EmployeeModelToDTO(employeeModel models.Employee) *dto.EmployeeDTO {

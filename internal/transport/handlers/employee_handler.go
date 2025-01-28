@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/D-Sorrow/meli-frescos/internal/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 )
 
 type EmployeeHandler struct {

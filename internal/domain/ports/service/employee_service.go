@@ -1,8 +1,6 @@
 package service
 
-import (
-	"github.com/D-Sorrow/meli-frescos/pkg/dto"
-)
+import "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 
 type EmployeeService interface {
 	GetEmployees() ([]dto.EmployeeDTO, error)
