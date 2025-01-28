@@ -14,3 +14,12 @@ func EmployeeModelToDTO(employeeModel models.Employee) *dto.EmployeeDTO {
 		WarehouseId:  employeeModel.WarehouseId,
 	}
 }
+
+func EmployeeDTOToModel(employeeDTO dto.EmployeeRequestDTO) *models.Employee {
+	return &models.Employee{
+		CardNumberId: employeeDTO.CardNumberId,
+		FirstName:    employeeDTO.FirstName,
+		LastName:     employeeDTO.LastName,
+		WarehouseId:  employeeDTO.WarehouseId,
+	}
+}

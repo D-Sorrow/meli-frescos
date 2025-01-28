@@ -27,5 +27,6 @@ func InitEmployeeRouter(rt *chi.Mux) {
 	rt.Route("/employees", func(rt chi.Router) {
 		rt.Get("/", handler.GetEmployees())
 		rt.Get("/{id}", handler.GetEmployeeById())
+		rt.Post(("/"), handler.CreateEmployee())
 	})
 }

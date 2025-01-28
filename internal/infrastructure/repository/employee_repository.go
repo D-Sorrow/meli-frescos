@@ -31,3 +31,27 @@ func (repository *EmployeeRepository) GetEmployeeById(employeeId int) (employee 
 
 	return employee, nil
 }
+
+func (repository *EmployeeRepository) CreateEmployee(employee models.Employee) models.Employee {
+	id := repository.generateId()
+	employeeCreated := models.Employee{
+		Id:           id,
+		CardNumberId: employee.CardNumberId,
+		FirstName:    employee.FirstName,
+		LastName:     employee.LastName,
+		WarehouseId:  employee.WarehouseId,
+	}
+	repository.db[id] = employeeCreated
+	return employeeCreated
+}
+
+func (repository *EmployeeRepository) generateId() int {
+	maxId := 0
+	for id := range repository.db {
+		if id > maxId {
+			maxId = id
+		}
+	}
+
+	return int(maxId + 1)
+}

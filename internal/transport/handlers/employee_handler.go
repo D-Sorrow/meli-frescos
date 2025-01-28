@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -53,6 +54,7 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		}
 
 		employee, err := handler.service.GetEmployeeById(id)
+		employeeDto := mappers.EmployeeModelToDTO(employee)
 
 		if err != nil {
 			if err.Error() == "ENF-SV" {
@@ -69,8 +71,52 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": employee,
+			"data": employeeDto,
 		})
 
+	}
+}
+
+func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var employeeToCreate dto.EmployeeRequestDTO
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+
+		if err := decoder.Decode(&employeeToCreate); err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"error": "Bad request - decoding",
+			})
+			return
+		}
+
+		if employeeToCreate.CardNumberId == 0 || employeeToCreate.FirstName == "" || employeeToCreate.LastName == "" || employeeToCreate.WarehouseId == 0 {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"error": "Bad request - Campos incompletos",
+			})
+			return
+		}
+
+		employeeModel := mappers.EmployeeDTOToModel(employeeToCreate)
+		employeeCreated, err := handler.service.CreateEmployee(*employeeModel)
+
+		if err != nil {
+			if err.Error() == "EAE_DB" {
+				response.JSON(w, http.StatusBadRequest, map[string]any{
+					"error": "Empleado con ese Card ID ya existe",
+				})
+				return
+			} else {
+				response.JSON(w, http.StatusInternalServerError, map[string]any{
+					"error": "Internal server error",
+				})
+				return
+			}
+		}
+
+		employeeDto := mappers.EmployeeModelToDTO(employeeCreated)
+		response.JSON(w, http.StatusCreated, map[string]any{
+			"data": employeeDto,
+		})
 	}
 }
