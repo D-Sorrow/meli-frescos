@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 
-	"github.com/D-Sorrow/meli-frescos/pkg/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 )
 
 type SellerRepository struct {

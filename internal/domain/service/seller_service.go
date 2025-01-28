@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 
-	"github.com/D-Sorrow/meli-frescos/internal/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/pkg/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 )
 
 type SellerService struct {

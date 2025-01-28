@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 )
