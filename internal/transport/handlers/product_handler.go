@@ -100,3 +100,44 @@ func (hand *ProductHandler) SaveProduct() http.HandlerFunc {
 		}
 	}
 }
+
+func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		id, errConv := strconv.Atoi(chi.URLParam(request, "id"))
+		if errConv != nil {
+			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  errConv.Error(),
+				Data: nil,
+			})
+			return
+		}
+
+		attributes := make(map[string]interface{})
+
+		if err := json.NewDecoder(request.Body).Decode(&attributes); err != nil {
+			response.JSON(writer, http.StatusUnprocessableEntity, dto.ResponseDTO{
+				Code: http.StatusUnprocessableEntity,
+				Msg:  err.Error(),
+				Data: nil,
+			})
+			return
+		}
+		product, err := hand.serv.UpdateProduct(id, attributes)
+		productDto := mapper.MapperToProductDto(product)
+		if err != nil {
+			response.JSON(writer, http.StatusNotFound, dto.ResponseDTO{
+				Code: http.StatusNotFound,
+				Msg:  err.Error(),
+				Data: nil,
+			})
+			return
+		}
+		response.JSON(writer, http.StatusOK, dto.ResponseDTO{
+			Code: http.StatusOK,
+			Msg:  "Product successfully updated",
+			Data: productDto,
+		})
+
+	}
+}

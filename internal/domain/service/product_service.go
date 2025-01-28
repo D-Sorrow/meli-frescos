@@ -36,3 +36,10 @@ func (p ProductService) SaveProduct(productSave models.Product) error {
 	}
 	return nil
 }
+func (p ProductService) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
+	product, errUpdate := p.repo.UpdateProduct(id, attributes)
+	if errUpdate != nil {
+		return models.Product{}, errUpdate
+	}
+	return product, nil
+}
