@@ -43,3 +43,10 @@ func (p ProductService) UpdateProduct(id int, attributes map[string]any) (models
 	}
 	return product, nil
 }
+func (p ProductService) DeleteProduct(id int) error {
+	isDeleted := p.repo.DeleteProduct(id)
+	if isDeleted == false {
+		return er.Error{Code: http.StatusNotFound, Message: er.ProductNotFound}
+	}
+	return nil
+}

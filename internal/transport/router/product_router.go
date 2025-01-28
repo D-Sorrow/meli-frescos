@@ -27,6 +27,7 @@ func InitProductRouter(rt *chi.Mux) {
 		rt.Get("/{id}", handler.GetProductByID())
 		rt.Post("/", handler.SaveProduct())
 		rt.Patch("/{id}", handler.UpdateProduct())
+		rt.Delete("/{id}", handler.DeleteProduct())
 	})
 	return
 }

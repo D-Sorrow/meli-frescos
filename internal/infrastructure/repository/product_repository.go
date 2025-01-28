@@ -79,6 +79,14 @@ func (p ProductRepository) UpdateProduct(id int, attributes map[string]any) (mod
 	p.productMap[id] = product
 	return product, nil
 }
+func (p ProductRepository) DeleteProduct(id int) bool {
+	_, ok := p.productMap[id]
+	if !ok {
+		return false
+	}
+	delete(p.productMap, id)
+	return true
+}
 func (p ProductRepository) validateCode(code string) bool {
 	for _, product := range p.productMap {
 		if product.Attributes.ProductCode == code {

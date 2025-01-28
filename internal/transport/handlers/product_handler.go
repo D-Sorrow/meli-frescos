@@ -141,3 +141,30 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 
 	}
 }
+
+func (hand *ProductHandler) DeleteProduct() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		id, errConv := strconv.Atoi(chi.URLParam(request, "id"))
+		if errConv != nil {
+			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  errConv.Error(),
+				Data: nil,
+			})
+		}
+		errDelete := hand.serv.DeleteProduct(id)
+		if errDelete != nil {
+			response.JSON(writer, http.StatusNotFound, dto.ResponseDTO{
+				Code: http.StatusNotFound,
+				Msg:  errDelete.Error(),
+				Data: nil,
+			})
+		}
+
+		response.JSON(writer, http.StatusNoContent, dto.ResponseDTO{
+			Code: http.StatusNoContent,
+			Msg:  "Product successfully deleted",
+			Data: nil,
+		})
+	}
+}
