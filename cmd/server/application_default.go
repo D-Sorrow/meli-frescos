@@ -1,8 +1,9 @@
 package server
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/transport/router"
 	"net/http"
+
+	"github.com/D-Sorrow/meli-frescos/internal/transport/router"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -48,6 +49,7 @@ func (a *ServerChi) Run() (err error) {
 	rt.Use(middleware.Recoverer)
 
 	router.InitSellerRouter(rt)
+	router.InitEmployeeRouter(rt)
 
 	err = http.ListenAndServe(a.serverAddress, rt)
 	return

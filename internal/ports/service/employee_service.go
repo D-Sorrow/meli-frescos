@@ -1,11 +1,10 @@
 package service
 
-import "github.com/D-Sorrow/meli-frescos/pkg/models"
+import (
+	"github.com/D-Sorrow/meli-frescos/pkg/dto"
+)
 
 type EmployeeService interface {
-	GetEmployees() (map[int]models.Employee, error)
-	GetEmployeeById(employeeId int) (models.Employee, error)
-	CreateEmployee(employee models.Employee) error
-	UpdateEmployee(employee models.Employee) (models.Employee, error)
-	DeleteEmployee(employeeId int) error
+	GetEmployees() ([]dto.EmployeeDTO, error)
+	GetEmployeeById(employeeId int) (dto.EmployeeDTO, error)
 }
