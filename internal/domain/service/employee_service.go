@@ -37,7 +37,7 @@ func (service *EmployeeService) GetEmployeeById(employeeId int) (employee models
 
 	if err != nil {
 		if err.Error() == "ENF-DB" {
-			return models.Employee{}, errors.New("employee-not-found")
+			return models.Employee{}, errors.New("ENF-SV")
 		} else {
 			return models.Employee{}, errors.New("internal server error")
 		}
