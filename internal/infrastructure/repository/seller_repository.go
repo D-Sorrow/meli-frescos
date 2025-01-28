@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/D-Sorrow/meli-frescos/pkg/models"
+import "github.com/D-Sorrow/meli-frescos/internal/domain/models"
 
 type SellerRepository struct {
 	db map[int]models.Seller
