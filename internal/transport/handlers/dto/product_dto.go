@@ -21,9 +21,6 @@ type ProductDto struct {
 }
 
 func (p *ProductDto) Validate() error {
-	if p.Id <= 0 {
-		return err.Error{Code: http.StatusBadRequest, Message: err.IdInvalid}
-	}
 	if p.Description == "" {
 		return err.Error{Code: http.StatusBadRequest, Message: err.DescriptionInvalid}
 	}

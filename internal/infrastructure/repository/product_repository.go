@@ -23,3 +23,18 @@ func (p ProductRepository) GetProductByID(id int) (models.Product, bool) {
 	}
 	return product, true
 }
+
+func (p ProductRepository) SaveProduct(productSave models.Product) bool {
+	indexToSave := 0
+
+	for _, product := range p.productMap {
+		if product.Attributes.ProductCode == productSave.Attributes.ProductCode {
+			return false
+		}
+		indexToSave += 1
+	}
+	indexToSave++
+	productSave.Id = indexToSave
+	p.productMap[indexToSave] = productSave
+	return true
+}

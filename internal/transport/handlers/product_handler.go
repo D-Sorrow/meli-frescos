@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	mapper "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
@@ -62,5 +63,40 @@ func (hand *ProductHandler) GetProductByID() http.HandlerFunc {
 			Data: productDto,
 		})
 
+	}
+}
+
+func (hand *ProductHandler) SaveProduct() http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		var product dto.ProductDto
+
+		if err := json.NewDecoder(request.Body).Decode(&product); err != nil {
+			response.JSON(writer, http.StatusUnprocessableEntity, dto.ResponseDTO{
+				Code: http.StatusUnprocessableEntity,
+				Msg:  err.Error(),
+				Data: nil,
+			})
+			return
+		}
+
+		errValidate := product.Validate()
+		if errValidate != nil {
+			response.JSON(writer, http.StatusUnprocessableEntity, dto.ResponseDTO{
+				Code: http.StatusUnprocessableEntity,
+				Msg:  errValidate.Error(),
+				Data: nil,
+			})
+			return
+		}
+
+		errSave := hand.serv.SaveProduct(mapper.MapperToProductModel(product))
+		if errSave != nil {
+			response.JSON(writer, http.StatusConflict, dto.ResponseDTO{
+				Code: http.StatusConflict,
+				Msg:  errSave.Error(),
+				Data: nil,
+			})
+			return
+		}
 	}
 }

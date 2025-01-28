@@ -30,3 +30,24 @@ func MapperToProductsDto(product map[int]models.Product) []dto.ProductDto {
 	}
 	return productSliceDto
 }
+
+func MapperToProductModel(product dto.ProductDto) models.Product {
+	return models.Product{
+		Id:       product.Id,
+		SellerId: product.SellerId,
+		Attributes: models.ProductAttribute{
+			ProductCode:         product.ProductCode,
+			Description:         product.Description,
+			NetWeight:           product.NetWeight,
+			ExpirationRate:      product.ExpirationRate,
+			TemperatureFreezing: product.TemperatureFreezing,
+			FreezingRate:        product.FreezingRate,
+			ProductTypeId:       product.ProductTypeId,
+			Dimensions: models.Dimensions{
+				Width:  product.Width,
+				Height: product.Height,
+				Length: product.Length,
+			},
+		},
+	}
+}

@@ -22,9 +22,10 @@ func InitProductRouter(rt *chi.Mux) {
 
 	handler := handlers.NewProductHandler(serviceImp)
 
-	rt.Route("/product", func(rt chi.Router) {
+	rt.Route("/api/v1/products", func(rt chi.Router) {
 		rt.Get("/", handler.GetProducts())
 		rt.Get("/{id}", handler.GetProductByID())
+		rt.Post("/", handler.SaveProduct())
 	})
 	return
 }

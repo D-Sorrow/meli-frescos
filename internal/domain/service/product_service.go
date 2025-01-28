@@ -28,3 +28,11 @@ func (p ProductService) GetProductByID(id int) (models.Product, error) {
 
 	return product, nil
 }
+
+func (p ProductService) SaveProduct(productSave models.Product) error {
+	isCreated := p.repo.SaveProduct(productSave)
+	if isCreated == false {
+		return er.Error{Code: http.StatusNotFound, Message: er.ProductIsAlreadyExist}
+	}
+	return nil
+}
