@@ -1,6 +1,10 @@
 package repository
 
-import "github.com/D-Sorrow/meli-frescos/pkg/models"
+import (
+	"errors"
+
+	"github.com/D-Sorrow/meli-frescos/pkg/models"
+)
 
 type SellerRepository struct {
 	db map[int]models.Seller
@@ -23,4 +27,15 @@ func (r *SellerRepository) GetSellers() (v map[int]models.Seller, err error) {
 	v[100] = models.Seller{}
 
 	return
+}
+
+func (r *SellerRepository) GetSellerById(id int) (models.Seller, error) {
+
+	for _, value := range r.db {
+		if value.Id == id {
+			return value, nil
+		}
+	}
+
+	return models.Seller{}, errors.New("User not found")
 }

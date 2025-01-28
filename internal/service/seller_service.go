@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/D-Sorrow/meli-frescos/internal/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/pkg/models"
 )
@@ -19,4 +21,12 @@ func (repo *SellerService) GetSellers() (map[int]models.Seller, error) {
 
 	}
 	return repo.repository.GetSellers()
+}
+
+func (repo *SellerService) GetSellerById(id int) (models.Seller, error) {
+	seller, err := repo.repository.GetSellerById(id)
+	if err != nil {
+		return models.Seller{}, errors.New("user doesnt exist")
+	}
+	return seller, nil
 }
