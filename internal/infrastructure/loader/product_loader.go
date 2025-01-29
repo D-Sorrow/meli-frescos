@@ -2,7 +2,7 @@ package loader
 
 import (
 	"encoding/json"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/product/models"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/loader/entity"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/loader/mappers"
 	"os"

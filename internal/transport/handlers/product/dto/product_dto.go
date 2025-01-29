@@ -1,9 +1,18 @@
 package dto
 
 import (
-	err "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	"net/http"
+	"errors"
 )
+
+const IdInvalid = "ID must be positive"
+const DescriptionInvalid = "Description must not be empty."
+const ExpirationInvalid = "Rates must not be negative"
+const FreezingInvalid = "FreezingRate must not be negative"
+const DimensionsInvalid = "Invalid dimensions"
+const NetWeightInvalid = "Net weight must be positive"
+const ProductCodeInvalid = "ProductCode must not be empty"
+const ProductTypeInvalid = "ProductTypeId must not be negative"
+const SellerIdInvalid = "SellerId must not be negative"
 
 type ProductDto struct {
 	Id                  int     `json:"id"`
@@ -22,29 +31,29 @@ type ProductDto struct {
 
 func (p *ProductDto) Validate() error {
 	if p.Description == "" {
-		return err.Error{Code: http.StatusBadRequest, Message: err.DescriptionInvalid}
+		return errors.New(DescriptionInvalid)
 	}
 	// More validation rules can be added here
 	if p.ExpirationRate < 0 {
-		return err.Error{Code: http.StatusBadRequest, Message: err.ExpirationInvalid}
+		return errors.New(ExpirationInvalid)
 	}
 	if p.FreezingRate <= 0 {
-		return err.Error{Code: http.StatusBadRequest, Message: err.FreezingInvalid}
+		return errors.New(FreezingInvalid)
 	}
 	if p.Height <= 0 || p.Length <= 0 || p.Width <= 0 {
-		return err.Error{Code: http.StatusBadRequest, Message: err.DimensionsInvalid}
+		return errors.New(DimensionsInvalid)
 	}
 	if p.NetWeight <= 0 {
-		return err.Error{Code: http.StatusBadRequest, Message: err.NetWeightInvalid}
+		return errors.New(NetWeightInvalid)
 	}
 	if p.ProductCode == "" {
-		return err.Error{Code: http.StatusBadRequest, Message: err.ProductCodeInvalid}
+		return errors.New(ProductCodeInvalid)
 	}
 	if p.ProductTypeId <= 0 {
-		return err.Error{Code: http.StatusBadRequest, Message: err.ProductTypeInvalid}
+		return errors.New(ProductTypeInvalid)
 	}
 	if p.SellerId <= 0 {
-		return err.Error{Code: http.StatusBadRequest, Message: err.SellerIdInvalid}
+		return errors.New(SellerIdInvalid)
 	}
 	return nil
 }

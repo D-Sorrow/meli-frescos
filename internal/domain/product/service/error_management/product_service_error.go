@@ -2,12 +2,13 @@ package error_management
 
 const ProductNotFound = "Product not found"
 const ProductIsAlreadyExist = "Product is already exist"
+const CodeNotFound = 404
 
-type Error struct {
+type ProductError struct {
 	Message string
 	Code    int
 }
 
-func (e Error) Error() string {
+func (e ProductError) Error() string {
 	return e.Message
 }

@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/product/models"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/product/dto"
 )
 
 func MapperToProductDto(product models.Product) dto.ProductDto {
@@ -50,4 +50,40 @@ func MapperToProductModel(product dto.ProductDto) models.Product {
 			},
 		},
 	}
+}
+
+func ModelToMap(att dto.AttributeDto) map[string]any {
+	mapDto := make(map[string]any)
+
+	if att.Description != nil {
+		mapDto["description"] = *att.Description
+	}
+	if att.ExpirationRate != nil {
+		mapDto["expiration_rate"] = *att.ExpirationRate
+	}
+	if att.FreezingRate != nil {
+		mapDto["freezing_rate"] = *att.FreezingRate
+	}
+	if att.Height != nil {
+		mapDto["height"] = *att.Height
+	}
+	if att.Length != nil {
+		mapDto["length"] = *att.Length
+	}
+	if att.Width != nil {
+		mapDto["width"] = *att.Width
+	}
+	if att.NetWeight != nil {
+		mapDto["netweight"] = *att.NetWeight
+	}
+	if att.ProductCode != nil {
+		mapDto["product_code"] = *att.ProductCode
+	}
+	if att.ProductTypeId != nil {
+		mapDto["product_type_id"] = *att.ProductTypeId
+	}
+	if att.SellerId != nil {
+		mapDto["seller_id"] = *att.SellerId
+	}
+	return mapDto
 }

@@ -1,10 +1,9 @@
 package service
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	er "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
-	"net/http"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/product/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/product/ports/repository"
+	er "github.com/D-Sorrow/meli-frescos/internal/domain/product/service/error_management"
 )
 
 type ProductService struct {
@@ -23,7 +22,7 @@ func (p ProductService) GetProductByID(id int) (models.Product, error) {
 	product, isFalse := p.repo.GetProductByID(id)
 
 	if isFalse == false {
-		return models.Product{}, er.Error{Code: http.StatusNotFound, Message: er.ProductNotFound}
+		return models.Product{}, er.ProductError{Code: er.CodeNotFound, Message: er.ProductNotFound}
 	}
 
 	return product, nil
@@ -32,21 +31,17 @@ func (p ProductService) GetProductByID(id int) (models.Product, error) {
 func (p ProductService) SaveProduct(productSave models.Product) error {
 	isCreated := p.repo.SaveProduct(productSave)
 	if isCreated == false {
-		return er.Error{Code: http.StatusNotFound, Message: er.ProductIsAlreadyExist}
+		return er.ProductError{Code: er.CodeNotFound, Message: er.ProductIsAlreadyExist}
 	}
 	return nil
 }
 func (p ProductService) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
-	product, errUpdate := p.repo.UpdateProduct(id, attributes)
-	if errUpdate != nil {
-		return models.Product{}, errUpdate
-	}
-	return product, nil
+	return p.repo.UpdateProduct(id, attributes)
 }
 func (p ProductService) DeleteProduct(id int) error {
 	isDeleted := p.repo.DeleteProduct(id)
 	if isDeleted == false {
-		return er.Error{Code: http.StatusNotFound, Message: er.ProductNotFound}
+		return er.ProductError{Code: er.CodeNotFound, Message: er.ProductNotFound}
 	}
 	return nil
 }

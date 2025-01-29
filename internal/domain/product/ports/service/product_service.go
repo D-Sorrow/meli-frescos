@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/product/models"
 )
 
 type ProductService interface {

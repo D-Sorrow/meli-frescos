@@ -1,10 +1,12 @@
-package handlers
+package product
 
 import (
 	"encoding/json"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	mapper "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
+	"errors"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/product/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/product/repository/error_management"
+	dto "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/product/dto"
+	mapper "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/product/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"net/http"
@@ -113,24 +115,50 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 			return
 		}
 
-		attributes := make(map[string]interface{})
+		var att dto.AttributeDto
 
-		if err := json.NewDecoder(request.Body).Decode(&attributes); err != nil {
-			response.JSON(writer, http.StatusUnprocessableEntity, dto.ResponseDTO{
-				Code: http.StatusUnprocessableEntity,
+		decoder := json.NewDecoder(request.Body)
+		if err := decoder.Decode(&att); err != nil {
+			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
 				Msg:  err.Error(),
 				Data: nil,
 			})
 			return
 		}
-		product, err := hand.serv.UpdateProduct(id, attributes)
-		productDto := mapper.MapperToProductDto(product)
-		if err != nil {
-			response.JSON(writer, http.StatusNotFound, dto.ResponseDTO{
-				Code: http.StatusNotFound,
-				Msg:  err.Error(),
+
+		if errValidation := att.Validation(); errValidation != nil {
+			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  errValidation.Error(),
 				Data: nil,
 			})
+			return
+		}
+
+		product, errUpdate := hand.serv.UpdateProduct(id, mapper.ModelToMap(att))
+		productDto := mapper.MapperToProductDto(product)
+
+		if errUpdate != nil {
+			if errors.Is(errUpdate, error_management.CodeProductIsExistErr) {
+				response.JSON(writer, http.StatusConflict, dto.ResponseDTO{
+					Code: http.StatusConflict,
+					Msg:  errUpdate.Error(),
+				})
+			}
+			if errors.Is(errUpdate, error_management.AttributeIsNotValidErr) {
+				response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
+					Code: http.StatusBadRequest,
+					Msg:  errUpdate.Error(),
+				})
+			}
+			if errors.Is(errUpdate, error_management.ProductNotExistErr) {
+				response.JSON(writer, http.StatusNotFound, dto.ResponseDTO{
+					Code: http.StatusNotFound,
+					Msg:  errUpdate.Error(),
+				})
+			}
+
 			return
 		}
 		response.JSON(writer, http.StatusOK, dto.ResponseDTO{
@@ -151,6 +179,7 @@ func (hand *ProductHandler) DeleteProduct() http.HandlerFunc {
 				Msg:  errConv.Error(),
 				Data: nil,
 			})
+			return
 		}
 		errDelete := hand.serv.DeleteProduct(id)
 		if errDelete != nil {
@@ -159,6 +188,7 @@ func (hand *ProductHandler) DeleteProduct() http.HandlerFunc {
 				Msg:  errDelete.Error(),
 				Data: nil,
 			})
+			return
 		}
 
 		response.JSON(writer, http.StatusNoContent, dto.ResponseDTO{

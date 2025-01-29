@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/product/ports/service"
 	"github.com/bootcamp-go/web/response"
 	"net/http"
 )

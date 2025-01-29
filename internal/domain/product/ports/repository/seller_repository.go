@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/product/models"
 )
 
 type SellerRepository interface {
