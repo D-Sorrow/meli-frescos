@@ -24,3 +24,12 @@ func MapperToSellerDTO(seller models.Seller) dto.SellerDto {
 		Telephone:   seller.Telephone,
 	}
 }
+
+func MapperToSellerPatch(seller dto.SellerUpdateDto) models.SellerPatch {
+	return models.SellerPatch{
+		Cid:         seller.Cid,
+		CompanyName: seller.CompanyName,
+		Address:     seller.Address,
+		Telephone:   seller.Telephone,
+	}
+}

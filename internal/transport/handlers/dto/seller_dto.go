@@ -7,3 +7,10 @@ type SellerDto struct {
 	Address     string `json:"address" validate:"required"`
 	Telephone   string `json:"telephone" validate:"required"`
 }
+
+type SellerUpdateDto struct {
+	Cid         *int    `json:"cid" validate:"omitempty"`
+	CompanyName *string `json:"company_name" validate:"omitempty"`
+	Address     *string `json:"address" validate:"omitempty"`
+	Telephone   *string `json:"telephone" validate:"omitempty"`
+}

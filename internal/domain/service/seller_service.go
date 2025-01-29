@@ -40,3 +40,11 @@ func (repo *SellerService) CreateSeller(seller models.Seller) (models.Seller, er
 	}
 	return seller, nil
 }
+
+func (repo *SellerService) UpdateSeller(id int, seller models.SellerPatch) (models.Seller, error) {
+	value, err := repo.repository.UpdateSeller(id, seller)
+	if err != nil {
+		return models.Seller{}, service_errors.ErrNotFound
+	}
+	return value, nil
+}

@@ -21,6 +21,7 @@ func InitSellerRouter(rt *chi.Mux) {
 		rt.Get("/", handler.GetSellers())
 		rt.Get("/{id}", handler.GetSeller())
 		rt.Post("/", handler.CreateSeller())
+		rt.Patch("/{id}", handler.UpdateSeller())
 	})
 	return
 }

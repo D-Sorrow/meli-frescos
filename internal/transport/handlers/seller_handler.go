@@ -91,3 +91,42 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 
 	}
 }
+
+func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  "id must be a number",
+				Data: nil,
+			})
+			return
+		}
+
+		var sellerDto dto.SellerUpdateDto
+
+		if err := json.NewDecoder(r.Body).Decode(&sellerDto); err != nil {
+			handler_errors.ResponseError(err, w)
+			return
+		}
+
+		if err := hand.validate.Struct(sellerDto); err != nil {
+			handler_errors.ResponseError(err, w)
+			return
+		}
+
+		seller, err := hand.service.UpdateSeller(id, mappers.MapperToSellerPatch(sellerDto))
+		if err != nil {
+			handler_errors.ResponseError(err, w)
+			return
+		}
+
+		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
+			Code: http.StatusCreated,
+			Msg:  "User Updated",
+			Data: mappers.MapperToSellerDTO(seller),
+		})
+
+	}
+}

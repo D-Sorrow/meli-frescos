@@ -56,3 +56,29 @@ func (r *SellerRepository) CreateSeller(seller models.Seller) (models.Seller, er
 
 	return seller, nil
 }
+
+func (r *SellerRepository) UpdateSeller(id int, seller models.SellerPatch) (models.Seller, error) {
+
+	value, exist := r.db[id]
+	if !exist {
+		return models.Seller{}, repository_errors.ErrNotFound
+	}
+
+	if seller.Cid != nil {
+		value.Cid = *seller.Cid
+	}
+	if seller.Address != nil {
+		value.Address = *seller.Address
+	}
+	if seller.CompanyName != nil {
+		value.CompanyName = *seller.CompanyName
+	}
+	if seller.Telephone != nil {
+		value.Telephone = *seller.Telephone
+	}
+
+	r.db[id] = value
+
+	return r.db[id], nil
+
+}
