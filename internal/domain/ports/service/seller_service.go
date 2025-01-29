@@ -7,4 +7,5 @@ import (
 type SellerService interface {
 	GetSellers() (map[int]models.Seller, error)
 	GetSellerById(id int) (models.Seller, error)
+	CreateSeller(seller models.Seller) (models.Seller, error)
 }
