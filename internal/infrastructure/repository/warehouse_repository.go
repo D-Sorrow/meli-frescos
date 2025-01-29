@@ -32,3 +32,20 @@ func (wr *WarehouseRepository) GetWarehouseById(id int) (wh models.Warehouse, er
 	err = repoErros.ErrIdNotFound
 	return
 }
+
+func (wr *WarehouseRepository) DeleteWarehouse(id int) (err error) {
+	var warehouseExist bool
+	for _, warehouse := range wr.db {
+		if warehouse.Id == id {
+			warehouseExist = true
+			break
+		}
+	}
+
+	if warehouseExist {
+		delete(wr.db, id)
+		return
+	}
+	err = repoErros.ErrIdNotFound
+	return
+}

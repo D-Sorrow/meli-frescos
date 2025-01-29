@@ -25,3 +25,7 @@ type ErrWarehouseCodeDuplicate struct {
 func (e *ErrWarehouseCodeDuplicate) Error() error {
 	return fmt.Errorf("warehouse code %s already exists", e.WarehouseCode)
 }
+
+func InternalServerErr() error {
+	return fmt.Errorf("internal server error")
+}

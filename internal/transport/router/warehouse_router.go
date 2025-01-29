@@ -26,5 +26,6 @@ func InitWarehouseRouter(rt *chi.Mux) {
 	rt.Route("/warehouses", func(rt chi.Router) {
 		rt.Get("/", handler.GetWarehouses())
 		rt.Get("/{id}", handler.GetWarehouseById())
+		rt.Delete("/{id}", handler.DeleteWarehouse())
 	})
 }
