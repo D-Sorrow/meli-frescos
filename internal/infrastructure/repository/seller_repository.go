@@ -82,3 +82,15 @@ func (r *SellerRepository) UpdateSeller(id int, seller models.SellerPatch) (mode
 	return r.db[id], nil
 
 }
+
+func (r *SellerRepository) DeleteSeller(id int) error {
+	_, exist := r.db[id]
+	if !exist {
+		return repository_errors.ErrNotFound
+	}
+
+	delete(r.db, id)
+
+	return nil
+
+}

@@ -48,3 +48,11 @@ func (repo *SellerService) UpdateSeller(id int, seller models.SellerPatch) (mode
 	}
 	return value, nil
 }
+
+func (repo *SellerService) DeleteSeller(id int) error {
+	err := repo.repository.DeleteSeller(id)
+	if err != nil {
+		return service_errors.ErrNotFound
+	}
+	return nil
+}

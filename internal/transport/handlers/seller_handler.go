@@ -130,3 +130,26 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 
 	}
 }
+
+func (hand *HandlerSeller) DeleteSeller() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  "id must be a number",
+				Data: nil,
+			})
+			return
+		}
+
+		err = hand.service.DeleteSeller(id)
+		if err != nil {
+			handler_errors.ResponseError(err, w)
+			return
+		}
+
+		response.JSON(w, http.StatusNoContent, dto.ResponseDTO{})
+
+	}
+}
