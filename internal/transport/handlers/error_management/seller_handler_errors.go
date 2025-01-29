@@ -1,6 +1,7 @@
 package handler_errors
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -22,7 +23,6 @@ func ResponseError(err error, w http.ResponseWriter) {
 	}
 
 	var validatorErr validator.ValidationErrors
-	fmt.Println(err.Error())
 	if errors.As(err, &validatorErr) {
 		var validationErrors []string
 		for _, validationErr := range err.(validator.ValidationErrors) {
@@ -32,6 +32,15 @@ func ResponseError(err error, w http.ResponseWriter) {
 			Code: http.StatusBadRequest,
 			Msg:  "Bad Request",
 			Data: validationErrors,
+		})
+	}
+
+	var syntaxErr *json.SyntaxError
+	if errors.As(err, &syntaxErr) {
+		response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+			Code: http.StatusBadRequest,
+			Msg:  "Bad Request - invalid JSON structure",
+			Data: nil,
 		})
 	}
 

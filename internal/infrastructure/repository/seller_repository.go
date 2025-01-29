@@ -1,10 +1,8 @@
 package repository
 
 import (
-	"errors"
-
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	errormanagementrepository "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
+	repository_errors "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type SellerRepository struct {
@@ -21,12 +19,12 @@ func NewSellerRepository(db map[int]models.Seller) *SellerRepository {
 
 func (r *SellerRepository) GetSellers() (v map[int]models.Seller, err error) {
 	v = make(map[int]models.Seller)
-	/*for key, value := range r.db {
+	for key, value := range r.db {
 		v[key] = value
-	}*/
-
-	v[100] = models.Seller{}
-
+	}
+	if len(v) <= 0 {
+		return nil, repository_errors.ErrNotFound
+	}
 	return
 }
 
@@ -38,7 +36,7 @@ func (r *SellerRepository) GetSellerById(id int) (models.Seller, error) {
 		}
 	}
 
-	return models.Seller{}, errors.New("User not found")
+	return models.Seller{}, repository_errors.ErrNotFound
 }
 
 func (r *SellerRepository) CreateSeller(seller models.Seller) (models.Seller, error) {
@@ -50,7 +48,7 @@ func (r *SellerRepository) CreateSeller(seller models.Seller) (models.Seller, er
 			newId = value.Id + 1
 		}
 		if value.Cid == seller.Cid {
-			return models.Seller{}, errormanagementrepository.ErrAlreadyExists
+			return models.Seller{}, repository_errors.ErrAlreadyExists
 		}
 	}
 	seller.Id = newId

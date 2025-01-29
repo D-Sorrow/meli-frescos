@@ -19,16 +19,16 @@ func NewSellerService(repository repository.SellerRepository) *SellerService {
 
 func (repo *SellerService) GetSellers() (map[int]models.Seller, error) {
 	_, err := repo.repository.GetSellers()
-	if err != nil {
-
+	if errors.Is(err, repository_errors.ErrNotFound) {
+		return nil, service_errors.ErrNotFound
 	}
 	return repo.repository.GetSellers()
 }
 
 func (repo *SellerService) GetSellerById(id int) (models.Seller, error) {
 	seller, err := repo.repository.GetSellerById(id)
-	if err != nil {
-		return models.Seller{}, errors.New("user doesnt exist")
+	if errors.Is(err, repository_errors.ErrNotFound) {
+		return models.Seller{}, service_errors.ErrNotFound
 	}
 	return seller, nil
 }

@@ -24,9 +24,17 @@ func NewHandlerService(service service.SellerService) *HandlerSeller {
 }
 
 func (hand *HandlerSeller) GetSellers() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		mapSeller, _ := hand.service.GetSellers()
-		response.JSON(writer, http.StatusOK, mapSeller)
+	return func(w http.ResponseWriter, r *http.Request) {
+		mapSeller, err := hand.service.GetSellers()
+		if err != nil {
+			handler_errors.ResponseError(err, w)
+			return
+		}
+		response.JSON(w, http.StatusOK, dto.ResponseDTO{
+			Code: http.StatusOK,
+			Msg:  "success",
+			Data: mapSeller,
+		})
 	}
 }
 
@@ -34,21 +42,22 @@ func (hand *HandlerSeller) GetSeller() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, map[string]any{
-				"message": "id must be a number",
+			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  "id must be a number",
+				Data: nil,
 			})
 			return
 		}
 		seller, err := hand.service.GetSellerById(id)
 		if err != nil {
-			response.JSON(w, http.StatusNotFound, map[string]any{
-				"message": "user not found",
-			})
+			handler_errors.ResponseError(err, w)
 			return
 		}
-		response.JSON(w, http.StatusOK, map[string]any{
-			"message": "success",
-			"data":    seller,
+		response.JSON(w, http.StatusOK, dto.ResponseDTO{
+			Code: http.StatusOK,
+			Msg:  "success",
+			Data: mappers.MapperToSellerDTO(seller),
 		})
 
 	}
@@ -59,11 +68,7 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 		var sellerDto dto.SellerDto
 
 		if err := json.NewDecoder(r.Body).Decode(&sellerDto); err != nil {
-			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-				Code: http.StatusBadRequest,
-				Msg:  "Bad Request - invalid JSON structure",
-				Data: nil,
-			})
+			handler_errors.ResponseError(err, w)
 			return
 		}
 

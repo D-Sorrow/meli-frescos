@@ -23,3 +23,8 @@ var ErrAlreadyExists *SellerErrors = &SellerErrors{
 	Code: http.StatusNotFound,
 	Msg:  "seller already exists",
 }
+
+var ErrNoExists *SellerErrors = &SellerErrors{
+	Code: http.StatusNotFound,
+	Msg:  "seller doesnt exists",
+}
