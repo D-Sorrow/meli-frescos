@@ -1,9 +1,8 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	repoErros "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type WarehouseRepository struct {
@@ -30,5 +29,6 @@ func (wr *WarehouseRepository) GetWarehouseById(id int) (wh models.Warehouse, er
 		}
 	}
 
-	return wh, fmt.Errorf("id does not exists")
+	err = repoErros.ErrIdNotFound
+	return
 }

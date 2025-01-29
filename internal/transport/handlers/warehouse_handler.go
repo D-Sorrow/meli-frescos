@@ -38,13 +38,21 @@ func (wh *WarehouseHandler) GetWarehouseById() http.HandlerFunc {
 
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
-			response.Error(w, http.StatusBadRequest, "enter a valid id")
+			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  "invalid id",
+				Data: nil,
+			})
 			return
 		}
 
 		warehouse, err := wh.service.GetWarehouseById(id)
 		if err != nil {
-			response.Error(w, http.StatusNotFound, err.Error())
+			response.JSON(w, http.StatusNotFound, dto.ResponseDTO{
+				Code: http.StatusNotFound,
+				Msg:  err.Error(),
+				Data: nil,
+			})
 			return
 		}
 
