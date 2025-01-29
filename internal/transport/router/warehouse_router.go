@@ -23,7 +23,8 @@ func InitWarehouseRouter(rt *chi.Mux) {
 
 	handler := handlers.NewWarehouseHandler(serviceImp)
 
-	rt.Route("/warehouse", func(rt chi.Router) {
+	rt.Route("/warehouses", func(rt chi.Router) {
 		rt.Get("/", handler.GetWarehouses())
+		rt.Get("/{id}", handler.GetWarehouseById())
 	})
 }
