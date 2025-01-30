@@ -55,6 +55,23 @@ func (ws *WarehouseService) CreateWarehouse(warehouse models.Warehouse) (models.
 	return newWarehouse, nil
 }
 
+func (ws *WarehouseService) PatchWarehouse(id int, data map[string]interface{}) (models.Warehouse, error) {
+	warehouse, err := ws.repository.PatchWarehouse(id, data)
+	if err != nil {
+		switch {
+		case errors.Is(err, repoErros.ErrIdNotFound):
+			errNotFound := serviceErrors.ErrIdNotFound()
+			return models.Warehouse{}, errNotFound
+		case errors.Is(err, repoErros.ErrWarehouseCodeDuplicate):
+			return models.Warehouse{}, serviceErrors.ErrWarehouseCodeDuplicate()
+		default:
+			return models.Warehouse{}, serviceErrors.InternalServerErr()
+		}
+	}
+
+	return warehouse, nil
+}
+
 func (ws *WarehouseService) DeleteWarehouse(id int) error {
 	err := ws.repository.DeleteWarehouse(id)
 	if err != nil {

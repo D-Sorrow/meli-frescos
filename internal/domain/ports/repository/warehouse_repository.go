@@ -7,4 +7,5 @@ type WarehouseRepositoryInterface interface {
 	GetWarehouseById(id int) (wh models.Warehouse, err error)
 	DeleteWarehouse(id int) (err error)
 	CreateWarehouse(warehouse models.Warehouse) (models.Warehouse, error)
+	PatchWarehouse(id int, data map[string]interface{}) (models.Warehouse, error)
 }

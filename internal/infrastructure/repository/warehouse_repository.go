@@ -50,6 +50,34 @@ func (wr *WarehouseRepository) CreateWarehouse(warehouse models.Warehouse) (mode
 	return wr.db[id], nil
 }
 
+func (wr *WarehouseRepository) PatchWarehouse(id int, data map[string]interface{}) (models.Warehouse, error) {
+	warehouse := wr.db[id]
+
+	for key, value := range data {
+		switch key {
+		case "warehouse_code":
+			for _, wh := range wr.db {
+				if wh.WarehouseCode == value && wh.Id != id {
+					return models.Warehouse{}, repoErros.ErrWarehouseCodeDuplicate
+				}
+			}
+
+			warehouse.WarehouseCode = value.(string)
+		case "address":
+			warehouse.Address = value.(string)
+		case "telephone":
+			warehouse.Telephone = value.(string)
+		case "minimun_capacity":
+			warehouse.MinimunCapacity = int(value.(float64))
+		case "minimun_temperature":
+			warehouse.MinimunTemperature = int(value.(float64))
+		}
+	}
+
+	wr.db[id] = warehouse
+	return warehouse, nil
+}
+
 func (wr *WarehouseRepository) DeleteWarehouse(id int) (err error) {
 	var warehouseExist bool
 	for _, warehouse := range wr.db {

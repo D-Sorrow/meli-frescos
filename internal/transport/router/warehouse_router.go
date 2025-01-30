@@ -28,5 +28,6 @@ func InitWarehouseRouter(rt *chi.Mux) {
 		rt.Get("/{id}", handler.GetWarehouseById())
 		rt.Delete("/{id}", handler.DeleteWarehouse())
 		rt.Post("/", handler.CreateWarehouse())
+		rt.Patch("/{id}", handler.PatchWarehouse())
 	})
 }
