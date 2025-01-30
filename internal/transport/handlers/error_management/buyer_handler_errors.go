@@ -25,7 +25,7 @@ func (e BuyerError) Error() string {
 	return fmt.Sprintf("%d: %s", e.Code, e.Msg)
 }
 
-func ResponseError(err error, w *http.ResponseWriter) {
+func BuyerResponseError(err error, w *http.ResponseWriter) {
 	var buyerErr BuyerError
 
 	if errors.As(err, &buyerErr) {
