@@ -37,7 +37,7 @@ func (b *BuyerHandler) GetAll() http.HandlerFunc {
 				}
 			}
 
-			handler_errors.ResponseError(getAllErr, &w)
+			handler_errors.BuyerResponseError(getAllErr, &w)
 			return
 		}
 
@@ -74,7 +74,7 @@ func (b *BuyerHandler) GetById() http.HandlerFunc {
 				}
 			}
 
-			handler_errors.ResponseError(getByIdErr, &w)
+			handler_errors.BuyerResponseError(getByIdErr, &w)
 			return
 		}
 
@@ -120,7 +120,7 @@ func (b *BuyerHandler) Create() http.HandlerFunc {
 				}
 			}
 
-			handler_errors.ResponseError(createErr, &w)
+			handler_errors.BuyerResponseError(createErr, &w)
 			return
 		}
 
@@ -181,7 +181,7 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 				}
 			}
 
-			handler_errors.ResponseError(updatedErr, &w)
+			handler_errors.BuyerResponseError(updatedErr, &w)
 			return
 		}
 
@@ -214,7 +214,7 @@ func (b *BuyerHandler) Delete() http.HandlerFunc {
 				}
 			}
 
-			handler_errors.ResponseError(deleteErr, &w)
+			handler_errors.BuyerResponseError(deleteErr, &w)
 			return
 		}
 
