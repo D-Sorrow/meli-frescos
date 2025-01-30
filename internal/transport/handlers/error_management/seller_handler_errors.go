@@ -6,14 +6,37 @@ import (
 	"fmt"
 	"net/http"
 
-	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
 )
 
+type SellerHandlerErrors struct {
+	Code int
+	Msg  string
+}
+
+func (se *SellerHandlerErrors) Error() string {
+	return fmt.Sprintf("%d: %s", se.Code, se.Msg)
+}
+
+var ErrNotFound *SellerHandlerErrors = &SellerHandlerErrors{
+	Code: http.StatusNotFound,
+	Msg:  "not found error",
+}
+
+var ErrAlreadyExists *SellerHandlerErrors = &SellerHandlerErrors{
+	Code: http.StatusNotFound,
+	Msg:  "seller already exists",
+}
+
+var ErrNoExists *SellerHandlerErrors = &SellerHandlerErrors{
+	Code: http.StatusNotFound,
+	Msg:  "seller doesnt exists",
+}
+
 func ResponseError(err error, w http.ResponseWriter) {
-	var sellerErr *service_errors.SellerErrors
+	var sellerErr *SellerHandlerErrors
 	if errors.As(err, &sellerErr) {
 		response.JSON(w, sellerErr.Code, dto.ResponseDTO{
 			Code: sellerErr.Code,

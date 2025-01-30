@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
@@ -27,8 +29,10 @@ func (hand *HandlerSeller) GetSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		mapSeller, err := hand.service.GetSellers()
 		if err != nil {
-			handler_errors.ResponseError(err, w)
-			return
+			if errors.Is(err, service_errors.ErrNotFound) {
+				handler_errors.ResponseError(handler_errors.ErrNotFound, w)
+				return
+			}
 		}
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
@@ -51,8 +55,10 @@ func (hand *HandlerSeller) GetSeller() http.HandlerFunc {
 		}
 		seller, err := hand.service.GetSellerById(id)
 		if err != nil {
-			handler_errors.ResponseError(err, w)
-			return
+			if errors.Is(err, service_errors.ErrNotFound) {
+				handler_errors.ResponseError(handler_errors.ErrNotFound, w)
+				return
+			}
 		}
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
@@ -79,8 +85,10 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 
 		seller, err := hand.service.CreateSeller(mappers.MapperToSeller(sellerDto))
 		if err != nil {
-			handler_errors.ResponseError(err, w)
-			return
+			if errors.Is(err, service_errors.ErrAlreadyExists) {
+				handler_errors.ResponseError(handler_errors.ErrAlreadyExists, w)
+				return
+			}
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
@@ -118,8 +126,10 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 
 		seller, err := hand.service.UpdateSeller(id, mappers.MapperToSellerPatch(sellerDto))
 		if err != nil {
-			handler_errors.ResponseError(err, w)
-			return
+			if errors.Is(err, service_errors.ErrNotFound) {
+				handler_errors.ResponseError(handler_errors.ErrNotFound, w)
+				return
+			}
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
@@ -145,8 +155,10 @@ func (hand *HandlerSeller) DeleteSeller() http.HandlerFunc {
 
 		err = hand.service.DeleteSeller(id)
 		if err != nil {
-			handler_errors.ResponseError(err, w)
-			return
+			if errors.Is(err, service_errors.ErrNotFound) {
+				handler_errors.ResponseError(handler_errors.ErrNotFound, w)
+				return
+			}
 		}
 
 		response.JSON(w, http.StatusNoContent, dto.ResponseDTO{})

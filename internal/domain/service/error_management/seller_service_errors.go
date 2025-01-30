@@ -2,29 +2,20 @@ package service_errors
 
 import (
 	"fmt"
-	"net/http"
 )
 
 type SellerErrors struct {
-	Code int
-	Msg  string
+	Msg string
 }
 
 func (se *SellerErrors) Error() string {
-	return fmt.Sprintf("%d: %s", se.Code, se.Msg)
+	return fmt.Sprintf("%s", se.Msg)
 }
 
 var ErrNotFound *SellerErrors = &SellerErrors{
-	Code: http.StatusNotFound,
-	Msg:  "not found error",
+	Msg: "not found error",
 }
 
 var ErrAlreadyExists *SellerErrors = &SellerErrors{
-	Code: http.StatusNotFound,
-	Msg:  "seller already exists",
-}
-
-var ErrNoExists *SellerErrors = &SellerErrors{
-	Code: http.StatusNotFound,
-	Msg:  "seller doesnt exists",
+	Msg: "seller already exists",
 }
