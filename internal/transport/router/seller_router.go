@@ -17,8 +17,12 @@ func InitSellerRouter(rt *chi.Mux) {
 
 	handler := handlers.NewHandlerService(serviceImp)
 
-	rt.Route("/seller", func(rt chi.Router) {
-		rt.Get("/", handler.GetSeller())
+	rt.Route("/api/v1/sellers", func(rt chi.Router) {
+		rt.Get("/", handler.GetSellers())
+		rt.Get("/{id}", handler.GetSeller())
+		rt.Post("/", handler.CreateSeller())
+		rt.Patch("/{id}", handler.UpdateSeller())
+		rt.Delete("/{id}", handler.DeleteSeller())
 	})
 	return
 }

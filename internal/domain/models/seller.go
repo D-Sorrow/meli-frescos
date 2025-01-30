@@ -7,3 +7,11 @@ type Seller struct {
 	Address     string
 	Telephone   string
 }
+
+
+type SellerPatch struct {
+	Cid         *int
+	CompanyName *string
+	Address     *string
+	Telephone   *string
+}
