@@ -34,10 +34,16 @@ func (hand *HandlerSeller) GetSellers() http.HandlerFunc {
 				return
 			}
 		}
+
+		data := make([]dto.SellerDto, 0)
+		for _, value := range mapSeller {
+			data = append(data, mappers.MapperToSellerDTO(value))
+		}
+
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
 			Msg:  "success",
-			Data: mapSeller,
+			Data: data,
 		})
 	}
 }

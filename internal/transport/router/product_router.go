@@ -9,7 +9,7 @@ import (
 )
 
 func InitProductRouter(rt *chi.Mux) {
-	loader := loader.NewProductJSONFile("docs/db/products_data.json")
+	loader := loader.NewProductJSONFile("../docs/db/products_data.json")
 
 	db, err := loader.Load()
 	if err != nil {

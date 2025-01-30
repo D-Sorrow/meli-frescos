@@ -26,13 +26,8 @@ var ErrNotFound *SellerHandlerErrors = &SellerHandlerErrors{
 }
 
 var ErrAlreadyExists *SellerHandlerErrors = &SellerHandlerErrors{
-	Code: http.StatusNotFound,
+	Code: http.StatusConflict,
 	Msg:  "seller already exists",
-}
-
-var ErrNoExists *SellerHandlerErrors = &SellerHandlerErrors{
-	Code: http.StatusNotFound,
-	Msg:  "seller doesnt exists",
 }
 
 func ResponseErrorSeller(err error, w http.ResponseWriter) {
@@ -51,9 +46,9 @@ func ResponseErrorSeller(err error, w http.ResponseWriter) {
 		for _, validationErr := range err.(validator.ValidationErrors) {
 			validationErrors = append(validationErrors, fmt.Sprintf("%s is %s and must be a %s", validationErr.Field(), validationErr.ActualTag(), validationErr.Kind()))
 		}
-		response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-			Code: http.StatusBadRequest,
-			Msg:  "Bad Request",
+		response.JSON(w, http.StatusUnprocessableEntity, dto.ResponseDTO{
+			Code: http.StatusUnprocessableEntity,
+			Msg:  "The request is invalid because it does not contain the necessary fields",
 			Data: validationErrors,
 		})
 	}
