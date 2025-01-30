@@ -42,6 +42,9 @@ func (a *ServerChi) Run() (err error) {
 	router.InitWarehouseRouter(rt)
 	router.InitSellerRouter(rt)
 
+	router.InitProductRouter(rt)
+	router.NewBuyerRouter(rt)
+
 	err = http.ListenAndServe(a.serverAddress, rt)
 	return
 }

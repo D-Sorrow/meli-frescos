@@ -1,4 +1,4 @@
-package errormanagement
+package error_management
 
 import (
 	"errors"

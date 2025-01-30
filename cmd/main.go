@@ -8,7 +8,7 @@ import (
 
 func main() {
 	cfg := &server.ConfigServerChi{
-		ServerAddress: ":8089",
+		ServerAddress: ":8080",
 	}
 	app := server.NewServerChi(cfg)
 	if err := app.Run(); err != nil {
