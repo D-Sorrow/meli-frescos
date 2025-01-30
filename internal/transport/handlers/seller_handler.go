@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"

@@ -92,5 +92,4 @@ func (r *SellerRepository) DeleteSeller(id int) error {
 	delete(r.db, id)
 
 	return nil
-
 }

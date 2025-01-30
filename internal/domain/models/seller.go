@@ -8,6 +8,7 @@ type Seller struct {
 	Telephone   string
 }
 
+
 type SellerPatch struct {
 	Cid         *int
 	CompanyName *string
