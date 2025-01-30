@@ -101,7 +101,7 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		employeeCreated, err := handler.service.CreateEmployee(*employeeModel)
 
 		if err != nil {
-			if err.Error() == "EAE_DB" {
+			if err.Error() == "EAE_SV" {
 				response.JSON(w, http.StatusBadRequest, map[string]any{
 					"error": "Empleado con ese Card ID ya existe",
 				})
@@ -151,7 +151,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 					"error": "Empleado no encontrado",
 				})
 				return
-			} else if err.Error() == "EAE-DB" {
+			} else if err.Error() == "EAE-SV" {
 				response.JSON(w, http.StatusNotFound, map[string]any{
 					"error": "Empleado con ese card id ya existe",
 				})
@@ -166,6 +166,38 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 
 		response.JSON(w, http.StatusOK, map[string]any{
 			"data": employeeUpdated,
+		})
+	}
+}
+
+func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		employeeIdString := chi.URLParam(r, "id")
+		employeeId, err := strconv.Atoi(employeeIdString)
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"error": "El formato del id no es válido",
+			})
+			return
+		}
+
+		errorService := handler.service.DeleteEmployee(employeeId)
+		if errorService != nil {
+			if errorService.Error() == "ENF-SV" {
+				response.JSON(w, http.StatusNotFound, map[string]any{
+					"error": "El empleado con ese id no existe",
+				})
+				return
+			} else {
+				response.JSON(w, http.StatusInternalServerError, map[string]any{
+					"error": "Internal server error",
+				})
+				return
+			}
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "Empleado elimindo correctamente",
 		})
 	}
 }

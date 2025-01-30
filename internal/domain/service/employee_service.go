@@ -49,11 +49,11 @@ func (service *EmployeeService) GetEmployeeById(employeeId int) (employee models
 func (service *EmployeeService) CreateEmployee(employee models.Employee) (models.Employee, error) {
 	allEmployees, err := service.repository.GetEmployees()
 	if err != nil {
-		return models.Employee{}, errors.New("ERE_DB")
+		return models.Employee{}, errors.New("ERE_SV")
 	}
 	for _, emp := range allEmployees {
 		if emp.CardNumberId == employee.CardNumberId {
-			return models.Employee{}, errors.New("EAE_DB")
+			return models.Employee{}, errors.New("EAE_SV")
 		}
 	}
 	return service.repository.CreateEmployee(employee), nil
@@ -77,7 +77,7 @@ func (service *EmployeeService) UpdateEmployee(employeeId int, employee models.E
 		employeeUpdated.CardNumberId = *employee.CardNumberId
 		for _, emp := range allEmployees {
 			if emp.CardNumberId == *employee.CardNumberId {
-				return models.Employee{}, errors.New("EAE-DB")
+				return models.Employee{}, errors.New("EAE-SV")
 			}
 		}
 	}
@@ -96,4 +96,16 @@ func (service *EmployeeService) UpdateEmployee(employeeId int, employee models.E
 	service.repository.UpdateEmployee(employeeId, employeeUpdated)
 	return
 
+}
+
+func (service *EmployeeService) DeleteEmployee(employeeId int) (err error) {
+	err = service.repository.DeleteEmployee(employeeId)
+
+	if err != nil {
+		if err.Error() == "ENF-DB" {
+			err = errors.New("ENF-SV")
+		}
+	}
+
+	return
 }

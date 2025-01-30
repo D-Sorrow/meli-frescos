@@ -49,6 +49,16 @@ func (repository *EmployeeRepository) UpdateEmployee(employeeId int, employee mo
 	repository.db[employeeId] = employee
 }
 
+func (repository *EmployeeRepository) DeleteEmployee(employeeId int) error {
+	_, exists := repository.db[employeeId]
+	if !exists {
+		return errors.New("ENF-DB")
+	}
+
+	delete(repository.db, employeeId)
+	return nil
+}
+
 func (repository *EmployeeRepository) generateId() int {
 	maxId := 0
 	for id := range repository.db {
