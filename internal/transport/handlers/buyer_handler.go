@@ -1,4 +1,4 @@
-package buyer
+package handlers
 
 import (
 	"encoding/json"
