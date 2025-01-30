@@ -10,5 +10,4 @@ type SellerRepository interface {
 	CreateSeller(seller models.Seller) (models.Seller, error)
 	UpdateSeller(id int, seller models.SellerPatch) (models.Seller, error)
 	DeleteSeller(id int) error
-
 }
