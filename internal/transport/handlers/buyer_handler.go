@@ -69,7 +69,7 @@ func (b *BuyerHandler) GetById() http.HandlerFunc {
 		if getByIdErr != nil {
 			if errors.Is(getByIdErr, service_errors.BuyerDoesNotExist) {
 				getByIdErr = handler_errors.BuyerError{
-					Code: http.StatusOK,
+					Code: http.StatusNotFound,
 					Msg:  fmt.Sprintf(getByIdErr.Error(), idInt),
 				}
 			}
@@ -115,7 +115,7 @@ func (b *BuyerHandler) Create() http.HandlerFunc {
 		if createErr != nil {
 			if errors.Is(createErr, service_errors.BuyerAlreadyExists) {
 				createErr = handler_errors.BuyerError{
-					Code: http.StatusOK,
+					Code: http.StatusConflict,
 					Msg:  fmt.Sprintf(createErr.Error(), newBuyer.CardNumberID),
 				}
 			}
@@ -171,12 +171,12 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 		if updatedErr != nil {
 			if errors.Is(updatedErr, service_errors.BuyerAlreadyExists) {
 				updatedErr = handler_errors.BuyerError{
-					Code: http.StatusOK,
+					Code: http.StatusConflict,
 					Msg:  fmt.Sprintf(updatedErr.Error(), updatedBuyer.CardNumberID),
 				}
 			} else if errors.Is(updatedErr, service_errors.BuyerDoesNotExist) {
 				updatedErr = handler_errors.BuyerError{
-					Code: http.StatusOK,
+					Code: http.StatusNotFound,
 					Msg:  fmt.Sprintf(updatedErr.Error(), idInt),
 				}
 			}
@@ -209,7 +209,7 @@ func (b *BuyerHandler) Delete() http.HandlerFunc {
 		if deleteErr != nil {
 			if errors.Is(deleteErr, service_errors.BuyerDoesNotExist) {
 				deleteErr = handler_errors.BuyerError{
-					Code: http.StatusOK,
+					Code: http.StatusNotFound,
 					Msg:  fmt.Sprintf(deleteErr.Error(), idInt),
 				}
 			}
