@@ -33,7 +33,6 @@ func (p *ProductDto) Validate() error {
 	if p.Description == "" {
 		return errors.New(DescriptionInvalid)
 	}
-	// More validation rules can be added here
 	if p.ExpirationRate < 0 {
 		return errors.New(ExpirationInvalid)
 	}

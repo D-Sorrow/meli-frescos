@@ -46,9 +46,7 @@ func (a *ServerChi) Run() (err error) {
 
 	rt.Use(middleware.Logger)
 	rt.Use(middleware.Recoverer)
-
-	router.InitSellerRouter(rt)
-
+	
 	router.InitProductRouter(rt)
 
 	err = http.ListenAndServe(a.serverAddress, rt)

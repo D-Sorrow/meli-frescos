@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/product/models"
-	err "github.com/D-Sorrow/meli-frescos/internal/infrastructure/product/repository/error_management"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	err "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type ProductRepository struct {

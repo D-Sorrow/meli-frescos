@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/product/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/product/ports/repository"
-	er "github.com/D-Sorrow/meli-frescos/internal/domain/product/service/error_management"
+	er "github.com/D-Sorrow/meli-frescos/internal/domain/error_management"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 )
 
 type ProductService struct {

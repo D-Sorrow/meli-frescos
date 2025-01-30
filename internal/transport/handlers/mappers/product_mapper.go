@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/product/models"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/product/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 )
 
 func MapperToProductDto(product models.Product) dto.ProductDto {
