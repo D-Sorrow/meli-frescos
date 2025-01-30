@@ -7,6 +7,7 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
@@ -25,9 +26,7 @@ func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
 		employees, err := handler.service.GetEmployees()
 
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, map[string]any{
-				"error": "Internal server error",
-			})
+			error_management.HandleErrorEmployee(w, err.Error(), nil)
 			return
 		}
 		var employeesDto []dto.EmployeeDTO
@@ -47,9 +46,7 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, map[string]any{
-				"error": "Formato de ID inválido",
-			})
+			error_management.HandleErrorEmployee(w, "ID-DEC-ERR", nil)
 			return
 		}
 
@@ -57,17 +54,8 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		employeeDto := mappers.EmployeeModelToDTO(employee)
 
 		if err != nil {
-			if err.Error() == "ENF-SV" {
-				response.JSON(w, http.StatusNotFound, map[string]any{
-					"error": "Empleado no encontrado",
-				})
-				return
-			} else {
-				response.JSON(w, http.StatusInternalServerError, map[string]any{
-					"error": "Internal server error",
-				})
-				return
-			}
+			error_management.HandleErrorEmployee(w, err.Error(), nil)
+			return
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
@@ -84,9 +72,7 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&employeeToCreate); err != nil {
-			response.JSON(w, http.StatusBadRequest, map[string]any{
-				"error": "Bad request - decoding",
-			})
+			error_management.HandleErrorEmployee(w, "BODY-ERR", err)
 			return
 		}
 
@@ -101,17 +87,8 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		employeeCreated, err := handler.service.CreateEmployee(*employeeModel)
 
 		if err != nil {
-			if err.Error() == "EAE_SV" {
-				response.JSON(w, http.StatusBadRequest, map[string]any{
-					"error": "Empleado con ese Card ID ya existe",
-				})
-				return
-			} else {
-				response.JSON(w, http.StatusInternalServerError, map[string]any{
-					"error": "Internal server error",
-				})
-				return
-			}
+			error_management.HandleErrorEmployee(w, err.Error(), nil)
+			return
 		}
 
 		employeeDto := mappers.EmployeeModelToDTO(employeeCreated)
@@ -126,9 +103,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, map[string]any{
-				"error": "Formato de ID inválido",
-			})
+			error_management.HandleErrorEmployee(w, "ID-DEC-ERR", nil)
 			return
 		}
 
@@ -136,9 +111,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 		if err := decoder.Decode(&employeePatchRequestDTO); err != nil {
-			response.JSON(w, http.StatusBadRequest, map[string]any{
-				"error": "Bad request - decoding",
-			})
+			error_management.HandleErrorEmployee(w, "BODY-ERR", err)
 			return
 		}
 
@@ -146,22 +119,8 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		employeeUpdated, err := handler.service.UpdateEmployee(id, *employeePatchRequestModel)
 
 		if err != nil {
-			if err.Error() == "ENF-SV" {
-				response.JSON(w, http.StatusNotFound, map[string]any{
-					"error": "Empleado no encontrado",
-				})
-				return
-			} else if err.Error() == "EAE-SV" {
-				response.JSON(w, http.StatusNotFound, map[string]any{
-					"error": "Empleado con ese card id ya existe",
-				})
-				return
-			} else {
-				response.JSON(w, http.StatusInternalServerError, map[string]any{
-					"error": "Internal server error",
-				})
-				return
-			}
+			error_management.HandleErrorEmployee(w, err.Error(), nil)
+			return
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
@@ -175,25 +134,14 @@ func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
 		employeeIdString := chi.URLParam(r, "id")
 		employeeId, err := strconv.Atoi(employeeIdString)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, map[string]any{
-				"error": "El formato del id no es válido",
-			})
+			error_management.HandleErrorEmployee(w, "ID-DEC-ERR", nil)
 			return
 		}
 
 		errorService := handler.service.DeleteEmployee(employeeId)
 		if errorService != nil {
-			if errorService.Error() == "ENF-SV" {
-				response.JSON(w, http.StatusNotFound, map[string]any{
-					"error": "El empleado con ese id no existe",
-				})
-				return
-			} else {
-				response.JSON(w, http.StatusInternalServerError, map[string]any{
-					"error": "Internal server error",
-				})
-				return
-			}
+			error_management.HandleErrorEmployee(w, errorService.Error(), nil)
+			return
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{

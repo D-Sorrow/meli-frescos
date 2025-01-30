@@ -49,11 +49,11 @@ func (service *EmployeeService) GetEmployeeById(employeeId int) (employee models
 func (service *EmployeeService) CreateEmployee(employee models.Employee) (models.Employee, error) {
 	allEmployees, err := service.repository.GetEmployees()
 	if err != nil {
-		return models.Employee{}, errors.New("ERE_SV")
+		return models.Employee{}, errors.New("ERE-SV")
 	}
 	for _, emp := range allEmployees {
 		if emp.CardNumberId == employee.CardNumberId {
-			return models.Employee{}, errors.New("EAE_SV")
+			return models.Employee{}, errors.New("EAE-SV")
 		}
 	}
 	return service.repository.CreateEmployee(employee), nil
