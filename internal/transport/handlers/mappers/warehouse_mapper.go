@@ -11,8 +11,8 @@ func MapperToWarehouseDto(warehouse models.Warehouse) dto.WarehouseDto {
 		WarehouseCode:      warehouse.WarehouseCode,
 		Address:            warehouse.Address,
 		Telephone:          warehouse.Telephone,
-		MinimunCapacity:    warehouse.MinimunCapacity,
-		MinimunTemperature: warehouse.MinimunTemperature,
+		MinimumCapacity:    warehouse.MinimunCapacity,
+		MinimumTemperature: warehouse.MinimunTemperature,
 	}
 }
 
@@ -31,7 +31,7 @@ func MapperToWarehouseModel(warehouse dto.WarehouseDto) models.Warehouse {
 		WarehouseCode:      warehouse.WarehouseCode,
 		Address:            warehouse.Address,
 		Telephone:          warehouse.Telephone,
-		MinimunCapacity:    warehouse.MinimunCapacity,
-		MinimunTemperature: warehouse.MinimunTemperature,
+		MinimunCapacity:    warehouse.MinimumCapacity,
+		MinimunTemperature: warehouse.MinimumTemperature,
 	}
 }

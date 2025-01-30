@@ -83,17 +83,26 @@ func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
 			})
 		}
 
+		if err := reqBody.Validate(); err != nil {
+			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  err.Error(),
+				Data: nil,
+			})
+			return
+		}
+
 		newWarehouse, err := wh.service.CreateWarehouse(mappers.MapperToWarehouseModel(reqBody))
 		if err != nil {
 			switch {
-			case errors.Is(err, serviceErrors.ErrIdDuplicate()):
+			case err.Error() == serviceErrors.ErrIdDuplicate().Error():
 				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
 					Code: http.StatusConflict,
 					Msg:  err.Error(),
 					Data: nil,
 				})
 				return
-			case errors.Is(err, serviceErrors.ErrWarehouseCodeDuplicate()):
+			case err.Error() == serviceErrors.ErrWarehouseCodeDuplicate().Error():
 				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
 					Code: http.StatusConflict,
 					Msg:  err.Error(),
@@ -101,6 +110,7 @@ func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
 				})
 				return
 			default:
+				println(errors.Is(err, serviceErrors.ErrWarehouseCodeDuplicate()))
 				response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
 					Code: http.StatusInternalServerError,
 					Msg:  err.Error(),
