@@ -28,5 +28,6 @@ func InitEmployeeRouter(rt *chi.Mux) {
 		rt.Get("/", handler.GetEmployees())
 		rt.Get("/{id}", handler.GetEmployeeById())
 		rt.Post(("/"), handler.CreateEmployee())
+		rt.Patch("/{id}", handler.UpdateEmployee())
 	})
 }

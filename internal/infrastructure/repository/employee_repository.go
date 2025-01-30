@@ -45,6 +45,10 @@ func (repository *EmployeeRepository) CreateEmployee(employee models.Employee) m
 	return employeeCreated
 }
 
+func (repository *EmployeeRepository) UpdateEmployee(employeeId int, employee models.Employee) {
+	repository.db[employeeId] = employee
+}
+
 func (repository *EmployeeRepository) generateId() int {
 	maxId := 0
 	for id := range repository.db {

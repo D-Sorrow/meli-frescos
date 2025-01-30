@@ -23,3 +23,12 @@ func EmployeeDTOToModel(employeeDTO dto.EmployeeRequestDTO) *models.Employee {
 		WarehouseId:  employeeDTO.WarehouseId,
 	}
 }
+
+func EmployeePatchRequestDTOToModel(employeePatchRequestDTO dto.EmployeePatchRequestDTO) *models.EmployeePatchRequest {
+	return &models.EmployeePatchRequest{
+		CardNumberId: employeePatchRequestDTO.CardNumberId,
+		FirstName:    employeePatchRequestDTO.FirstName,
+		LastName:     employeePatchRequestDTO.LastName,
+		WarehouseId:  employeePatchRequestDTO.WarehouseId,
+	}
+}

@@ -6,4 +6,5 @@ type EmployeeRepository interface {
 	GetEmployees() (map[int]models.Employee, error)
 	GetEmployeeById(employeeId int) (models.Employee, error)
 	CreateEmployee(employee models.Employee) models.Employee
+	UpdateEmployee(employeeId int, employee models.Employee)
 }

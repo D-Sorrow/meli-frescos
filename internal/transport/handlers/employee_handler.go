@@ -120,3 +120,52 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		})
 	}
 }
+
+func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idString := chi.URLParam(r, "id")
+		id, err := strconv.Atoi(idString)
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"error": "Formato de ID inválido",
+			})
+			return
+		}
+
+		var employeePatchRequestDTO dto.EmployeePatchRequestDTO
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&employeePatchRequestDTO); err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"error": "Bad request - decoding",
+			})
+			return
+		}
+
+		employeePatchRequestModel := mappers.EmployeePatchRequestDTOToModel(employeePatchRequestDTO)
+		employeeUpdated, err := handler.service.UpdateEmployee(id, *employeePatchRequestModel)
+
+		if err != nil {
+			if err.Error() == "ENF-SV" {
+				response.JSON(w, http.StatusNotFound, map[string]any{
+					"error": "Empleado no encontrado",
+				})
+				return
+			} else if err.Error() == "EAE-DB" {
+				response.JSON(w, http.StatusNotFound, map[string]any{
+					"error": "Empleado con ese card id ya existe",
+				})
+				return
+			} else {
+				response.JSON(w, http.StatusInternalServerError, map[string]any{
+					"error": "Internal server error",
+				})
+				return
+			}
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": employeeUpdated,
+		})
+	}
+}

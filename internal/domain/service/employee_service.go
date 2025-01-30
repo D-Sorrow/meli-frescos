@@ -58,3 +58,42 @@ func (service *EmployeeService) CreateEmployee(employee models.Employee) (models
 	}
 	return service.repository.CreateEmployee(employee), nil
 }
+
+func (service *EmployeeService) UpdateEmployee(employeeId int, employee models.EmployeePatchRequest) (employeeUpdated models.Employee, err error) {
+	employeeUpdated, err = service.repository.GetEmployeeById(employeeId)
+	allEmployees, errorAll := service.repository.GetEmployees()
+	if errorAll != nil {
+		return models.Employee{}, errors.New("ISE-SV")
+	}
+	if err != nil {
+		if err.Error() == "ENF-DB" {
+			return models.Employee{}, errors.New("ENF-SV")
+		} else {
+			return models.Employee{}, errors.New("ISE-SV")
+		}
+	}
+
+	if employee.CardNumberId != nil {
+		employeeUpdated.CardNumberId = *employee.CardNumberId
+		for _, emp := range allEmployees {
+			if emp.CardNumberId == *employee.CardNumberId {
+				return models.Employee{}, errors.New("EAE-DB")
+			}
+		}
+	}
+
+	if employee.FirstName != nil {
+		employeeUpdated.FirstName = *employee.FirstName
+	}
+
+	if employee.LastName != nil {
+		employeeUpdated.LastName = *employee.LastName
+	}
+
+	if employee.WarehouseId != nil {
+		employeeUpdated.WarehouseId = *employee.WarehouseId
+	}
+	service.repository.UpdateEmployee(employeeId, employeeUpdated)
+	return
+
+}
