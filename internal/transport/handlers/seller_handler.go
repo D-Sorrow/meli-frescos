@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
@@ -29,7 +30,7 @@ func (hand *HandlerSeller) GetSellers() http.HandlerFunc {
 		mapSeller, err := hand.service.GetSellers()
 		if err != nil {
 			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseError(handler_errors.ErrNotFound, w)
+				handler_errors.ResponseErrorSeller(handler_errors.ErrNotFound, w)
 				return
 			}
 		}
@@ -55,7 +56,7 @@ func (hand *HandlerSeller) GetSeller() http.HandlerFunc {
 		seller, err := hand.service.GetSellerById(id)
 		if err != nil {
 			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseError(handler_errors.ErrNotFound, w)
+				handler_errors.ResponseErrorSeller(handler_errors.ErrNotFound, w)
 				return
 			}
 		}
@@ -73,19 +74,19 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 		var sellerDto dto.SellerDto
 
 		if err := json.NewDecoder(r.Body).Decode(&sellerDto); err != nil {
-			handler_errors.ResponseError(err, w)
+			handler_errors.ResponseErrorSeller(err, w)
 			return
 		}
 
 		if err := hand.validate.Struct(sellerDto); err != nil {
-			handler_errors.ResponseError(err, w)
+			handler_errors.ResponseErrorSeller(err, w)
 			return
 		}
 
 		seller, err := hand.service.CreateSeller(mappers.MapperToSeller(sellerDto))
 		if err != nil {
 			if errors.Is(err, service_errors.ErrAlreadyExists) {
-				handler_errors.ResponseError(handler_errors.ErrAlreadyExists, w)
+				handler_errors.ResponseErrorSeller(handler_errors.ErrAlreadyExists, w)
 				return
 			}
 		}
@@ -114,19 +115,19 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 		var sellerDto dto.SellerUpdateDto
 
 		if err := json.NewDecoder(r.Body).Decode(&sellerDto); err != nil {
-			handler_errors.ResponseError(err, w)
+			handler_errors.ResponseErrorSeller(err, w)
 			return
 		}
 
 		if err := hand.validate.Struct(sellerDto); err != nil {
-			handler_errors.ResponseError(err, w)
+			handler_errors.ResponseErrorSeller(err, w)
 			return
 		}
 
 		seller, err := hand.service.UpdateSeller(id, mappers.MapperToSellerPatch(sellerDto))
 		if err != nil {
 			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseError(handler_errors.ErrNotFound, w)
+				handler_errors.ResponseErrorSeller(handler_errors.ErrNotFound, w)
 				return
 			}
 		}
@@ -155,7 +156,7 @@ func (hand *HandlerSeller) DeleteSeller() http.HandlerFunc {
 		err = hand.service.DeleteSeller(id)
 		if err != nil {
 			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseError(handler_errors.ErrNotFound, w)
+				handler_errors.ResponseErrorSeller(handler_errors.ErrNotFound, w)
 				return
 			}
 		}

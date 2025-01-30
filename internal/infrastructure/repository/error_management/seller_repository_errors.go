@@ -1,4 +1,4 @@
-package repository_errors
+package error_management
 
 import "errors"
 

@@ -1,4 +1,4 @@
-package handler_errors
+package error_management
 
 import (
 	"encoding/json"
@@ -35,7 +35,7 @@ var ErrNoExists *SellerHandlerErrors = &SellerHandlerErrors{
 	Msg:  "seller doesnt exists",
 }
 
-func ResponseError(err error, w http.ResponseWriter) {
+func ResponseErrorSeller(err error, w http.ResponseWriter) {
 	var sellerErr *SellerHandlerErrors
 	if errors.As(err, &sellerErr) {
 		response.JSON(w, sellerErr.Code, dto.ResponseDTO{
