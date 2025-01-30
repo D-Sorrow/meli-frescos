@@ -1,43 +1,35 @@
 package server
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/transport/router"
 	"net/http"
+
+	"github.com/D-Sorrow/meli-frescos/internal/transport/router"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
 type ConfigServerChi struct {
-	ServerAddress  string
-	LoaderFilePath string
+	ServerAddress string
 }
 
 func NewServerChi(cfg *ConfigServerChi) *ServerChi {
 	defaultConfig := &ConfigServerChi{
 		ServerAddress: ":8080",
 	}
-	if cfg.ServerAddress == "" {
-
-	}
-	if cfg != nil {
-		if cfg.ServerAddress != "" {
-			defaultConfig.ServerAddress = cfg.ServerAddress
-		}
-		if cfg.LoaderFilePath != "" {
-			defaultConfig.LoaderFilePath = cfg.LoaderFilePath
-		}
+	if cfg == nil {
+		cfg = defaultConfig
+	} else if cfg.ServerAddress == "" {
+		cfg.ServerAddress = defaultConfig.ServerAddress
 	}
 
 	return &ServerChi{
-		serverAddress:  defaultConfig.ServerAddress,
-		loaderFilePath: defaultConfig.LoaderFilePath,
+		serverAddress: cfg.ServerAddress,
 	}
 }
 
 type ServerChi struct {
-	serverAddress  string
-	loaderFilePath string
+	serverAddress string
 }
 
 func (a *ServerChi) Run() (err error) {
@@ -47,10 +39,11 @@ func (a *ServerChi) Run() (err error) {
 	rt.Use(middleware.Logger)
 	rt.Use(middleware.Recoverer)
 
-	router.InitSellerRouter(rt)
+	router.NewBuyerRouter(rt)
 
 	router.InitProductRouter(rt)
 
 	err = http.ListenAndServe(a.serverAddress, rt)
+
 	return
 }
