@@ -10,35 +10,26 @@ import (
 )
 
 type ConfigServerChi struct {
-	ServerAddress  string
-	LoaderFilePath string
+	ServerAddress string
 }
 
 func NewServerChi(cfg *ConfigServerChi) *ServerChi {
 	defaultConfig := &ConfigServerChi{
 		ServerAddress: ":8080",
 	}
-	if cfg.ServerAddress == "" {
-
-	}
-	if cfg != nil {
-		if cfg.ServerAddress != "" {
-			defaultConfig.ServerAddress = cfg.ServerAddress
-		}
-		if cfg.LoaderFilePath != "" {
-			defaultConfig.LoaderFilePath = cfg.LoaderFilePath
-		}
+	if cfg == nil {
+		cfg = defaultConfig
+	} else if cfg.ServerAddress == "" {
+		cfg.ServerAddress = defaultConfig.ServerAddress
 	}
 
 	return &ServerChi{
-		serverAddress:  defaultConfig.ServerAddress,
-		loaderFilePath: defaultConfig.LoaderFilePath,
+		serverAddress: cfg.ServerAddress,
 	}
 }
 
 type ServerChi struct {
-	serverAddress  string
-	loaderFilePath string
+	serverAddress string
 }
 
 func (a *ServerChi) Run() (err error) {
