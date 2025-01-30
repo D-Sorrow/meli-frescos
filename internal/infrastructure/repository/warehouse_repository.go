@@ -33,6 +33,23 @@ func (wr *WarehouseRepository) GetWarehouseById(id int) (wh models.Warehouse, er
 	return
 }
 
+func (wr *WarehouseRepository) CreateWarehouse(warehouse models.Warehouse) (models.Warehouse, error) {
+	id := len(wr.db) + 1
+
+	for _, wh := range wr.db {
+		switch {
+		case wh.Id == id:
+			return models.Warehouse{}, repoErros.ErrIdDuplicate
+		case wh.WarehouseCode == warehouse.WarehouseCode:
+			return models.Warehouse{}, repoErros.ErrWarehouseCodeDuplicate
+		}
+	}
+
+	warehouse.Id = id
+	wr.db[id] = warehouse
+	return wr.db[id], nil
+}
+
 func (wr *WarehouseRepository) DeleteWarehouse(id int) (err error) {
 	var warehouseExist bool
 	for _, warehouse := range wr.db {

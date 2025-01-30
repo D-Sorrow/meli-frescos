@@ -26,8 +26,8 @@ func (ws *WarehouseService) GetWarehouseById(id int) (models.Warehouse, error) {
 	if err != nil {
 		switch {
 		case errors.Is(err, repoErros.ErrIdNotFound):
-			errNotFound := serviceErrors.ErrIdNotFound{Id: id}
-			return models.Warehouse{}, errNotFound.Error()
+			errNotFound := serviceErrors.ErrIdNotFound()
+			return models.Warehouse{}, errNotFound
 		default:
 			return models.Warehouse{}, serviceErrors.InternalServerErr()
 		}
@@ -36,13 +36,32 @@ func (ws *WarehouseService) GetWarehouseById(id int) (models.Warehouse, error) {
 	return warehouse, nil
 }
 
+func (ws *WarehouseService) CreateWarehouse(warehouse models.Warehouse) (models.Warehouse, error) {
+	newWarehouse, err := ws.repository.CreateWarehouse(warehouse)
+	if err != nil {
+		switch {
+		case errors.Is(err, repoErros.ErrIdDuplicate):
+			err = serviceErrors.ErrIdDuplicate()
+			return models.Warehouse{}, err
+		case errors.Is(err, repoErros.ErrWarehouseCodeDuplicate):
+			err = serviceErrors.ErrWarehouseCodeDuplicate()
+			return models.Warehouse{}, err
+		default:
+			err = serviceErrors.InternalServerErr()
+			return models.Warehouse{}, err
+		}
+	}
+
+	return newWarehouse, nil
+}
+
 func (ws *WarehouseService) DeleteWarehouse(id int) error {
 	err := ws.repository.DeleteWarehouse(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, repoErros.ErrIdNotFound):
-			errNotFound := serviceErrors.ErrIdNotFound{Id: id}
-			return errNotFound.Error()
+			errNotFound := serviceErrors.ErrIdNotFound()
+			return errNotFound
 		default:
 			return serviceErrors.InternalServerErr()
 		}

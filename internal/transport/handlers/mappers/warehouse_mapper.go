@@ -24,3 +24,14 @@ func MapperToWarehousesDto(warehouses map[int]models.Warehouse) []dto.WarehouseD
 	}
 	return warehousesDto
 }
+
+func MapperToWarehouseModel(warehouse dto.WarehouseDto) models.Warehouse {
+	return models.Warehouse{
+		Id:                 warehouse.Id,
+		WarehouseCode:      warehouse.WarehouseCode,
+		Address:            warehouse.Address,
+		Telephone:          warehouse.Telephone,
+		MinimunCapacity:    warehouse.MinimunCapacity,
+		MinimunTemperature: warehouse.MinimunTemperature,
+	}
+}

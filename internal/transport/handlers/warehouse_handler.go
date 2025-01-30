@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -70,6 +71,52 @@ func (wh *WarehouseHandler) GetWarehouseById() http.HandlerFunc {
 	}
 }
 
+func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		reqBody := dto.WarehouseDto{}
+
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  "Bad request",
+				Data: nil,
+			})
+		}
+
+		newWarehouse, err := wh.service.CreateWarehouse(mappers.MapperToWarehouseModel(reqBody))
+		if err != nil {
+			switch {
+			case errors.Is(err, serviceErrors.ErrIdDuplicate()):
+				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
+					Code: http.StatusConflict,
+					Msg:  err.Error(),
+					Data: nil,
+				})
+				return
+			case errors.Is(err, serviceErrors.ErrWarehouseCodeDuplicate()):
+				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
+					Code: http.StatusConflict,
+					Msg:  err.Error(),
+					Data: nil,
+				})
+				return
+			default:
+				response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
+					Code: http.StatusInternalServerError,
+					Msg:  err.Error(),
+					Data: nil,
+				})
+				return
+			}
+		}
+		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
+			Code: http.StatusCreated,
+			Msg:  "Warehouse created successsfully",
+			Data: newWarehouse,
+		})
+	}
+}
+
 func (wh *WarehouseHandler) DeleteWarehouse() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -87,7 +134,7 @@ func (wh *WarehouseHandler) DeleteWarehouse() http.HandlerFunc {
 			if errors.Is(err, serviceErrors.InternalServerErr()) {
 				response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
 					Code: http.StatusInternalServerError,
-					Msg:  "Server error",
+					Msg:  err.Error(),
 					Data: nil,
 				})
 				return
