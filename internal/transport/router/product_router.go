@@ -20,10 +20,14 @@ func InitProductRouter(rt *chi.Mux) {
 
 	serviceImp := service.NewProductService(repositoryImp)
 
-	handler := handlers.NewProductHandler(serviceImp)
+	handler := product.NewProductHandler(serviceImp)
 
-	rt.Route("/product", func(rt chi.Router) {
+	rt.Route("/api/v1/products", func(rt chi.Router) {
 		rt.Get("/", handler.GetProducts())
+		rt.Get("/{id}", handler.GetProductByID())
+		rt.Post("/", handler.SaveProduct())
+		rt.Patch("/{id}", handler.UpdateProduct())
+		rt.Delete("/{id}", handler.DeleteProduct())
 	})
 	return
 }

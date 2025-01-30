@@ -39,13 +39,11 @@ func (a *ServerChi) Run() (err error) {
 	rt.Use(middleware.Logger)
 	rt.Use(middleware.Recoverer)
 
-	router.NewBuyerRouter(rt)
-
-	router.InitProductRouter(rt)
-
 	router.InitSellerRouter(rt)
 
-	err = http.ListenAndServe(a.serverAddress, rt)
+	router.InitProductRouter(rt)
+	router.NewBuyerRouter(rt)
 
+	err = http.ListenAndServe(a.serverAddress, rt)
 	return
 }
