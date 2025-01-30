@@ -24,5 +24,4 @@ func InitSellerRouter(rt *chi.Mux) {
 		rt.Patch("/{id}", handler.UpdateSeller())
 		rt.Delete("/{id}", handler.DeleteSeller())
 	})
-	return
 }
