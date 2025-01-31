@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -11,14 +12,19 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 )
 
 type EmployeeHandler struct {
-	service service.EmployeeService
+	service   service.EmployeeService
+	validator *validator.Validate
 }
 
 func NewEmployeeHandler(service service.EmployeeService) *EmployeeHandler {
-	return &EmployeeHandler{service: service}
+	return &EmployeeHandler{
+		service:   service,
+		validator: validator.New(),
+	}
 }
 
 func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
@@ -26,7 +32,7 @@ func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
 		employees, err := handler.service.GetEmployees()
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err.Error(), nil)
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 		var employeesDto []dto.EmployeeDTO
@@ -46,7 +52,7 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			error_management.HandleErrorEmployee(w, "ID-DEC-ERR", nil)
+			error_management.HandleErrorEmployee(w, errors.New("ID-DEC-ERR"))
 			return
 		}
 
@@ -54,7 +60,7 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		employeeDto := mappers.EmployeeModelToDTO(employee)
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err.Error(), nil)
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 
@@ -72,14 +78,12 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&employeeToCreate); err != nil {
-			error_management.HandleErrorEmployee(w, "BODY-ERR", err)
+			error_management.HandleErrorEmployee(w, errors.New("BODY-DEC-ERR"))
 			return
 		}
 
-		if employeeToCreate.CardNumberId == 0 || employeeToCreate.FirstName == "" || employeeToCreate.LastName == "" || employeeToCreate.WarehouseId == 0 {
-			response.JSON(w, http.StatusBadRequest, map[string]any{
-				"error": "Bad request - Campos incompletos",
-			})
+		if err := handler.validator.Struct(employeeToCreate); err != nil {
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 
@@ -87,7 +91,7 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		employeeCreated, err := handler.service.CreateEmployee(*employeeModel)
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err.Error(), nil)
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 
@@ -103,7 +107,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			error_management.HandleErrorEmployee(w, "ID-DEC-ERR", nil)
+			error_management.HandleErrorEmployee(w, errors.New("ID-DEC-ERR"))
 			return
 		}
 
@@ -111,7 +115,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 		if err := decoder.Decode(&employeePatchRequestDTO); err != nil {
-			error_management.HandleErrorEmployee(w, "BODY-ERR", err)
+			error_management.HandleErrorEmployee(w, errors.New("BODY-DEC-ERR"))
 			return
 		}
 
@@ -119,7 +123,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		employeeUpdated, err := handler.service.UpdateEmployee(id, *employeePatchRequestModel)
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err.Error(), nil)
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 
@@ -134,13 +138,13 @@ func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
 		employeeIdString := chi.URLParam(r, "id")
 		employeeId, err := strconv.Atoi(employeeIdString)
 		if err != nil {
-			error_management.HandleErrorEmployee(w, "ID-DEC-ERR", nil)
+			error_management.HandleErrorEmployee(w, errors.New("ID-DEC-ERR"))
 			return
 		}
 
 		errorService := handler.service.DeleteEmployee(employeeId)
 		if errorService != nil {
-			error_management.HandleErrorEmployee(w, errorService.Error(), nil)
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 
