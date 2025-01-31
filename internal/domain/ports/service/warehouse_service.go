@@ -1,0 +1,11 @@
+package service
+
+import "github.com/D-Sorrow/meli-frescos/internal/domain/models"
+
+type WarehouseServiceInterface interface {
+	GetWarehouses() map[int]models.Warehouse
+	GetWarehouseById(id int) (wh models.Warehouse, err error)
+	DeleteWarehouse(id int) error
+	CreateWarehouse(warehouse models.Warehouse) (models.Warehouse, error)
+	PatchWarehouse(id int, data map[string]interface{}) (models.Warehouse, error)
+}
