@@ -12,6 +12,8 @@ import (
 type ConfigServerChi struct {
 	ServerAddress string
 }
+type ConfigMySql struct {
+}
 
 func NewServerChi(cfg *ConfigServerChi) *ServerChi {
 	defaultConfig := &ConfigServerChi{
