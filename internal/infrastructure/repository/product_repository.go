@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 )
 
@@ -14,7 +15,23 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 }
 
 func (p ProductRepository) GetProducts() map[int]models.Product {
-	panic("implement me")
+	productMap := make(map[int]models.Product)
+	rows, err := p.db.Query("SELECT id, description, expiration_rate, freezing_rate, height, length, netweight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM melifresh.products")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var product models.Product
+		err := rows.Scan(&product.Id, &product.Attributes.Description, &product.Attributes.ExpirationRate, &product.Attributes.FreezingRate, &product.Attributes.Dimensions.Height, &product.Attributes.Dimensions.Length, &product.Attributes.NetWeight, &product.Attributes.ProductCode, &product.Attributes.TemperatureFreezing, &product.Attributes.Dimensions.Width, &product.Attributes.ProductTypeId, &product.SellerId)
+		if err != nil {
+			panic(err)
+		}
+		productMap[product.Id] = product
+	}
+	return productMap
+
 }
 
 func (p ProductRepository) GetProductByID(id int) (models.Product, bool) {

@@ -1,19 +1,21 @@
 package config
 
 import (
-	"github.com/subosito/gotenv"
-	_ "github.com/subosito/gotenv"
+	"log"
 	"os"
+	"strconv"
 	"sync"
+
+	_ "github.com/subosito/gotenv"
 )
 
 type Config struct {
-	ServerAddr string
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
+	User   string
+	Passwd string
+	Net    string
+	Addr   string
+	Port   int
+	DBName string
 }
 
 var (
@@ -24,16 +26,28 @@ var (
 func NewConfig() (*Config, error) {
 	var err error
 	once.Do(func() {
-		if err = gotenv.Load(); err != nil {
+		var (
+			host    = os.Getenv("DB_HOST")
+			port    = os.Getenv("DB_PORT")
+			user    = os.Getenv("DB_USER")
+			pwd     = os.Getenv("DB_PASSWORD")
+			db_name = os.Getenv("DB_NAME")
+		)
 
+		portInt, err := strconv.Atoi(port)
+
+		if err != nil {
+			log.Fatal(err)
+			return
 		}
+
 		config = &Config{
-			ServerAddr: os.Getenv("SERVER_ADDR"),
-			DBHost:     os.Getenv("DB_HOST"),
-			DBPort:     os.Getenv("DB_PORT"),
-			DBUser:     os.Getenv("DB_USER"),
-			DBPassword: os.Getenv("DB_PASSWORD"),
-			DBName:     os.Getenv("DB_NAME"),
+			User:   user,
+			Passwd: pwd,
+			Net:    "tcp",
+			Addr:   host,
+			Port:   portInt,
+			DBName: db_name,
 		}
 
 	})
