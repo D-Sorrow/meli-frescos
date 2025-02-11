@@ -1,32 +1,50 @@
 package repository
 
 import (
+	"database/sql"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	err "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type ProductRepository struct {
-	productMap map[int]models.Product
+	db *sql.DB
 }
 
-func NewProductRepository(productMap map[int]models.Product) *ProductRepository {
-	return &ProductRepository{productMap: productMap}
+func NewProductRepository(db *sql.DB) *ProductRepository {
+	return &ProductRepository{db: db}
 }
 
 func (p ProductRepository) GetProducts() map[int]models.Product {
-	return p.productMap
+	productMap := make(map[int]models.Product)
+	rows, err := p.db.Query("SELECT id, description, expiration_rate, freezing_rate, height, length, netweight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM melifresh.products")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var product models.Product
+		err := rows.Scan(&product.Id, &product.Attributes.Description, &product.Attributes.ExpirationRate, &product.Attributes.FreezingRate, &product.Attributes.Dimensions.Height, &product.Attributes.Dimensions.Length, &product.Attributes.NetWeight, &product.Attributes.ProductCode, &product.Attributes.TemperatureFreezing, &product.Attributes.Dimensions.Width, &product.Attributes.ProductTypeId, &product.SellerId)
+		if err != nil {
+			panic(err)
+		}
+		productMap[product.Id] = product
+	}
+	return productMap
+
 }
 
 func (p ProductRepository) GetProductByID(id int) (models.Product, bool) {
-	product, ok := p.productMap[id]
+	/*product, ok := p.productMap[id]
 	if !ok {
 		return models.Product{}, false
 	}
-	return product, true
+	return product, true*/
+	panic("implement me")
 }
 
 func (p ProductRepository) SaveProduct(productSave models.Product) bool {
-	indexToSave := 0
+	/*indexToSave := 0
 
 	for _, product := range p.productMap {
 		if product.Attributes.ProductCode == productSave.Attributes.ProductCode {
@@ -37,10 +55,11 @@ func (p ProductRepository) SaveProduct(productSave models.Product) bool {
 	indexToSave++
 	productSave.Id = indexToSave
 	p.productMap[indexToSave] = productSave
-	return true
+	return true*/
+	panic("implement me")
 }
 func (p ProductRepository) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
-	product, ok := p.productMap[id]
+	/*product, ok := p.productMap[id]
 	if !ok {
 		return models.Product{}, err.ProductNotExistErr
 	}
@@ -76,21 +95,12 @@ func (p ProductRepository) UpdateProduct(id int, attributes map[string]any) (mod
 		}
 	}
 	p.productMap[id] = product
-	return product, nil
+	return product, nil*/
+	panic("implement me")
 }
 func (p ProductRepository) DeleteProduct(id int) bool {
-	_, ok := p.productMap[id]
-	if !ok {
-		return false
-	}
-	delete(p.productMap, id)
-	return true
+	panic("implement me")
 }
 func (p ProductRepository) validateCode(code string) bool {
-	for _, product := range p.productMap {
-		if product.Attributes.ProductCode == code {
-			return true
-		}
-	}
-	return false
+	panic("implement me")
 }
