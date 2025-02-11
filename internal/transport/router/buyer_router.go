@@ -12,7 +12,7 @@ import (
 
 func NewBuyerRouter(rt *chi.Mux) {
 
-	buyerMap := loader.NewBuyerJSONFile("../docs/db/buyers_100.json")
+	buyerMap := loader.NewBuyerJSONFile("docs/db/buyers_100.json")
 	db, err := buyerMap.Load()
 	if err != nil {
 		fmt.Printf("Error loading: %s", err.Error())
