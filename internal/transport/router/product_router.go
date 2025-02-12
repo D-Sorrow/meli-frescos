@@ -1,21 +1,15 @@
 package router
 
 import (
+	"database/sql"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/loader"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
 	"github.com/go-chi/chi/v5"
 )
 
-func InitProductRouter(rt *chi.Mux) {
-	loader := loader.NewProductJSONFile("docs/db/products_data.json")
-
-	db, err := loader.Load()
-	if err != nil {
-		return
-	}
-
+func InitProductRouter(rt *chi.Mux, db *sql.DB) {
 	repositoryImp := repository.NewProductRepository(db)
 
 	serviceImp := service.NewProductService(repositoryImp)
@@ -29,5 +23,4 @@ func InitProductRouter(rt *chi.Mux) {
 		rt.Patch("/{id}", handler.UpdateProduct())
 		rt.Delete("/{id}", handler.DeleteProduct())
 	})
-	return
 }

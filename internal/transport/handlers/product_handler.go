@@ -3,14 +3,15 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+	"strconv"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 	dto "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	mapper "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
-	"net/http"
-	"strconv"
 )
 
 type ProductHandler struct {

@@ -3,6 +3,8 @@ package server
 import (
 	"net/http"
 
+	db_config "github.com/D-Sorrow/meli-frescos/internal/infrastructure/config"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/db"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/router"
 
 	"github.com/go-chi/chi/v5"
@@ -35,13 +37,17 @@ type ServerChi struct {
 func (a *ServerChi) Run() (err error) {
 
 	rt := chi.NewRouter()
+	dbconf, err := db_config.NewConfig()
+	database := db.NewDataBase(dbconf)
 
 	rt.Use(middleware.Logger)
 	rt.Use(middleware.Recoverer)
 
+	router.InitWarehouseRouter(rt)
 	router.InitSellerRouter(rt)
+	router.InitEmployeeRouter(rt)
 
-	router.InitProductRouter(rt)
+	router.InitProductRouter(rt, database.Db)
 	router.NewBuyerRouter(rt)
 
 	err = http.ListenAndServe(a.serverAddress, rt)
