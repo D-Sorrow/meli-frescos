@@ -2,6 +2,9 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/mappers"
+	"strings"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 )
@@ -34,73 +37,65 @@ func (p ProductRepository) GetProducts() map[int]models.Product {
 
 }
 
-func (p ProductRepository) GetProductByID(id int) (models.Product, bool) {
-	/*product, ok := p.productMap[id]
-	if !ok {
-		return models.Product{}, false
+func (p ProductRepository) GetProductByID(id int) (models.Product, error) {
+	var product models.Product
+
+	row := p.db.QueryRow("SELECT id, description, expiration_rate, freezing_rate, height, length, netweight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM melifresh.products WHERE  id = ?", id)
+	err := row.Scan(&product.Id, &product.Attributes.Description, &product.Attributes.ExpirationRate, &product.Attributes.FreezingRate, &product.Attributes.Dimensions.Height, &product.Attributes.Dimensions.Length, &product.Attributes.NetWeight, &product.Attributes.ProductCode, &product.Attributes.TemperatureFreezing, &product.Attributes.Dimensions.Width, &product.Attributes.ProductTypeId, &product.SellerId)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.Product{}, err
+		}
 	}
-	return product, true*/
-	panic("implement me")
+	return product, nil
 }
 
-func (p ProductRepository) SaveProduct(productSave models.Product) bool {
-	/*indexToSave := 0
+func (p ProductRepository) SaveProduct(productSave models.Product) error {
+	productEntity := mappers.ToProductEntity(productSave)
+	query := "INSERT INTO melifresh.products" +
+		"(description, expiration_rate, freezing_rate, height, length, netweight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id)" +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-	for _, product := range p.productMap {
-		if product.Attributes.ProductCode == productSave.Attributes.ProductCode {
-			return false
-		}
-		indexToSave += 1
+	_, err := p.db.Exec(query, productEntity.Description, productEntity.ExpirationRate, productEntity.FreezingRate, productEntity.Height, productEntity.Length, productEntity.NetWeight, productEntity.ProductCode, productEntity.TemperatureFreezing, productEntity.Width, productEntity.ProductTypeId, productEntity.SellerId)
+
+	if err != nil {
+		return err
 	}
-	indexToSave++
-	productSave.Id = indexToSave
-	p.productMap[indexToSave] = productSave
-	return true*/
-	panic("implement me")
+	return nil
 }
 func (p ProductRepository) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
-	/*product, ok := p.productMap[id]
-	if !ok {
-		return models.Product{}, err.ProductNotExistErr
+	setParts := make([]string, 0, len(attributes))
+	values := make([]interface{}, 0, len(attributes))
+
+	for columna, valor := range attributes {
+		setParts = append(setParts, fmt.Sprintf("%s = ?", columna))
+		values = append(values, valor)
 	}
-	for key, value := range attributes {
-		switch key {
-		case "description":
-			product.Attributes.Description = value.(string)
-		case "expiration_rate":
-			product.Attributes.ExpirationRate = value.(int)
-		case "freezing_rate":
-			product.Attributes.FreezingRate = value.(int)
-		case "height":
-			product.Attributes.Dimensions.Height = value.(float64)
-		case "length":
-			product.Attributes.Dimensions.Length = value.(float64)
-		case "netweight":
-			product.Attributes.NetWeight = value.(float64)
-		case "product_code":
-			if p.validateCode(value.(string)) {
-				return models.Product{}, err.CodeProductIsExistErr
-			}
-			product.Attributes.ProductCode = value.(string)
-		case "recommended_freezing_temperature":
-			product.Attributes.ProductCode = value.(string)
-		case "width":
-			product.Attributes.Dimensions.Width = value.(float64)
-		case "product_type_id":
-			product.Attributes.ProductTypeId = value.(int)
-		case "seller_id":
-			product.SellerId = value.(int)
-		default:
-			return models.Product{}, err.AttributeIsNotValidErr
-		}
+
+	setClause := strings.Join(setParts, ", ")
+
+	sqlQuery := fmt.Sprintf("UPDATE %s SET %s WHERE id = %d ", "melifresh.products", setClause, id)
+
+	_, err := p.db.Exec(sqlQuery, values...)
+
+	if err != nil {
+		return models.Product{}, err
 	}
-	p.productMap[id] = product
-	return product, nil*/
-	panic("implement me")
+	product, errGet := p.GetProductByID(id)
+
+	if errGet != nil {
+		return models.Product{}, errGet
+	}
+	return product, nil
 }
-func (p ProductRepository) DeleteProduct(id int) bool {
-	panic("implement me")
-}
-func (p ProductRepository) validateCode(code string) bool {
-	panic("implement me")
+func (p ProductRepository) DeleteProduct(id int) error {
+	query := "DELETE FROM melifresh.products WHERE id = ?"
+
+	err := p.db.QueryRow(query, id)
+
+	if err.Err() != nil {
+		return err.Err()
+	}
+	return nil
 }

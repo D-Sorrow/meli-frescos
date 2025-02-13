@@ -4,6 +4,7 @@ import (
 	er "github.com/D-Sorrow/meli-frescos/internal/domain/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 )
 
 type ProductService struct {
@@ -19,18 +20,16 @@ func (p ProductService) GetProducts() map[int]models.Product {
 }
 
 func (p ProductService) GetProductByID(id int) (models.Product, error) {
-	product, isFalse := p.repo.GetProductByID(id)
-
-	if isFalse == false {
-		return models.Product{}, er.ProductError{Code: er.CodeNotFound, Message: er.ProductNotFound}
+	product, errGet := p.repo.GetProductByID(id)
+	if errGet != nil {
+		return models.Product{}, error_management.ErrProductNotFound
 	}
-
 	return product, nil
 }
 
 func (p ProductService) SaveProduct(productSave models.Product) error {
-	isCreated := p.repo.SaveProduct(productSave)
-	if isCreated == false {
+	errSave := p.repo.SaveProduct(productSave)
+	if errSave != nil {
 		return er.ProductError{Code: er.CodeNotFound, Message: er.ProductIsAlreadyExist}
 	}
 	return nil
@@ -39,8 +38,8 @@ func (p ProductService) UpdateProduct(id int, attributes map[string]any) (models
 	return p.repo.UpdateProduct(id, attributes)
 }
 func (p ProductService) DeleteProduct(id int) error {
-	isDeleted := p.repo.DeleteProduct(id)
-	if isDeleted == false {
+	errDelete := p.repo.DeleteProduct(id)
+	if errDelete != nil {
 		return er.ProductError{Code: er.CodeNotFound, Message: er.ProductNotFound}
 	}
 	return nil
