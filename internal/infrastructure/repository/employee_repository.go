@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 )
@@ -49,18 +50,50 @@ func (repository *EmployeeRepository) GetEmployeeById(employeeId int) (employee 
 	return
 }
 
-func (repository *EmployeeRepository) CreateEmployee(employee models.Employee) models.Employee {
-	panic("implement me")
+func (repository *EmployeeRepository) CreateEmployee(employee *models.Employee) error {
+	employeeId, err := repository.generateId()
+	if err != nil {
+		return err
+	}
+	_, err = repository.db.Exec(
+		"INSERT INTO employees (`id`, `card_number_id`, `first_name`, `last_name`, `warehouse_id`) VALUES (?, ?, ?, ?, ?)",
+		employeeId, (*employee).CardNumberId, (*employee).FirstName, (*employee).LastName, (*employee).WarehouseId,
+	)
+	if err != nil {
+		return err
+	}
+	(*employee).Id = employeeId
+	return nil
 }
 
-func (repository *EmployeeRepository) UpdateEmployee(employeeId int, employee models.Employee) {
-	panic("implement me")
+func (repository *EmployeeRepository) UpdateEmployee(employee *models.Employee) error {
+	_, err := repository.db.Exec(
+		"UPDATE employees SET `card_number_id` = ?, `first_name` = ?, `last_name` = ?, `warehouse_id` = ? WHERE `id` = ?",
+		(*employee).CardNumberId, (*employee).FirstName, (*employee).LastName, (*employee).WarehouseId, (*employee).Id,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (repository *EmployeeRepository) DeleteEmployee(employeeId int) error {
-	panic("implement me")
+	_, err := repository.db.Exec(
+		"DELETE FROM employees WHERE id=?",
+		employeeId,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (repository *EmployeeRepository) generateId() int {
-	panic("implement me")
+func (repository *EmployeeRepository) generateId() (int, error) {
+	var maxID int
+	err := repository.db.QueryRow("SELECT COALESCE(MAX(id), 0) FROM employees").Scan(&maxID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get max ID from table: %v", err)
+	}
+	newID := maxID + 1
+	return newID, nil
 }

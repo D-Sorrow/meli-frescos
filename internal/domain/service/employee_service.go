@@ -56,7 +56,10 @@ func (service *EmployeeService) CreateEmployee(employee models.Employee) (models
 			return models.Employee{}, errors.New("EAE-SV")
 		}
 	}
-	return service.repository.CreateEmployee(employee), nil
+	if err = service.repository.CreateEmployee(&employee); err != nil {
+		return models.Employee{}, err
+	}
+	return employee, nil
 }
 
 func (service *EmployeeService) UpdateEmployee(employeeId int, employee models.EmployeePatchRequest) (employeeUpdated models.Employee, err error) {
@@ -93,7 +96,7 @@ func (service *EmployeeService) UpdateEmployee(employeeId int, employee models.E
 	if employee.WarehouseId != nil {
 		employeeUpdated.WarehouseId = *employee.WarehouseId
 	}
-	service.repository.UpdateEmployee(employeeId, employeeUpdated)
+	service.repository.UpdateEmployee(&employeeUpdated)
 	return
 
 }
