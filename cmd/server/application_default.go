@@ -50,6 +50,7 @@ func (a *ServerChi) Run() (err error) {
 	router.InitProductRouter(rt, database.Db)
 	router.NewBuyerRouter(rt)
 
+	router.InitCarryRouter(rt, database.Db)
 	err = http.ListenAndServe(a.serverAddress, rt)
 	return
 }
