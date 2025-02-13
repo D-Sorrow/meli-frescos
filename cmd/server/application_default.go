@@ -37,13 +37,13 @@ type ServerChi struct {
 func (a *ServerChi) Run() (err error) {
 
 	rt := chi.NewRouter()
-	dbconf, err := db_config.NewConfig()
+	dbconf, _ := db_config.NewConfig()
 	database := db.NewDataBase(dbconf)
 
 	rt.Use(middleware.Logger)
 	rt.Use(middleware.Recoverer)
 
-	router.InitWarehouseRouter(rt)
+	router.InitWarehouseRouter(rt, database.Db)
 	router.InitSellerRouter(rt)
 	router.InitEmployeeRouter(rt)
 
