@@ -1,67 +1,93 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
+	"log"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	repository_errors "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
+	"github.com/go-sql-driver/mysql"
 )
 
 type SellerRepository struct {
-	db map[int]models.Seller
+	db *sql.DB
 }
 
-func NewSellerRepository(db map[int]models.Seller) *SellerRepository {
-	defaultDb := make(map[int]models.Seller)
-	if db != nil {
-		defaultDb = db
-	}
-	return &SellerRepository{db: defaultDb}
+func NewSellerRepository(db *sql.DB) *SellerRepository {
+	return &SellerRepository{db: db}
 }
 
 func (r *SellerRepository) GetSellers() (v map[int]models.Seller, err error) {
 	v = make(map[int]models.Seller)
-	for key, value := range r.db {
-		v[key] = value
+
+	rows, err := r.db.Query("SELECT id, cid, company_name, address, telephone, locality_id from sellers")
+	if err != nil {
+		log.Print(err)
+		return nil, repository_errors.ErrSellerNotFound
 	}
+
+	for rows.Next() {
+		var seller models.Seller
+		err := rows.Scan(&seller.Id, &seller.Cid, &seller.CompanyName, &seller.Address, &seller.Telephone, &seller.LocalityId)
+		if err != nil {
+			log.Print(err)
+			return nil, repository_errors.ErrSellerNotFound
+		}
+		v[seller.Id] = seller
+	}
+
 	if len(v) <= 0 {
-		return nil, repository_errors.ErrNotFound
+		return nil, repository_errors.ErrSellerNotFound
 	}
 	return
 }
 
 func (r *SellerRepository) GetSellerById(id int) (models.Seller, error) {
+	var seller models.Seller
 
-	for _, value := range r.db {
-		if value.Id == id {
-			return value, nil
-		}
+	row := r.db.QueryRow("SELECT id, cid, company_name, address, telephone, locality_id from sellers where id = ?", id)
+	if err := row.Err(); err != nil {
+		log.Print(err)
+		return models.Seller{}, repository_errors.ErrSellerNotFound
 	}
 
-	return models.Seller{}, repository_errors.ErrNotFound
-}
-
-func (r *SellerRepository) CreateSeller(seller models.Seller) (models.Seller, error) {
-
-	var newId int = 1
-
-	for _, value := range r.db {
-		if value.Id >= newId {
-			newId = value.Id + 1
-		}
-		if value.Cid == seller.Cid {
-			return models.Seller{}, repository_errors.ErrAlreadyExists
-		}
+	err := row.Scan(&seller.Id, &seller.Cid, &seller.CompanyName, &seller.Address, &seller.Telephone, &seller.LocalityId)
+	if errors.Is(err, sql.ErrNoRows) {
+		log.Print(err)
+		return models.Seller{}, repository_errors.ErrSellerNotFound
 	}
-	seller.Id = newId
-	r.db[seller.Id] = seller
 
 	return seller, nil
 }
 
-func (r *SellerRepository) UpdateSeller(id int, seller models.SellerPatch) (models.Seller, error) {
+func (r *SellerRepository) CreateSeller(seller models.Seller) (models.Seller, error) {
 
-	value, exist := r.db[id]
-	if !exist {
-		return models.Seller{}, repository_errors.ErrNotFound
+	result, err := r.db.Exec("INSERT INTO sellers (cid,company_name,address,telephone,locality_id) values (?,?,?,?,?)", seller.Cid, seller.CompanyName, seller.Address, seller.Telephone, seller.LocalityId)
+
+	if err != nil {
+		log.Print(err)
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
+			return models.Seller{}, repository_errors.ErrSellerAlreadyExists
+		}
+		return models.Seller{}, repository_errors.ErrSellerCannotBeCreated
+	}
+
+	lastInsertId, err := result.LastInsertId()
+	if err != nil {
+		log.Print(err)
+		return models.Seller{}, repository_errors.ErrSellerCannotBeCreated
+	}
+
+	seller.Id = int(lastInsertId)
+	return seller, nil
+
+}
+
+func (r *SellerRepository) UpdateSeller(id int, seller models.SellerPatch) (models.Seller, error) {
+	value, err := r.GetSellerById(id)
+	if err != nil {
+		return models.Seller{}, err
 	}
 
 	if seller.Cid != nil {
@@ -76,20 +102,34 @@ func (r *SellerRepository) UpdateSeller(id int, seller models.SellerPatch) (mode
 	if seller.Telephone != nil {
 		value.Telephone = *seller.Telephone
 	}
+	if seller.LocalityId != nil {
+		value.LocalityId = *seller.LocalityId
+	}
 
-	r.db[id] = value
+	_, err = r.db.Exec("UPDATE sellers SET cid=?, address=?, company_name=?, telephone=?, locality_id=? where id = ?", value.Cid, value.Address, value.CompanyName, value.Telephone, value.LocalityId, value.Id)
+	if err != nil {
+		log.Print(err)
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
+			return models.Seller{}, repository_errors.ErrSellerAlreadyExists
+		}
+		return models.Seller{}, repository_errors.ErrSellerCannotBeUpdated
+	}
 
-	return r.db[id], nil
+	return value, nil
 
 }
 
 func (r *SellerRepository) DeleteSeller(id int) error {
-	_, exist := r.db[id]
-	if !exist {
-		return repository_errors.ErrNotFound
+	_, err := r.GetSellerById(id)
+	if err != nil {
+		return err
 	}
+	_, err = r.db.Exec("DELETE FROM sellers WHERE id = ?", id)
 
-	delete(r.db, id)
+	if err != nil {
+		log.Print(err)
+		return repository_errors.ErrSellerCannotBeDeleted
+	}
 
 	return nil
 }

@@ -12,6 +12,7 @@ func MapperToSeller(seller dto.SellerDto) models.Seller {
 		CompanyName: seller.CompanyName,
 		Address:     seller.Address,
 		Telephone:   seller.Telephone,
+		LocalityId:  seller.LocalityId,
 	}
 }
 
@@ -22,6 +23,7 @@ func MapperToSellerDTO(seller models.Seller) dto.SellerDto {
 		CompanyName: seller.CompanyName,
 		Address:     seller.Address,
 		Telephone:   seller.Telephone,
+		LocalityId:  seller.LocalityId,
 	}
 }
 
@@ -31,5 +33,6 @@ func MapperToSellerPatch(seller dto.SellerUpdateDto) models.SellerPatch {
 		CompanyName: seller.CompanyName,
 		Address:     seller.Address,
 		Telephone:   seller.Telephone,
+		LocalityId:  seller.LocalityId,
 	}
 }

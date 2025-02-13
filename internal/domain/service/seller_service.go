@@ -19,7 +19,7 @@ func NewSellerService(repository repository.SellerRepository) *SellerService {
 
 func (repo *SellerService) GetSellers() (map[int]models.Seller, error) {
 	_, err := repo.repository.GetSellers()
-	if errors.Is(err, repository_errors.ErrNotFound) {
+	if errors.Is(err, repository_errors.ErrSellerNotFound) {
 		return nil, service_errors.ErrNotFound
 	}
 	return repo.repository.GetSellers()
@@ -27,7 +27,7 @@ func (repo *SellerService) GetSellers() (map[int]models.Seller, error) {
 
 func (repo *SellerService) GetSellerById(id int) (models.Seller, error) {
 	seller, err := repo.repository.GetSellerById(id)
-	if errors.Is(err, repository_errors.ErrNotFound) {
+	if errors.Is(err, repository_errors.ErrSellerNotFound) {
 		return models.Seller{}, service_errors.ErrNotFound
 	}
 	return seller, nil
@@ -35,7 +35,7 @@ func (repo *SellerService) GetSellerById(id int) (models.Seller, error) {
 
 func (repo *SellerService) CreateSeller(seller models.Seller) (models.Seller, error) {
 	seller, err := repo.repository.CreateSeller(seller)
-	if errors.Is(err, repository_errors.ErrAlreadyExists) {
+	if errors.Is(err, repository_errors.ErrSellerAlreadyExists) {
 		return models.Seller{}, service_errors.ErrAlreadyExists
 	}
 	return seller, nil
