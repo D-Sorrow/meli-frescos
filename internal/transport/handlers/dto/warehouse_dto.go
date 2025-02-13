@@ -9,6 +9,7 @@ type WarehouseDto struct {
 	Telephone          string `json:"telephone"`
 	MinimumCapacity    int    `json:"minimun_capacity"`
 	MinimumTemperature int    `json:"minimun_temperature"`
+	LocalityId         int    `json:"locality_id"`
 }
 
 func (item *WarehouseDto) Validate() error {
@@ -25,6 +26,8 @@ func (item *WarehouseDto) Validate() error {
 		return errors.New("temperature can not be less than -18 degrees")
 	case item.MinimumTemperature > 15:
 		return errors.New("temperature can not be greater than 15 degrees")
+	case item.LocalityId <= 0:
+		return errors.New("enter a valid locality id")
 	default:
 		return nil
 	}
