@@ -16,6 +16,38 @@ func NewCarrierRepository(db *sql.DB) *CarrierRepository {
 	return &CarrierRepository{db: db}
 }
 
+func (cr *CarrierRepository) GetAllCarriers() ([]models.Carrier, error) {
+	var carriers []models.Carrier
+
+	query := `SELECT id,
+					cid,
+					company_name,
+					address,
+					telephone,
+					locality_id
+				FROM carriers`
+	rows, err := cr.db.Query(query)
+	if err != nil {
+		return nil, repoErros.ErrDataBase
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var carrier models.Carrier
+		err = rows.Scan(&carrier.Id,
+			&carrier.Cid,
+			&carrier.CompanyName,
+			&carrier.Address,
+			&carrier.Telephone,
+			&carrier.LocalityId)
+		if err != nil {
+			return nil, repoErros.ErrDataBase
+		}
+		carriers = append(carriers, carrier)
+	}
+	return carriers, nil
+}
+
 func (cr *CarrierRepository) GetCarrierById(id int) (models.Carrier, error) {
 	var carrier models.Carrier
 	query := `SELECT id,

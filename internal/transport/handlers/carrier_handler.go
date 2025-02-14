@@ -20,6 +20,28 @@ func NewCarryHandler(service service.CarrierServiceInterface) *CarryHandler {
 	return &CarryHandler{service: service}
 }
 
+func (ch *CarryHandler) GetAllCarriers() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		carriers, err := ch.service.GetAllCarriers()
+		if err != nil {
+			response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
+				Code: http.StatusInternalServerError,
+				Msg:  "Server Error",
+				Data: nil,
+			})
+			return
+		}
+
+		carriersDto := mappers.MapperToCarriersDto(carriers)
+
+		response.JSON(w, http.StatusOK, dto.ResponseDTO{
+			Code: http.StatusOK,
+			Msg:  "Carriers got successfully",
+			Data: carriersDto,
+		})
+	}
+}
+
 func (ch *CarryHandler) CreateCarrier() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqBody := dto.CarrierDto{}
