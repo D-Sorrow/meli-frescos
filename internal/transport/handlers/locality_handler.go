@@ -68,8 +68,8 @@ func (hand LocalityHandler) GetSellersByLocality() http.HandlerFunc {
 		}
 		localitySellers, err := hand.service.GetSellersByLocality(id)
 		if err != nil {
-			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseErrorLocality(handler_errors.ErrNotFound, w)
+			if errors.Is(err, service_errors.ErrLocalityNotFound) {
+				handler_errors.ResponseErrorLocality(handler_errors.ErrLocalityNotFound, w)
 				return
 			}
 		}

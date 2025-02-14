@@ -29,8 +29,8 @@ func (hand *HandlerSeller) GetSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		mapSeller, err := hand.service.GetSellers()
 		if err != nil {
-			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseErrorSeller(handler_errors.ErrNotFound, w)
+			if errors.Is(err, service_errors.ErrSellerNotFound) {
+				handler_errors.ResponseErrorSeller(handler_errors.ErrSellerNotFound, w)
 				return
 			}
 		}
@@ -61,8 +61,8 @@ func (hand *HandlerSeller) GetSeller() http.HandlerFunc {
 		}
 		seller, err := hand.service.GetSellerById(id)
 		if err != nil {
-			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseErrorSeller(handler_errors.ErrNotFound, w)
+			if errors.Is(err, service_errors.ErrSellerNotFound) {
+				handler_errors.ResponseErrorSeller(handler_errors.ErrSellerNotFound, w)
 				return
 			}
 		}
@@ -91,8 +91,8 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 
 		seller, err := hand.service.CreateSeller(mappers.MapperToSeller(sellerDto))
 		if err != nil {
-			if errors.Is(err, service_errors.ErrAlreadyExists) {
-				handler_errors.ResponseErrorSeller(handler_errors.ErrAlreadyExists, w)
+			if errors.Is(err, service_errors.ErrSellerAlreadyExists) {
+				handler_errors.ResponseErrorSeller(handler_errors.ErrSellerAlreadyExists, w)
 				return
 			}
 		}
@@ -132,8 +132,8 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 
 		seller, err := hand.service.UpdateSeller(id, mappers.MapperToSellerPatch(sellerDto))
 		if err != nil {
-			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseErrorSeller(handler_errors.ErrNotFound, w)
+			if errors.Is(err, service_errors.ErrSellerNotFound) {
+				handler_errors.ResponseErrorSeller(handler_errors.ErrSellerNotFound, w)
 				return
 			}
 		}
@@ -161,8 +161,8 @@ func (hand *HandlerSeller) DeleteSeller() http.HandlerFunc {
 
 		err = hand.service.DeleteSeller(id)
 		if err != nil {
-			if errors.Is(err, service_errors.ErrNotFound) {
-				handler_errors.ResponseErrorSeller(handler_errors.ErrNotFound, w)
+			if errors.Is(err, service_errors.ErrSellerNotFound) {
+				handler_errors.ResponseErrorSeller(handler_errors.ErrSellerNotFound, w)
 				return
 			}
 		}
