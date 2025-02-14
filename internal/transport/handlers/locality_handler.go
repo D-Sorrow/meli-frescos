@@ -83,6 +83,28 @@ func (hand LocalityHandler) GetSellersByLocality() http.HandlerFunc {
 
 func (hand LocalityHandler) GetCarriersByLocality() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.URL.Query().Get("id")
+		if idStr == "" {
+			carriersByLocalities, err := hand.service.GetCarriersByAllLocalities()
+			if err != nil {
+				if errors.Is(err, service_errors.ErrGetAllLocalities) {
+					response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
+						Code: http.StatusInternalServerError,
+						Msg:  "could not get localities",
+						Data: nil,
+					})
+					return
+				}
+			}
+
+			carriersByLocalitiesDto := mappers.MapperToLocalitiesCarriersDTO(carriersByLocalities)
+			response.JSON(w, http.StatusOK, dto.ResponseDTO{
+				Code: http.StatusOK,
+				Data: carriersByLocalitiesDto,
+			})
+			return
+		}
+
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
@@ -95,7 +117,6 @@ func (hand LocalityHandler) GetCarriersByLocality() http.HandlerFunc {
 
 		localityCarriers, err := hand.service.GetCarriersByLocality(id)
 		if err != nil {
-			//if err.Error() ==
 			if errors.Is(err, service_errors.ErrLocalityNotFound) {
 				response.JSON(w, http.StatusNotFound, dto.ResponseDTO{
 					Code: http.StatusNotFound,
@@ -108,7 +129,7 @@ func (hand LocalityHandler) GetCarriersByLocality() http.HandlerFunc {
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
 			Msg:  "success",
-			Data: mappers.MapperToLocalityCarriersDTO(localityCarriers),
+			Data: mappers.MapperToLocalityCarrierDTO(localityCarriers),
 		})
 	}
 }

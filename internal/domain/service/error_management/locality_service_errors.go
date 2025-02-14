@@ -19,3 +19,7 @@ var ErrLocalityNotFound *LocalityErrors = &LocalityErrors{
 var ErrLocalityAlreadyExists *LocalityErrors = &LocalityErrors{
 	Msg: "locality already exists",
 }
+
+var ErrGetAllLocalities *LocalityErrors = &LocalityErrors{
+	Msg: "could not get localities",
+}
