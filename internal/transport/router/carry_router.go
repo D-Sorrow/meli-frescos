@@ -17,6 +17,7 @@ func InitCarryRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewCarryHandler(serviceImp)
 
 	rt.Route("/api/v1/carrier", func(rt chi.Router) {
+		rt.Get("/", handler.GetAllCarriers())
 		rt.Post("/", handler.CreateCarrier())
 	})
 }

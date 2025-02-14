@@ -17,6 +17,15 @@ func NewCarryService(repository repository.CarrierRepositoryInterface) *CarrierS
 	return &CarrierService{repository: repository}
 }
 
+func (cs *CarrierService) GetAllCarriers() ([]models.Carrier, error) {
+	carriers, err := cs.repository.GetAllCarriers()
+	if err != nil {
+		return nil, serviceErrors.InternalServerErr()
+	}
+
+	return carriers, nil
+}
+
 func (cs *CarrierService) CreateCarrier(carrier models.Carrier) (models.Carrier, error) {
 	newCarrier, err := cs.repository.CreateCarrier(carrier)
 	if err != nil {
