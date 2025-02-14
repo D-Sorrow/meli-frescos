@@ -58,3 +58,27 @@ func (repo *LocalityRepository) GetSellersByLocality(localityId int) (models.Loc
 	return localitySellers, nil
 
 }
+
+func (repo *LocalityRepository) GetCarriersByLocality(id int) (models.LocalityCarriers, error) {
+	var localityCarriers models.LocalityCarriers
+
+	query := `SELECT l.id, l.zip_code, l.locality_name, COUNT(c.id) AS carriers_count
+				FROM localities l LEFT JOIN carriers c ON l.id = c.locality_id
+				WHERE l.id = ? GROUP BY l.id`
+	row := repo.db.QueryRow(query, id)
+	if err := row.Err(); err != nil {
+		log.Print(err)
+		return models.LocalityCarriers{}, repository_errors.ErrLocalityNotFound
+	}
+
+	err := row.Scan(&localityCarriers.LocalityId,
+		&localityCarriers.ZipCode,
+		&localityCarriers.Name,
+		&localityCarriers.CarriersCount)
+	if errors.Is(err, sql.ErrNoRows) {
+		log.Print(err)
+		return models.LocalityCarriers{}, repository_errors.ErrLocalityNotFound
+	}
+
+	return localityCarriers, nil
+}

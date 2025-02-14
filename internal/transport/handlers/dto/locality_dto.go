@@ -13,3 +13,10 @@ type LocalitySellersDto struct {
 	Name         string `json:"locality_name"`
 	SellersCount int    `json:"sellers_count"`
 }
+
+type LocalityCarriersDto struct {
+	LocalityId    int    `json:"locality_id"`
+	ZipCode       string `json:"zip_code"`
+	Name          string `json:"locality_name"`
+	CarriersCount int    `json:"carriers_count"`
+}
