@@ -40,3 +40,21 @@ func MapperToLocalitySellersDTO(localitySellers models.LocalitySellers) dto.Loca
 		SellersCount: *localitySellers.SellersCount,
 	}
 }
+
+func MapperToLocalityCarrierDTO(localityCarriers models.LocalityCarriers) dto.LocalityCarriersDto {
+	return dto.LocalityCarriersDto{
+		LocalityId:    *localityCarriers.LocalityId,
+		ZipCode:       *localityCarriers.ZipCode,
+		Name:          *localityCarriers.Name,
+		CarriersCount: *localityCarriers.CarriersCount,
+	}
+}
+
+func MapperToLocalitiesCarriersDTO(localitycarriers []models.LocalityCarriers) []dto.LocalityCarriersDto {
+	var dtoLocatyCarriers []dto.LocalityCarriersDto
+	for _, lc := range localitycarriers {
+		lcDto := MapperToLocalityCarrierDTO(lc)
+		dtoLocatyCarriers = append(dtoLocatyCarriers, lcDto)
+	}
+	return dtoLocatyCarriers
+}

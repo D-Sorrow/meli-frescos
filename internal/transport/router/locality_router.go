@@ -20,5 +20,6 @@ func InitLocalityRouter(rt *chi.Mux, db *sql.DB) {
 	rt.Route("/api/v1/localities", func(rt chi.Router) {
 		rt.Post("/", handler.CreateLocality())
 		rt.Get("/reportSellers", handler.GetSellersByLocality())
+		rt.Get("/reportCarries", handler.GetCarriersByLocality())
 	})
 }

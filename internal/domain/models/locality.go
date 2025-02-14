@@ -19,3 +19,10 @@ type LocalitySellers struct {
 	Name         *string
 	SellersCount *int
 }
+
+type LocalityCarriers struct {
+	LocalityId    *int
+	ZipCode       *string
+	Name          *string
+	CarriersCount *int
+}

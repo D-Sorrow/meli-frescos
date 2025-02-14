@@ -32,3 +32,20 @@ func (repo *LocalityService) GetSellersByLocality(localityId int) (models.Locali
 	}
 	return localitySellers, nil
 }
+
+func (ls *LocalityService) GetCarriersByAllLocalities() ([]models.LocalityCarriers, error) {
+	carriersByLocalities, err := ls.repo.GetCarriersByAllLocalities()
+	if errors.Is(err, repository_errors.ErrGetAllLocalities) {
+		return nil, service_errors.ErrGetAllLocalities
+	}
+
+	return carriersByLocalities, nil
+}
+
+func (ls *LocalityService) GetCarriersByLocality(id int) (models.LocalityCarriers, error) {
+	localityCarriers, err := ls.repo.GetCarriersByLocality(id)
+	if errors.Is(err, repository_errors.ErrLocalityNotFound) {
+		return models.LocalityCarriers{}, service_errors.ErrLocalityNotFound
+	}
+	return localityCarriers, nil
+}
