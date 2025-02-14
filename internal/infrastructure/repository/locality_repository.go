@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
@@ -40,6 +41,20 @@ func (repo *LocalityRepository) CreateLocality(locality models.Locality) (models
 }
 
 func (repo *LocalityRepository) GetSellersByLocality(localityId int) (models.LocalitySellers, error) {
-	//TODO
-	return models.LocalitySellers{}, nil
+	var localitySellers models.LocalitySellers
+
+	row := repo.db.QueryRow("SELECT l.id, l.zip_code, l.locality_name, count(s.id) as seller_count FROM localities l LEFT JOIN sellers s ON s.locality_id = l.id WHERE l.id = ? GROUP BY l.id, l.zip_code, l.locality_name", localityId)
+	if err := row.Err(); err != nil {
+		log.Print(err)
+		return models.LocalitySellers{}, repository_errors.ErrLocalityNotFound
+	}
+
+	err := row.Scan(&localitySellers.LocalityId, &localitySellers.ZipCode, &localitySellers.Name, &localitySellers.SellersCount)
+	if errors.Is(err, sql.ErrNoRows) {
+		log.Print(err)
+		return models.LocalitySellers{}, repository_errors.ErrLocalityNotFound
+	}
+
+	return localitySellers, nil
+
 }

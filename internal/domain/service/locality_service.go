@@ -26,6 +26,9 @@ func (repo *LocalityService) CreateLocality(locality models.Locality) (models.Lo
 }
 
 func (repo *LocalityService) GetSellersByLocality(localityId int) (models.LocalitySellers, error) {
-	//TODO
-	return models.LocalitySellers{}, nil
+	localitySellers, err := repo.repo.GetSellersByLocality(localityId)
+	if errors.Is(err, repository_errors.ErrLocalityNotFound) {
+		return models.LocalitySellers{}, service_errors.ErrLocalityNotFound
+	}
+	return localitySellers, nil
 }

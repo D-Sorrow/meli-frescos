@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
@@ -56,6 +57,26 @@ func (hand LocalityHandler) CreateLocality() http.HandlerFunc {
 
 func (hand LocalityHandler) GetSellersByLocality() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		id, err := strconv.Atoi(r.URL.Query().Get("id"))
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+				Code: http.StatusBadRequest,
+				Msg:  "id must be a number",
+				Data: nil,
+			})
+			return
+		}
+		localitySellers, err := hand.service.GetSellersByLocality(id)
+		if err != nil {
+			if errors.Is(err, service_errors.ErrNotFound) {
+				handler_errors.ResponseErrorLocality(handler_errors.ErrNotFound, w)
+				return
+			}
+		}
+		response.JSON(w, http.StatusOK, dto.ResponseDTO{
+			Code: http.StatusOK,
+			Msg:  "success",
+			Data: mappers.MapperToLocalitySellersDTO(localitySellers),
+		})
 	}
 }

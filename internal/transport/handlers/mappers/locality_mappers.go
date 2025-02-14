@@ -22,3 +22,21 @@ func MapperToLocalityDTO(locality models.Locality) dto.LocalityDto {
 		ProvinceId:   locality.ProvinceId,
 	}
 }
+
+func MapperToLocalitySellers(localitySellers dto.LocalitySellersDto) models.LocalitySellers {
+	return models.LocalitySellers{
+		LocalityId:   &localitySellers.LocalityId,
+		ZipCode:      &localitySellers.ZipCode,
+		Name:         &localitySellers.Name,
+		SellersCount: &localitySellers.SellersCount,
+	}
+}
+
+func MapperToLocalitySellersDTO(localitySellers models.LocalitySellers) dto.LocalitySellersDto {
+	return dto.LocalitySellersDto{
+		LocalityId:   *localitySellers.LocalityId,
+		ZipCode:      *localitySellers.ZipCode,
+		Name:         *localitySellers.Name,
+		SellersCount: *localitySellers.SellersCount,
+	}
+}
