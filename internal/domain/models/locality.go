@@ -12,3 +12,10 @@ type LocalityPatch struct {
 	Name       *string
 	ProvinceId *int
 }
+
+type LocalitySellers struct {
+	LocalityId   *int
+	ZipCode      *string
+	Name         *string
+	SellersCount *int
+}

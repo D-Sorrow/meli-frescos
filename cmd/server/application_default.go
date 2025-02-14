@@ -47,6 +47,7 @@ func (a *ServerChi) Run() (err error) {
 	rt.Use(middleware.Logger)
 	rt.Use(middleware.Recoverer)
 
+	router.InitLocalityRouter(rt, database.Db)
 	router.InitWarehouseRouter(rt)
 	router.InitSellerRouter(rt, database.Db)
 	router.InitEmployeeRouter(rt)
