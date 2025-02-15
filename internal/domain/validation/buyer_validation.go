@@ -23,6 +23,7 @@ func getJsonFieldName(fieldName string, obj interface{}) (tag string) {
 		jsonTagParts := strings.Split(jsonTag, ",")
 		tag = jsonTagParts[0]
 	}
+
 	return
 }
 
@@ -56,6 +57,7 @@ func MapValidatorErrors(err error, structToValidate interface{}) (messages map[s
 		tag := errItem.Tag()
 		field := errItem.StructField()
 		jsonTag := getJsonFieldName(field, structToValidate)
+
 		switch tag {
 		case "cardnumber":
 			messages[jsonTag] = "Must start with a letter and be followed by 10 digits"
