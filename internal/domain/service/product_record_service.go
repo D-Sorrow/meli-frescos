@@ -22,3 +22,6 @@ func (service *ProductRecordService) SaveProductRecord(productRecord models.Prod
 	}
 	return service.repository.SaveProductRecord(productRecord)
 }
+func (service *ProductRecordService) GetProductRecord(productId int) (map[int]models.ProductRecordResponse, error) {
+	return service.repository.GetProductRecord(productId)
+}

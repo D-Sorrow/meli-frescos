@@ -6,4 +6,5 @@ import (
 
 type ProductRecordService interface {
 	SaveProductRecord(productRecord models.ProductRecord) error
+	GetProductRecord(productId int) (map[int]models.ProductRecordResponse, error)
 }

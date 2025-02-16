@@ -13,3 +13,10 @@ func ToProductRecordModel(product *dto.ProductRecordDto) models.ProductRecord {
 		LastUpdateTime: *product.LastUpdateTime,
 	}
 }
+func ToProductRecordResponseSlice(productRecordMap map[int]models.ProductRecordResponse) []models.ProductRecordResponse {
+	var productRecords []models.ProductRecordResponse
+	for _, productRecord := range productRecordMap {
+		productRecords[productRecord.ProductId] = productRecord
+	}
+	return productRecords
+}

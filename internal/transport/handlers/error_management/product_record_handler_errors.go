@@ -24,6 +24,11 @@ func HandlerErrProductRecord(err error) ErrHandlerProductRecord {
 			Message: "Error business rules",
 			Code:    http.StatusBadRequest,
 		}
+	} else if err.Error() == "003" {
+		return ErrHandlerProductRecord{
+			Message: "Error get report",
+			Code:    http.StatusBadRequest,
+		}
 	}
 	return ErrHandlerProductRecord{
 		Message: "an unknown error occurred",

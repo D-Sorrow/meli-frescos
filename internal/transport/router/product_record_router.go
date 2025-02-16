@@ -17,5 +17,6 @@ func InitProductRecordRouter(rt *chi.Mux, db *sql.DB) {
 
 	rt.Route("/api/v1/productRecords", func(rt chi.Router) {
 		rt.Post("/", handler.SaveProductRecord())
+		rt.Get("/", handler.GetProductRecord())
 	})
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"net/http"
+	"strconv"
 )
 
 type ProductRecordHandler struct {
@@ -63,6 +64,29 @@ func (hand *ProductRecordHandler) SaveProductRecord() http.HandlerFunc {
 			Code: http.StatusCreated,
 			Msg:  "Product record saved",
 			Data: nil,
+		})
+		return
+	}
+}
+func (hand *ProductRecordHandler) GetProductRecord() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.URL.Query().Get("id")
+		var productId int
+		productId, _ = strconv.Atoi(id)
+		records, errGet := hand.service.GetProductRecord(productId)
+		if errGet != nil {
+			errSpe := error_management.HandlerErrProductRecord(errGet)
+			response.JSON(w, errSpe.Code, dto.ResponseDTO{
+				Code: errSpe.Code,
+				Msg:  errSpe.Error(),
+				Data: nil,
+			})
+			return
+		}
+
+		response.JSON(w, http.StatusOK, dto.ResponseDTO{
+			Code: http.StatusOK,
+			Data: records,
 		})
 		return
 	}

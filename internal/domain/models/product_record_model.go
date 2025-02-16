@@ -11,6 +11,11 @@ type ProductRecord struct {
 	PurchasePrice  float64
 	LastUpdateTime string
 }
+type ProductRecordResponse struct {
+	ProductId    int
+	Description  string
+	RecordsCount int
+}
 
 var (
 	ErrProductId      = errors.New("ProductId is invalid")
