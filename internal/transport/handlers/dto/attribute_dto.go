@@ -28,11 +28,10 @@ func (attribute *AttributeDto) Validation() error {
 		}
 	}
 	if attribute.FreezingRate != nil {
-		if *attribute.FreezingRate <= 0 {
+		if *attribute.FreezingRate >= 0 {
 			return errors.New(FreezingInvalid)
 		}
 	}
-
 	if attribute.Height != nil {
 		if *attribute.Height <= 0 {
 			return errors.New(DimensionsInvalid)

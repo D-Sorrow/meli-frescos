@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 )
 
 type ProductRecordService struct {
@@ -15,9 +16,9 @@ func NewProductRecordService(repository repository.ProductRecordRepository) *Pro
 	}
 }
 func (service *ProductRecordService) SaveProductRecord(productRecord models.ProductRecord) error {
-	err := service.repository.SaveProductRecord(productRecord)
-	if err != nil {
-		return err
+	errServ := productRecord.ValidateProductRecord()
+	if errServ != nil {
+		return error_management.CodeErrBusiness
 	}
-	return nil
+	return service.repository.SaveProductRecord(productRecord)
 }

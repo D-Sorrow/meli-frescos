@@ -1,7 +1,11 @@
 package error_management
 
-import "errors"
+const CodeUseCaseError = "004"
 
-var (
-	ErrProductNotFound = errors.New("product not found")
-)
+type ErrService struct {
+	Code string
+}
+
+func (e *ErrService) Error() string {
+	return e.Code
+}

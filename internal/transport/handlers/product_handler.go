@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 	dto "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	mapper "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
@@ -24,7 +23,12 @@ func NewProductHandler(serv service.ProductService) *ProductHandler {
 
 func (hand *ProductHandler) GetProducts() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		mapProduct := hand.serv.GetProducts()
+		mapProduct, errGet := hand.serv.GetProducts()
+		if errGet != nil {
+			errSpe := error_management.HandlerErr(errGet)
+			response.JSON(writer, errSpe.GetCode(), errSpe)
+			return
+		}
 		mapProductDto := mapper.MapperToProductsDto(mapProduct)
 
 		response.JSON(writer, http.StatusOK, dto.ResponseDTO{
@@ -52,9 +56,10 @@ func (hand *ProductHandler) GetProductByID() http.HandlerFunc {
 
 		productDto := mapper.MapperToProductDto(product)
 		if err != nil {
-			response.JSON(writer, http.StatusNotFound, dto.ResponseDTO{
-				Code: http.StatusNotFound,
-				Msg:  err.Error(),
+			errSpe := error_management.HandlerErr(err)
+			response.JSON(writer, errSpe.GetCode(), dto.ResponseDTO{
+				Code: errSpe.GetCode(),
+				Msg:  errSpe.Message,
 				Data: nil,
 			})
 			return
@@ -92,11 +97,12 @@ func (hand *ProductHandler) SaveProduct() http.HandlerFunc {
 			return
 		}
 
-		errSave := hand.serv.SaveProduct(mapper.MapperToProductModel(product))
+		errSave := hand.serv.SaveProduct(mapper.MapperToProductModel(&product))
 		if errSave != nil {
-			response.JSON(writer, http.StatusConflict, dto.ResponseDTO{
-				Code: http.StatusConflict,
-				Msg:  errSave.Error(),
+			errSpe := error_management.HandlerErr(errSave)
+			response.JSON(writer, errSpe.GetCode(), dto.ResponseDTO{
+				Code: errSpe.Code,
+				Msg:  errSpe.Message,
 				Data: nil,
 			})
 			return
@@ -141,25 +147,12 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 		productDto := mapper.MapperToProductDto(product)
 
 		if errUpdate != nil {
-			if errors.Is(errUpdate, error_management.CodeProductIsExistErr) {
-				response.JSON(writer, http.StatusConflict, dto.ResponseDTO{
-					Code: http.StatusConflict,
-					Msg:  errUpdate.Error(),
-				})
-			}
-			if errors.Is(errUpdate, error_management.AttributeIsNotValidErr) {
-				response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
-					Code: http.StatusBadRequest,
-					Msg:  errUpdate.Error(),
-				})
-			}
-			if errors.Is(errUpdate, error_management.ProductNotExistErr) {
-				response.JSON(writer, http.StatusNotFound, dto.ResponseDTO{
-					Code: http.StatusNotFound,
-					Msg:  errUpdate.Error(),
-				})
-			}
-
+			errSpe := error_management.HandlerErr(errUpdate)
+			response.JSON(writer, errSpe.Code, dto.ResponseDTO{
+				Code: errSpe.Code,
+				Msg:  errSpe.Error(),
+				Data: nil,
+			})
 			return
 		}
 		response.JSON(writer, http.StatusOK, dto.ResponseDTO{
@@ -167,7 +160,7 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 			Msg:  "Product successfully updated",
 			Data: productDto,
 		})
-
+		return
 	}
 }
 
@@ -184,9 +177,10 @@ func (hand *ProductHandler) DeleteProduct() http.HandlerFunc {
 		}
 		errDelete := hand.serv.DeleteProduct(id)
 		if errDelete != nil {
-			response.JSON(writer, http.StatusNotFound, dto.ResponseDTO{
-				Code: http.StatusNotFound,
-				Msg:  errDelete.Error(),
+			errSp := error_management.HandlerErr(errDelete)
+			response.JSON(writer, errSp.Code, dto.ResponseDTO{
+				Code: errSp.Code,
+				Msg:  errSp.Error(),
 				Data: nil,
 			})
 			return

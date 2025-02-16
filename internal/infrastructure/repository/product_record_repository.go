@@ -3,6 +3,8 @@ package repository
 import (
 	"database/sql"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	recordRepo "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entity"
 )
 
 type ProductRecordRepository struct {
@@ -16,13 +18,10 @@ func NewProductRecordRepository(db *sql.DB) *ProductRecordRepository {
 }
 
 func (repository *ProductRecordRepository) SaveProductRecord(productRecord models.ProductRecord) error {
-	query := "INSERT INTO melifresh.product_records" +
-		"(last_update_date, purchase_price, sale_price, product_id)" +
-		"VALUES (?, ?, ?, ?)"
-
-	_, err := repository.db.Exec(query, productRecord.LastUpdateTime, productRecord.PurchasePrice, productRecord.SalePrice, productRecord.ProductId)
+	var productRecordEntity entity.ProductRecordEntity
+	_, err := repository.db.Exec(productRecordEntity.SaveProductRecord(), productRecord.LastUpdateTime, productRecord.PurchasePrice, productRecord.SalePrice, productRecord.ProductId)
 	if err != nil {
-		return err
+		return recordRepo.CodeSaveErr
 	}
 	return nil
 }
