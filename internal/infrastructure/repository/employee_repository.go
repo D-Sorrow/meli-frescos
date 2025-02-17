@@ -90,6 +90,7 @@ func (repository *EmployeeRepository) DeleteEmployee(employeeId int) error {
 
 func (repository *EmployeeRepository) generateId() (int, error) {
 	var maxID int
+
 	err := repository.db.QueryRow("SELECT COALESCE(MAX(id), 0) FROM employees").Scan(&maxID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get max ID from table: %v", err)
