@@ -11,31 +11,36 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type SellerHandlerErrors struct {
+type LocalityHandlerErrors struct {
 	Code int
 	Msg  string
 }
 
-func (se *SellerHandlerErrors) Error() string {
+func (se *LocalityHandlerErrors) Error() string {
 	return fmt.Sprintf("%d: %s", se.Code, se.Msg)
 }
 
-var ErrSellerNotFound *SellerHandlerErrors = &SellerHandlerErrors{
+var ErrLocalityNotFound *LocalityHandlerErrors = &LocalityHandlerErrors{
 	Code: http.StatusNotFound,
 	Msg:  "not found error",
 }
 
-var ErrSellerAlreadyExists *SellerHandlerErrors = &SellerHandlerErrors{
-	Code: http.StatusConflict,
-	Msg:  "seller already exists",
+var ErrProvinceNotFound *LocalityHandlerErrors = &LocalityHandlerErrors{
+	Code: http.StatusNotFound,
+	Msg:  "province not found",
 }
 
-func ResponseErrorSeller(err error, w http.ResponseWriter) {
-	var sellerErr *SellerHandlerErrors
-	if errors.As(err, &sellerErr) {
-		response.JSON(w, sellerErr.Code, dto.ResponseDTO{
-			Code: sellerErr.Code,
-			Msg:  sellerErr.Msg,
+var ErrLocalityAlreadyExists *LocalityHandlerErrors = &LocalityHandlerErrors{
+	Code: http.StatusConflict,
+	Msg:  "locality already exists",
+}
+
+func ResponseErrorLocality(err error, w http.ResponseWriter) {
+	var localityErr *LocalityHandlerErrors
+	if errors.As(err, &localityErr) {
+		response.JSON(w, localityErr.Code, dto.ResponseDTO{
+			Code: localityErr.Code,
+			Msg:  localityErr.Msg,
 			Data: nil,
 		})
 	}

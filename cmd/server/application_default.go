@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"net/http"
 
 	db_config "github.com/D-Sorrow/meli-frescos/internal/infrastructure/config"
@@ -47,11 +48,12 @@ func (a *ServerChi) Run() (err error) {
 	rt.Use(middleware.Logger)
 	rt.Use(middleware.Recoverer)
 
+	router.InitLocalityRouter(rt, database.Db)
+	router.InitSellerRouter(rt, database.Db)
 	router.NewBuyerRouter(rt, database.Db)
 	router.NewPurchaseOrderRouter(rt, database.Db)
 	router.NewOrderStatusRouter(rt, database.Db)
 	router.InitWarehouseRouter(rt, database.Db)
-	router.InitSellerRouter(rt)
 	router.InitEmployeeRouter(rt, database.Db)
 	router.InitInboundOrderRouter(rt, database.Db)
 
