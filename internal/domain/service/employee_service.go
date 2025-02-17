@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
@@ -18,7 +20,6 @@ func NewEmployeeService(repository repository.EmployeeRepository) *EmployeeServi
 }
 
 func (service *EmployeeService) GetEmployees() (employees []models.Employee, err error) {
-	//Mapper a DTO de respuesta
 	allEmployees, err := service.repository.GetEmployees()
 
 	if err != nil {
@@ -108,6 +109,35 @@ func (service *EmployeeService) DeleteEmployee(employeeId int) (err error) {
 		if err.Error() == "ENF-DB" {
 			err = errors.New("ENF-SV")
 		}
+	}
+
+	return
+}
+
+func (service *EmployeeService) GetReportInboundOrdersByEmployee(employeeId string) (employees []models.EmployeeReportInboundOrders, err error) {
+	if employeeId != "" {
+		fmt.Printf("ID LLEGA: %s", employeeId)
+		id, err := strconv.Atoi(employeeId)
+		if err != nil {
+			return nil, errors.New("ID-DEC-ERR")
+		}
+		employee, err := service.repository.GetInboundOrdersCountByEmployeeId(id)
+		if err != nil {
+			if err.Error() == "ENF-DB" {
+				return nil, errors.New("ENF-SV")
+			} else {
+				return nil, errors.New("internal server error")
+			}
+		}
+		employees = append(employees, employee)
+	} else {
+		allEmployees, err := service.repository.GetInboundOrdersCountAllEmployees()
+
+		if err != nil {
+			return nil, errors.New("employee-repo-error")
+		}
+
+		employees = append(employees, allEmployees...)
 	}
 
 	return

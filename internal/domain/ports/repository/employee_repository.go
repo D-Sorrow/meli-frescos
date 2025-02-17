@@ -8,4 +8,6 @@ type EmployeeRepository interface {
 	CreateEmployee(employee *models.Employee) error
 	UpdateEmployee(employee *models.Employee) error
 	DeleteEmployee(employeeId int) error
+	GetInboundOrdersCountByEmployeeId(employeeId int) (models.EmployeeReportInboundOrders, error)
+	GetInboundOrdersCountAllEmployees() ([]models.EmployeeReportInboundOrders, error)
 }

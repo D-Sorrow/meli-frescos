@@ -17,11 +17,12 @@ func InitEmployeeRouter(rt *chi.Mux, db *sql.DB) {
 
 	handler := handlers.NewEmployeeHandler(serviceImp)
 
-	rt.Route("/employees", func(rt chi.Router) {
+	rt.Route("/api/v1/employees", func(rt chi.Router) {
 		rt.Get("/", handler.GetEmployees())
 		rt.Get("/{id}", handler.GetEmployeeById())
 		rt.Post(("/"), handler.CreateEmployee())
 		rt.Patch("/{id}", handler.UpdateEmployee())
 		rt.Delete("/{id}", handler.DeleteEmployee())
+		rt.Get(("/reportinboundorders"), handler.GetReportInboundOrdersByEmployee())
 	})
 }

@@ -97,3 +97,35 @@ func (repository *EmployeeRepository) generateId() (int, error) {
 	newID := maxID + 1
 	return newID, nil
 }
+
+func (repository *EmployeeRepository) GetInboundOrdersCountByEmployeeId(employeeId int) (employee models.EmployeeReportInboundOrders, err error) {
+	row := repository.db.QueryRow("SELECT employees.id, employees.card_number_id, employees.first_name, employees.last_name, employees.warehouse_id, COUNT(inbound_orders.id) AS inbound_orders_count FROM employees LEFT JOIN inbound_orders ON employees.id = inbound_orders.employe_id WHERE employees.id = ? GROUP BY employees.id", employeeId)
+	if row.Err() != nil {
+		return models.EmployeeReportInboundOrders{}, row.Err()
+	}
+
+	if err := row.Scan(&employee.Id, &employee.CardNumberId, &employee.FirstName, &employee.LastName, &employee.WarehouseId, &employee.InboundOrderCount); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.EmployeeReportInboundOrders{}, errors.New("ENF-DB")
+		}
+		return models.EmployeeReportInboundOrders{}, err
+	}
+	return
+}
+
+func (repository *EmployeeRepository) GetInboundOrdersCountAllEmployees() (employees []models.EmployeeReportInboundOrders, err error) {
+	rows, err := repository.db.Query("SELECT employees.id, employees.card_number_id, employees.first_name, employees.last_name, employees.warehouse_id, COUNT(inbound_orders.id) AS inbound_orders_count FROM employees LEFT JOIN inbound_orders ON employees.id = inbound_orders.employe_id GROUP BY employees.id")
+	if err != nil {
+		return
+	}
+
+	for rows.Next() {
+		var employee models.EmployeeReportInboundOrders
+		err = rows.Scan(&employee.Id, &employee.CardNumberId, &employee.FirstName, &employee.LastName, &employee.WarehouseId, &employee.InboundOrderCount)
+		if err != nil {
+			return
+		}
+		employees = append(employees, employee)
+	}
+	return employees, nil
+}
