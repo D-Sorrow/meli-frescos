@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -150,6 +151,29 @@ func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
 
 		response.JSON(w, http.StatusOK, map[string]any{
 			"message": "Empleado elimindo correctamente",
+		})
+	}
+}
+
+func (handler *EmployeeHandler) GetReportInboundOrdersByEmployee() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idString := r.URL.Query().Get("id")
+		fmt.Printf("id: %s", idString)
+
+		var employeesDTO []dto.EmployeeReportInboundOrdersDTO
+		employees, err := handler.service.GetReportInboundOrdersByEmployee(idString)
+		for _, employee := range employees {
+			employeeDto := mappers.EmployeeReportInboundOrdersModelToDTO(employee)
+			employeesDTO = append(employeesDTO, *employeeDto)
+		}
+
+		if err != nil {
+			error_management.HandleErrorEmployee(w, err)
+			return
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": employeesDTO,
 		})
 	}
 }

@@ -15,6 +15,6 @@ type ProductBatchesRepository interface {
 }
 
 var (
-	ForeignKeysNotValid           = errors.New("The foreign keys of the requested ProductBatch order are not valid")
-	ProductBatchOrderDoesNotExist = errors.New("The requested ProductBatch order does not exist in the database for the ID: %d")
+	ForeignKeysNotValidProductBatches = errors.New("The foreign keys of the requested ProductBatch order are not valid")
+	ProductBatchOrderDoesNotExist     = errors.New("The requested ProductBatch order does not exist in the database for the ID: %d")
 )

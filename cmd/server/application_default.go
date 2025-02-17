@@ -35,23 +35,31 @@ type ServerChi struct {
 }
 
 func (a *ServerChi) Run() (err error) {
-
 	rt := chi.NewRouter()
-	dbconf, _ := db_config.NewConfig()
+	dbconf, err := db_config.NewConfig()
+
+	if err != nil {
+		return
+	}
+
 	database := db.NewDataBase(dbconf)
 
 	rt.Use(middleware.Logger)
 	rt.Use(middleware.Recoverer)
 
+	router.NewBuyerRouter(rt, database.Db)
+	router.NewPurchaseOrderRouter(rt, database.Db)
+	router.NewOrderStatusRouter(rt, database.Db)
 	router.InitWarehouseRouter(rt, database.Db)
 	router.InitSellerRouter(rt)
-	router.InitEmployeeRouter(rt)
+	router.InitEmployeeRouter(rt, database.Db)
+	router.InitInboundOrderRouter(rt, database.Db)
 	router.InitProductBatchesRouter(rt, database.Db)
 	router.InitSectionsRouter(rt, database.Db)
 
 	router.InitProductRouter(rt, database.Db)
-	router.NewBuyerRouter(rt)
 
+	router.InitCarryRouter(rt, database.Db)
 	err = http.ListenAndServe(a.serverAddress, rt)
 	return
 }

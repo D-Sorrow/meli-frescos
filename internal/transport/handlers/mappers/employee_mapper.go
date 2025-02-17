@@ -32,3 +32,14 @@ func EmployeePatchRequestDTOToModel(employeePatchRequestDTO dto.EmployeePatchReq
 		WarehouseId:  employeePatchRequestDTO.WarehouseId,
 	}
 }
+
+func EmployeeReportInboundOrdersModelToDTO(model models.EmployeeReportInboundOrders) *dto.EmployeeReportInboundOrdersDTO {
+	return &dto.EmployeeReportInboundOrdersDTO{
+		Id:                 model.Id,
+		CardNumberId:       model.CardNumberId,
+		FirstName:          model.FirstName,
+		LastName:           model.LastName,
+		WarehouseId:        model.WarehouseId,
+		InboundOrdersCount: model.InboundOrderCount,
+	}
+}

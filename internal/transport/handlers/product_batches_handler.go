@@ -106,7 +106,7 @@ func (h *ProductBatchesHandler) Create() http.HandlerFunc {
 
 		ProductBatches, createErr := h.s.Create(*mappers.ProductBatchesCreateDTOToPProductBatchesFKs(&ProductBatchesDto))
 		if createErr != nil {
-			if errors.Is(createErr, service.ForeignKeysNotValid) {
+			if errors.Is(createErr, service.ForeignKeysNotValidProductBatches) {
 				createErr = herr.HandlerError{
 					Code: http.StatusConflict,
 					Msg:  createErr.Error(),
