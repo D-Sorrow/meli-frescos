@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"net/http"
 
 	db_config "github.com/D-Sorrow/meli-frescos/internal/infrastructure/config"
@@ -60,6 +59,7 @@ func (a *ServerChi) Run() (err error) {
 	router.InitSectionsRouter(rt, database.Db)
 
 	router.InitProductRouter(rt, database.Db)
+	router.InitProductRecordRouter(rt, database.Db)
 
 	router.InitCarryRouter(rt, database.Db)
 	err = http.ListenAndServe(a.serverAddress, rt)

@@ -5,7 +5,7 @@ import (
 )
 
 type ProductService interface {
-	GetProducts() map[int]models.Product
+	GetProducts() (map[int]models.Product, error)
 	GetProductByID(id int) (models.Product, error)
 	SaveProduct(product models.Product) error
 	UpdateProduct(id int, attributes map[string]any) (models.Product, error)
