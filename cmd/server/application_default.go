@@ -56,6 +56,7 @@ func (a *ServerChi) Run() (err error) {
 	router.InitInboundOrderRouter(rt, database.Db)
 
 	router.InitProductRouter(rt, database.Db)
+	router.InitProductRecordRouter(rt, database.Db)
 
 	router.InitCarryRouter(rt, database.Db)
 	err = http.ListenAndServe(a.serverAddress, rt)
