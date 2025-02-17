@@ -20,7 +20,19 @@ func NewLocalityRepository(db *sql.DB) *LocalityRepository {
 
 func (repo *LocalityRepository) CreateLocality(locality models.Locality) (models.Locality, error) {
 
-	result, err := repo.db.Exec("INSERT INTO localities (locality_name,province_id,zip_code) values (?,?,?)", locality.Name, locality.ProvinceId, locality.ZipCode)
+	var provinceId int
+	row := repo.db.QueryRow("select p.id from countries c join provinces p on c.id = p.id_country_fk where country_name = ? and province_name = ?", locality.CountryName, locality.ProvinceName)
+	if err := row.Err(); err != nil {
+		log.Print(err)
+		return models.Locality{}, repository_errors.ErrProvinceNotFound
+	}
+	err := row.Scan(&provinceId)
+	if errors.Is(err, sql.ErrNoRows) {
+		log.Print(err)
+		return models.Locality{}, repository_errors.ErrProvinceNotFound
+	}
+
+	result, err := repo.db.Exec("INSERT INTO localities (locality_name,province_id,zip_code) values (?,?,?)", locality.Name, provinceId, locality.ZipCode)
 
 	if err != nil {
 		log.Print(err)

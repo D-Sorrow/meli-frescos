@@ -44,6 +44,10 @@ func (hand LocalityHandler) CreateLocality() http.HandlerFunc {
 				handler_errors.ResponseErrorLocality(handler_errors.ErrLocalityAlreadyExists, w)
 				return
 			}
+			if errors.Is(err, service_errors.ErrProvinceNotFound) {
+				handler_errors.ResponseErrorLocality(handler_errors.ErrProvinceNotFound, w)
+				return
+			}
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{

@@ -22,6 +22,9 @@ func (repo *LocalityService) CreateLocality(locality models.Locality) (models.Lo
 	if errors.Is(err, repository_errors.ErrLocalityAlreadyExists) {
 		return models.Locality{}, service_errors.ErrLocalityAlreadyExists
 	}
+	if errors.Is(err, repository_errors.ErrProvinceNotFound) {
+		return models.Locality{}, service_errors.ErrProvinceNotFound
+	}
 	return locality, nil
 }
 

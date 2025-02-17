@@ -25,6 +25,11 @@ var ErrLocalityNotFound *LocalityHandlerErrors = &LocalityHandlerErrors{
 	Msg:  "not found error",
 }
 
+var ErrProvinceNotFound *LocalityHandlerErrors = &LocalityHandlerErrors{
+	Code: http.StatusNotFound,
+	Msg:  "province not found",
+}
+
 var ErrLocalityAlreadyExists *LocalityHandlerErrors = &LocalityHandlerErrors{
 	Code: http.StatusConflict,
 	Msg:  "locality already exists",

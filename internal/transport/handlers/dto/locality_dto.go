@@ -4,7 +4,8 @@ type LocalityDto struct {
 	Id           int    `json:"id"`
 	ZipCode      string `json:"zip_code" validate:"required"`
 	LocalityName string `json:"locality_name" validate:"required"`
-	ProvinceId   int    `json:"province_id" validate:"required"`
+	ProvinceName string `json:"province_name" validate:"required"`
+	CountryName  string `json:"country_name" validate:"required"`
 }
 
 type LocalitySellersDto struct {

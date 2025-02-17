@@ -20,12 +20,12 @@ func (se *SellerHandlerErrors) Error() string {
 	return fmt.Sprintf("%d: %s", se.Code, se.Msg)
 }
 
-var ErrNotFound *SellerHandlerErrors = &SellerHandlerErrors{
+var ErrSellerNotFound *SellerHandlerErrors = &SellerHandlerErrors{
 	Code: http.StatusNotFound,
 	Msg:  "not found error",
 }
 
-var ErrAlreadyExists *SellerHandlerErrors = &SellerHandlerErrors{
+var ErrSellerAlreadyExists *SellerHandlerErrors = &SellerHandlerErrors{
 	Code: http.StatusConflict,
 	Msg:  "seller already exists",
 }

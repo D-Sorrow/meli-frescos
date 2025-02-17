@@ -1,10 +1,11 @@
 package models
 
 type Locality struct {
-	Id         int
-	ZipCode    string
-	Name       string
-	ProvinceId int
+	Id           int
+	ZipCode      string
+	Name         string
+	ProvinceName string
+	CountryName  string
 }
 
 type LocalityPatch struct {

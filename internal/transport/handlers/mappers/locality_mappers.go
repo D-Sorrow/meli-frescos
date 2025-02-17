@@ -7,10 +7,11 @@ import (
 
 func MapperToLocality(locality dto.LocalityDto) models.Locality {
 	return models.Locality{
-		Id:         locality.Id,
-		ZipCode:    locality.ZipCode,
-		Name:       locality.LocalityName,
-		ProvinceId: locality.ProvinceId,
+		Id:           locality.Id,
+		ZipCode:      locality.ZipCode,
+		Name:         locality.LocalityName,
+		ProvinceName: locality.ProvinceName,
+		CountryName:  locality.CountryName,
 	}
 }
 
@@ -19,7 +20,8 @@ func MapperToLocalityDTO(locality models.Locality) dto.LocalityDto {
 		Id:           locality.Id,
 		ZipCode:      locality.ZipCode,
 		LocalityName: locality.Name,
-		ProvinceId:   locality.ProvinceId,
+		ProvinceName: locality.ProvinceName,
+		CountryName:  locality.CountryName,
 	}
 }
 

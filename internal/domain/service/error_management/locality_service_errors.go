@@ -23,3 +23,7 @@ var ErrLocalityAlreadyExists *LocalityErrors = &LocalityErrors{
 var ErrGetAllLocalities *LocalityErrors = &LocalityErrors{
 	Msg: "could not get localities",
 }
+
+var ErrProvinceNotFound *LocalityErrors = &LocalityErrors{
+	Msg: "province not found",
+}
