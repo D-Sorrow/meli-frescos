@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"net/http"
 
 	db_config "github.com/D-Sorrow/meli-frescos/internal/infrastructure/config"

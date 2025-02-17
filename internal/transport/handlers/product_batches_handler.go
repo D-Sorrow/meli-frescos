@@ -27,7 +27,6 @@ func NewProductBatches(s service.ProductBatchesRepository) *ProductBatchesHandle
 }
 
 func (h ProductBatchesHandler) AddProductBatches() http.HandlerFunc {
-	fmt.Println("asdas")
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ProductBatchesDto dto.ProductBatchesDto
 

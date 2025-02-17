@@ -20,12 +20,12 @@ func (se *ProductBatchesHandlerErr) Error() string {
 	return fmt.Sprintf("%d: %s", se.Code, se.Msg)
 }
 
-var ErrLocalityNotFound *ProductBatchesHandlerErr = &ProductBatchesHandlerErr{
+var LocalityNotFound *ProductBatchesHandlerErr = &ProductBatchesHandlerErr{
 	Code: http.StatusNotFound,
 	Msg:  "not found error",
 }
 
-var ErrLocalityAlreadyExists *ProductBatchesHandlerErr = &ProductBatchesHandlerErr{
+var LocalityAlreadyExists *ProductBatchesHandlerErr = &ProductBatchesHandlerErr{
 	Code: http.StatusConflict,
 	Msg:  "ProductBatches  already exists",
 }
