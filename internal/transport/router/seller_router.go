@@ -1,27 +1,24 @@
 package router
 
 import (
-	"database/sql"
-
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
+	"github.com/D-Sorrow/meli-frescos/pkg/models"
 	"github.com/go-chi/chi/v5"
 )
 
-func InitSellerRouter(rt *chi.Mux, db *sql.DB) {
+func InitSellerRouter(rt *chi.Mux) {
 
-	repositoryImp := repository.NewSellerRepository(db)
+	mapSeller := make(map[int]models.Seller)
+	repositoryImp := repository.NewSellerRepository(mapSeller)
 
 	serviceImp := service.NewSellerService(repositoryImp)
 
 	handler := handlers.NewHandlerService(serviceImp)
 
-	rt.Route("/api/v1/sellers", func(rt chi.Router) {
-		rt.Get("/", handler.GetSellers())
-		rt.Get("/{id}", handler.GetSeller())
-		rt.Post("/", handler.CreateSeller())
-		rt.Patch("/{id}", handler.UpdateSeller())
-		rt.Delete("/{id}", handler.DeleteSeller())
+	rt.Route("/seller", func(rt chi.Router) {
+		rt.Get("/", handler.GetSeller())
 	})
+	return
 }
