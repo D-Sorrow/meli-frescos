@@ -37,6 +37,7 @@ func validateJsonKeys(data map[string]interface{}) (err error) {
 		"warehouse_code":      {},
 		"minimun_capacity":    {},
 		"minimun_temperature": {},
+		"locality_id":         {},
 	}
 
 	for key := range data {
@@ -73,6 +74,10 @@ func validateValuesJsonType(data map[string]interface{}) (err error) {
 			if _, ok := value.(float64); !ok {
 				err = errors.New("minimun temperature must be a int")
 			}
+		case "locality_id":
+			if _, ok := value.(float64); !ok {
+				err = errors.New("locality id must be a int")
+			}
 		}
 	}
 	return
@@ -103,6 +108,12 @@ func ValidatePatchValues(data map[string]interface{}) error {
 			if val, ok := value.(float64); ok {
 				if val < -18 || val > 15 {
 					return errors.New("temperatura must be between -18 and 15 degrees")
+				}
+			}
+		case "locality_id":
+			if val, ok := value.(float64); ok {
+				if val < 1 {
+					return errors.New("locality id can not be less than 1")
 				}
 			}
 		}

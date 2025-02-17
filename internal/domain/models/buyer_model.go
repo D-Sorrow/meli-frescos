@@ -1,12 +1,14 @@
 package models
 
-type BuyerAttributes struct {
-	CardNumberID string
-	FirstName    string
-	LastName     string
+type ReportPurchaseOrders struct {
+	ID                  int
+	CardNumberID        string
+	FirstName           string
+	LastName            string
+	PurchaseOrdersCount int
 }
 
-type BuyerPatchAttributes struct {
+type BuyerAttributes struct {
 	CardNumberID *string
 	FirstName    *string
 	LastName     *string

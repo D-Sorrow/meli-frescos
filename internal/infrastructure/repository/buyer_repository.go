@@ -1,108 +1,196 @@
 package repository
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
+	"database/sql"
+	"errors"
+
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
+	"github.com/go-sql-driver/mysql"
 )
 
 type BuyerRepository struct {
-	db map[int]models.Buyer
+	db *sql.DB
 }
 
-func NewBuyerRepository(db map[int]models.Buyer) *BuyerRepository {
-	defaultDb := make(map[int]models.Buyer)
-	if db != nil {
-		defaultDb = db
+func NewBuyerRepository(db *sql.DB) *BuyerRepository {
+	return &BuyerRepository{db: db}
+}
+
+func (b *BuyerRepository) GetAll() (buyers []entities.BuyerEntity, err error) {
+	buyers = make([]entities.BuyerEntity, 0)
+
+	query, args := (&entities.BuyerEntity{}).GetAllQuery()
+
+	rows, err := b.db.Query(query, args...)
+	if err != nil {
+		return
 	}
+	defer rows.Close()
 
-	return &BuyerRepository{db: defaultDb}
-}
+	for rows.Next() {
+		var buyer entities.BuyerEntity
+		err = rows.Scan(&buyer.ID,
+			&buyer.CardNumberID,
+			&buyer.FirstName,
+			&buyer.LastName,
+		)
 
-func (b *BuyerRepository) GetAll() (buyers map[int]models.Buyer, err error) {
-	buyers = make(map[int]models.Buyer)
+		if err != nil {
+			return
+		}
 
-	for key, value := range b.db {
-		buyers[key] = value
+		buyers = append(buyers, buyer)
 	}
 
 	if len(buyers) == 0 {
-		err = error_management.ErrNoRegisteredBuyersYet
-	}
-
-	return
-}
-
-func (b *BuyerRepository) GetById(id int) (buyer models.Buyer, err error) {
-	buyer, ok := b.db[id]
-	if !ok {
-		err = error_management.ErrBuyerNotFoundWithID
+		err = repository.ErrNoRegisteredBuyersYet
 		return
 	}
 
 	return
 }
 
-func (b *BuyerRepository) Create(buyer models.BuyerAttributes) (newBuyer models.Buyer, err error) {
-	maxID := 0
-	for key, value := range b.db {
-		if value.BuyerAttributes.CardNumberID == buyer.CardNumberID {
-			err = error_management.ErrDuplicateCardNumberID
+func (b *BuyerRepository) GetById(id int) (buyer entities.BuyerEntity, err error) {
+	query, args := buyer.GetByIdQuery(id)
+
+	err = b.db.QueryRow(query, args...).Scan(&buyer.ID,
+		&buyer.CardNumberID,
+		&buyer.FirstName,
+		&buyer.LastName,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = repository.ErrBuyerNotFoundWithID
 			return
 		}
-
-		if key > maxID {
-			maxID = key
-		}
 	}
-
-	newBuyer = models.Buyer{
-		ID:              maxID + 1,
-		BuyerAttributes: buyer,
-	}
-	b.db[newBuyer.ID] = newBuyer
 
 	return
 }
 
-func (b *BuyerRepository) Patch(id int, buyerToPatch models.BuyerPatchAttributes) (updatedBuyer models.Buyer, err error) {
-	updatedBuyer, ok := b.db[id]
+func (b *BuyerRepository) Create(buyer entities.BuyerEntity) (newBuyer entities.BuyerEntity, err error) {
+	query, args := buyer.GetCreateQuery()
 
-	if !ok {
-		err = error_management.ErrBuyerNotFoundWithID
+	result, err := b.db.Exec(query, args...)
+
+	if err != nil {
+		var mySqlErr *mysql.MySQLError
+		if errors.As(err, &mySqlErr) && mySqlErr.Number == 1062 {
+			err = repository.ErrDuplicateCardNumberID
+			return
+		}
+
+		return
+	}
+
+	lastId, err := result.LastInsertId()
+
+	if err != nil {
+		return
+	}
+
+	newBuyer, err = b.GetById(int(lastId))
+
+	return
+}
+
+func (b *BuyerRepository) Patch(id int, buyerToPatch entities.BuyerEntity) (updatedBuyer entities.BuyerEntity, err error) {
+	updatedBuyer, err = b.GetById(id)
+
+	if err != nil {
 		return
 	}
 
 	if buyerToPatch.CardNumberID != nil {
-		for _, value := range b.db {
-			if value.BuyerAttributes.CardNumberID == *buyerToPatch.CardNumberID {
-				err = error_management.ErrDuplicateCardNumberID
-				return
-			}
-		}
-		updatedBuyer.CardNumberID = *buyerToPatch.CardNumberID
+		updatedBuyer.CardNumberID = buyerToPatch.CardNumberID
 	}
 
 	if buyerToPatch.FirstName != nil {
-		updatedBuyer.BuyerAttributes.FirstName = *buyerToPatch.FirstName
+		updatedBuyer.FirstName = buyerToPatch.FirstName
 	}
 
 	if buyerToPatch.LastName != nil {
-		updatedBuyer.BuyerAttributes.LastName = *buyerToPatch.LastName
+		updatedBuyer.LastName = buyerToPatch.LastName
 	}
 
-	b.db[id] = updatedBuyer
+	query, args := updatedBuyer.GetUpdateQuery()
+
+	_, err = b.db.Exec(query, args...)
+
+	if err != nil {
+		var mySqlErr *mysql.MySQLError
+		if errors.As(err, &mySqlErr) && mySqlErr.Number == 1062 {
+			err = repository.ErrDuplicateCardNumberID
+			return
+		}
+
+		return
+	}
 
 	return
 }
 
 func (b *BuyerRepository) Delete(id int) (err error) {
-	_, ok := b.db[id]
+	query, args := (&entities.BuyerEntity{}).GetDeleteQuery(id)
 
-	if !ok {
-		err = error_management.ErrBuyerNotFoundWithID
+	result, err := b.db.Exec(query, args...)
+
+	if err != nil {
+		var mySqlErr *mysql.MySQLError
+		if errors.As(err, &mySqlErr) && mySqlErr.Number == 1451 {
+			err = repository.ErrCannotDeleteBuyerWithOrders
+			return
+		}
+
 		return
 	}
 
-	delete(b.db, id)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return
+	}
+
+	if rowsAffected == 0 {
+		err = repository.ErrBuyerNotFoundWithID
+		return
+	}
+
+	return
+}
+
+func (b *BuyerRepository) GetReportPurchaseOrders(buyerID *int) (report []entities.ReportPurchaseOrdersEntity, err error) {
+	report = make([]entities.ReportPurchaseOrdersEntity, 0)
+
+	query, args := (&entities.ReportPurchaseOrdersEntity{}).GetReportPurchaseOrdersQuery(buyerID)
+
+	rows, err := b.db.Query(query, args...)
+
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var _report entities.ReportPurchaseOrdersEntity
+		err = rows.Scan(
+			&_report.ID,
+			&_report.CardNumberID,
+			&_report.FirstName,
+			&_report.LastName,
+			&_report.PurchaseOrdersCount,
+		)
+		if err != nil {
+			return
+		}
+		report = append(report, _report)
+	}
+
+	if len(report) == 0 {
+		err = repository.ErrBuyerNotFoundOrBuyerHasNoOrders
+		return
+	}
+
 	return
 }
