@@ -12,10 +12,10 @@ func (se *SellerErrors) Error() string {
 	return fmt.Sprintf("%s", se.Msg)
 }
 
-var ErrNotFound *SellerErrors = &SellerErrors{
+var ErrSellerNotFound *SellerErrors = &SellerErrors{
 	Msg: "not found error",
 }
 
-var ErrAlreadyExists *SellerErrors = &SellerErrors{
+var ErrSellerAlreadyExists *SellerErrors = &SellerErrors{
 	Msg: "seller already exists",
 }

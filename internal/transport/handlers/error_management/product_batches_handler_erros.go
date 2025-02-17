@@ -11,31 +11,31 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type SellerHandlerErrors struct {
+type ProductBatchesHandlerErr struct {
 	Code int
 	Msg  string
 }
 
-func (se *SellerHandlerErrors) Error() string {
+func (se *ProductBatchesHandlerErr) Error() string {
 	return fmt.Sprintf("%d: %s", se.Code, se.Msg)
 }
 
-var ErrSellerNotFound *SellerHandlerErrors = &SellerHandlerErrors{
+var ErrLocalityNotFound *ProductBatchesHandlerErr = &ProductBatchesHandlerErr{
 	Code: http.StatusNotFound,
 	Msg:  "not found error",
 }
 
-var ErrSellerAlreadyExists *SellerHandlerErrors = &SellerHandlerErrors{
+var ErrLocalityAlreadyExists *ProductBatchesHandlerErr = &ProductBatchesHandlerErr{
 	Code: http.StatusConflict,
-	Msg:  "seller already exists",
+	Msg:  "ProductBatches  already exists",
 }
 
-func ResponseErrorSeller(err error, w http.ResponseWriter) {
-	var sellerErr *SellerHandlerErrors
-	if errors.As(err, &sellerErr) {
-		response.JSON(w, sellerErr.Code, dto.ResponseDTO{
-			Code: sellerErr.Code,
-			Msg:  sellerErr.Msg,
+func ResponseErrorProductBatches(err error, w http.ResponseWriter) {
+	var ProductBatchErr *ProductBatchesHandlerErr
+	if errors.As(err, &ProductBatchErr) {
+		response.JSON(w, ProductBatchErr.Code, dto.ResponseDTO{
+			Code: ProductBatchErr.Code,
+			Msg:  ProductBatchErr.Msg,
 			Data: nil,
 		})
 	}
