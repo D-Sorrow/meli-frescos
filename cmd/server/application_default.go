@@ -46,6 +46,8 @@ func (a *ServerChi) Run() (err error) {
 	router.InitWarehouseRouter(rt, database.Db)
 	router.InitSellerRouter(rt)
 	router.InitEmployeeRouter(rt)
+	router.InitProductBatchesRouter(rt, database.Db)
+	router.InitSectionsRouter(rt, database.Db)
 
 	router.InitProductRouter(rt, database.Db)
 	router.NewBuyerRouter(rt)
