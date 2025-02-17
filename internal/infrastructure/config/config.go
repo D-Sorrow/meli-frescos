@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"sync"
 
-	_ "github.com/subosito/gotenv"
+	_ "github.com/joho/godotenv"
 )
 
 type Config struct {
