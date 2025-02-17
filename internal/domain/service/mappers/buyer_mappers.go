@@ -2,14 +2,24 @@ package mappers
 
 import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
 )
 
-func BuyerToBuyerDTO(v *models.Buyer) *dto.BuyerDTO {
-	return &dto.BuyerDTO{
-		ID:           v.ID,
-		CardNumberID: v.BuyerAttributes.CardNumberID,
-		FirstName:    v.BuyerAttributes.FirstName,
-		LastName:     v.BuyerAttributes.LastName,
+func BuyerAttributesToBuyerEntity(v *models.BuyerAttributes) *entities.BuyerEntity {
+	return &entities.BuyerEntity{
+		CardNumberID: v.CardNumberID,
+		FirstName:    v.FirstName,
+		LastName:     v.LastName,
+	}
+}
+
+func BuyerEntityToBuyer(v *entities.BuyerEntity) *models.Buyer {
+	return &models.Buyer{
+		ID: v.ID,
+		BuyerAttributes: models.BuyerAttributes{
+			CardNumberID: v.CardNumberID,
+			FirstName:    v.FirstName,
+			LastName:     v.LastName,
+		},
 	}
 }

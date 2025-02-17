@@ -10,4 +10,5 @@ type EmployeeService interface {
 	CreateEmployee(employee models.Employee) (models.Employee, error)
 	UpdateEmployee(employeeId int, employee models.EmployeePatchRequest) (models.Employee, error)
 	DeleteEmployee(employeeId int) error
+	GetReportInboundOrdersByEmployee(employeeId string) ([]models.EmployeeReportInboundOrders, error)
 }

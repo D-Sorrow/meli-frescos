@@ -19,3 +19,15 @@ func ErrIdDuplicate() error {
 func ErrWarehouseCodeDuplicate() error {
 	return errors.New("warehouse code already exists")
 }
+
+func ErrEntityId() error {
+	return errors.New("entity id faild")
+}
+
+func ErrUpdateBySameData() error {
+	return errors.New("enter different data to update")
+}
+
+func ErrFKConstraintFail() error {
+	return errors.New("foreign key constraint fails")
+}

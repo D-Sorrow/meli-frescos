@@ -7,4 +7,5 @@ type WarehouseJSON struct {
 	Telephone          string `json:"telephone"`
 	MinimunCapacity    int    `json:"minimun_capacity"`
 	MinimunTemperature int    `json:"minimun_temperature"`
+	LocalityId         int    `json:"locality_id"`
 }
