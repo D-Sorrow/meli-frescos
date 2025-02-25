@@ -1,52 +1,66 @@
 package error_management
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
 )
 
-var inboundOrderErrorMessages = map[string]string{
-	"ONAE_SV":      "El número de la orden ya existe.",
-	"BODY-DEC-ERR": "El cuerpo de la petición está mal formado",
-	"EIDNF_SV":     "El ID del empleado no existe",
-	"PBIDNF_DB":    "El ID del product batch no existe",
-	"WHIDNF_DB":    "El ID del warehouse no existe",
+var (
+	ErrInboundOrderBodyDecoding   = errors.New("error decoding body")
+	ErrInboundOrderHandlerDefault = errors.New("internal server error")
+)
+
+const (
+	messageInboundOrderNumberAlreadyExistsError     = "El número de la orden ya existe."
+	messageInboundOrderEmployeeIdNotExistsError     = "El ID del empleado no existe"
+	messageInboundOrderProductBatchIdNotExistsError = "El ID del product batch no existe"
+	messageInboundOrderWareHouseIdNotExistsError    = "El ID del warehouse no existe"
+	messageInboundOrderBodyMalformedError           = "El cuerpo de la petición está mal formado"
+	messageInboundOrderLastInsertIdError            = "Error con último ID"
+	messageInboundOrderInternalServerError          = "Internal server error"
+	messageInboundOrderDateFormatError              = "El formato de la fecha es inválido (AAAA-MM-DD)"
+)
+
+type HandlerErrorInboundOrder struct {
+	Code    int
+	Message string
 }
 
-func getInboundOrderErrorMessage(code string) string {
-	if msg, exists := inboundOrderErrorMessages[code]; exists {
-		return msg
-	}
-	return errorMessages["default"]
+var inboundOrderServiceErrors = map[error]HandlerErrorInboundOrder{
+	service.ErrInboundOrderNumberAlreadyExists:    {Code: http.StatusConflict, Message: messageInboundOrderNumberAlreadyExistsError},
+	service.ErrInboundOrderEmployeeIdNotFound:     {Code: http.StatusConflict, Message: messageInboundOrderEmployeeIdNotExistsError},
+	service.ErrInboundOrderProductBatchIdNotFound: {Code: http.StatusConflict, Message: messageInboundOrderProductBatchIdNotExistsError},
+	service.ErrInboundOrderWareHouseIdNotFound:    {Code: http.StatusConflict, Message: messageInboundOrderWareHouseIdNotExistsError},
+	service.ErrInboundOrderLastInsertId:           {Code: http.StatusInternalServerError, Message: messageInboundOrderLastInsertIdError},
+	service.ErrInboundOrderServiceGeneric:         {Code: http.StatusInternalServerError, Message: messageInboundOrderInternalServerError},
+	service.ErrInboundOrderDateInvalid:            {Code: http.StatusBadRequest, Message: messageInboundOrderDateFormatError},
+	ErrInboundOrderBodyDecoding:                   {Code: http.StatusBadRequest, Message: messageInboundOrderBodyMalformedError},
 }
 
-func getInboundOrderHttpStatusCode(errorCode string) int {
-	fmt.Printf("errorCode: %s", errorCode)
-	switch errorCode {
-	case "ONAE_SV", "EIDNF_SV", "PBIDNF_DB", "WHIDNF_DB":
-		return http.StatusConflict
-	case "BODY-DEC-ERR":
-		return http.StatusBadRequest
-	default:
-		return http.StatusInternalServerError
+func getInboundOrderErrorMessage(err error) HandlerErrorInboundOrder {
+	if e, exists := inboundOrderServiceErrors[err]; exists {
+		return e
 	}
+	return inboundOrderServiceErrors[service.ErrInboundOrderServiceGeneric]
 }
 
 func HandleErrorInboundOrder(w http.ResponseWriter, err error) {
-	if validationErrors, ok := err.(validator.ValidationErrors); ok {
+	switch e := err.(type) {
+	case validator.ValidationErrors:
 		errors := make(map[string]string)
-		for _, fieldErr := range validationErrors {
-			errors[fieldErr.Field()] = fmt.Sprintf("Validación fallida:  %s", fieldErr.Tag())
+		for _, fieldErr := range e {
+			errors[fieldErr.Field()] = fmt.Sprintf("Validación fallida: %s", fieldErr.Tag())
 		}
-		response.JSON(w, http.StatusUnprocessableEntity, map[string]any{"error": errors})
-		return
+		response.JSON(w, http.StatusBadRequest, map[string]any{"error": errors})
+	default:
+		handlerEmployeeError := getInboundOrderErrorMessage(err)
+		response.JSON(w, handlerEmployeeError.Code, map[string]any{
+			"error": handlerEmployeeError.Message,
+		})
 	}
-
-	httpStatusCode := getInboundOrderHttpStatusCode(err.Error())
-	response.JSON(w, httpStatusCode, map[string]any{
-		"error": getInboundOrderErrorMessage(err.Error()),
-	})
 }

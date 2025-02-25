@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 )
 
@@ -12,3 +14,10 @@ type EmployeeService interface {
 	DeleteEmployee(employeeId int) error
 	GetReportInboundOrdersByEmployee(employeeId string) ([]models.EmployeeReportInboundOrders, error)
 }
+
+var (
+	ErrEmployeeNotFound       = errors.New("employee with the id provided not found in the database")
+	ErrEmployeeDecodingError  = errors.New("error decoding id")
+	ErrEmployeeServiceDefault = errors.New("internal server error")
+	ErrEmployeeAlreadyExists  = errors.New("employee already exists in the database")
+)

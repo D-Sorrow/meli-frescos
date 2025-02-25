@@ -1,12 +1,12 @@
 package service
 
 import (
-	"errors"
-	"fmt"
 	"strconv"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 )
 
 type EmployeeService struct {
@@ -19,11 +19,11 @@ func NewEmployeeService(repository repository.EmployeeRepository) *EmployeeServi
 	}
 }
 
-func (service *EmployeeService) GetEmployees() (employees []models.Employee, err error) {
-	allEmployees, err := service.repository.GetEmployees()
+func (_service *EmployeeService) GetEmployees() (employees []models.Employee, err error) {
+	allEmployees, err := _service.repository.GetEmployees()
 
 	if err != nil {
-		return nil, errors.New("employee-repo-error")
+		return nil, error_management.HandleErrorEmployeeService(err)
 	}
 
 	for _, employee := range allEmployees {
@@ -33,55 +33,47 @@ func (service *EmployeeService) GetEmployees() (employees []models.Employee, err
 	return
 }
 
-func (service *EmployeeService) GetEmployeeById(employeeId int) (employee models.Employee, err error) {
-	employee, err = service.repository.GetEmployeeById(employeeId)
+func (_service *EmployeeService) GetEmployeeById(employeeId int) (employee models.Employee, err error) {
+	employee, err = _service.repository.GetEmployeeById(employeeId)
 
 	if err != nil {
-		if err.Error() == "ENF-DB" {
-			return models.Employee{}, errors.New("ENF-SV")
-		} else {
-			return models.Employee{}, errors.New("internal server error")
-		}
+		return models.Employee{}, error_management.HandleErrorEmployeeService(err)
 	}
 
 	return
 }
 
-func (service *EmployeeService) CreateEmployee(employee models.Employee) (models.Employee, error) {
-	allEmployees, err := service.repository.GetEmployees()
+func (_service *EmployeeService) CreateEmployee(employee models.Employee) (models.Employee, error) {
+	allEmployees, err := _service.repository.GetEmployees()
 	if err != nil {
-		return models.Employee{}, errors.New("ERE-SV")
+		return models.Employee{}, error_management.HandleErrorEmployeeService(err)
 	}
 	for _, emp := range allEmployees {
 		if emp.CardNumberId == employee.CardNumberId {
-			return models.Employee{}, errors.New("EAE-SV")
+			return models.Employee{}, service.ErrEmployeeAlreadyExists
 		}
 	}
-	if err = service.repository.CreateEmployee(&employee); err != nil {
-		return models.Employee{}, err
+	if err = _service.repository.CreateEmployee(&employee); err != nil {
+		return models.Employee{}, error_management.HandleErrorEmployeeService(err)
 	}
 	return employee, nil
 }
 
-func (service *EmployeeService) UpdateEmployee(employeeId int, employee models.EmployeePatchRequest) (employeeUpdated models.Employee, err error) {
-	employeeUpdated, err = service.repository.GetEmployeeById(employeeId)
-	allEmployees, errorAll := service.repository.GetEmployees()
+func (_service *EmployeeService) UpdateEmployee(employeeId int, employee models.EmployeePatchRequest) (employeeUpdated models.Employee, err error) {
+	employeeUpdated, err = _service.repository.GetEmployeeById(employeeId)
+	allEmployees, errorAll := _service.repository.GetEmployees()
 	if errorAll != nil {
-		return models.Employee{}, errors.New("ISE-SV")
+		return models.Employee{}, error_management.HandleErrorEmployeeService(err)
 	}
 	if err != nil {
-		if err.Error() == "ENF-DB" {
-			return models.Employee{}, errors.New("ENF-SV")
-		} else {
-			return models.Employee{}, errors.New("ISE-SV")
-		}
+		return models.Employee{}, error_management.HandleErrorEmployeeService(err)
 	}
 
 	if employee.CardNumberId != nil {
 		employeeUpdated.CardNumberId = *employee.CardNumberId
 		for _, emp := range allEmployees {
 			if emp.CardNumberId == *employee.CardNumberId {
-				return models.Employee{}, errors.New("EAE-SV")
+				return models.Employee{}, service.ErrEmployeeAlreadyExists
 			}
 		}
 	}
@@ -97,44 +89,37 @@ func (service *EmployeeService) UpdateEmployee(employeeId int, employee models.E
 	if employee.WarehouseId != nil {
 		employeeUpdated.WarehouseId = *employee.WarehouseId
 	}
-	service.repository.UpdateEmployee(&employeeUpdated)
+	_service.repository.UpdateEmployee(&employeeUpdated)
 	return
 
 }
 
-func (service *EmployeeService) DeleteEmployee(employeeId int) (err error) {
-	err = service.repository.DeleteEmployee(employeeId)
+func (_service *EmployeeService) DeleteEmployee(employeeId int) (err error) {
+	err = _service.repository.DeleteEmployee(employeeId)
 
 	if err != nil {
-		if err.Error() == "ENF-DB" {
-			err = errors.New("ENF-SV")
-		}
+		err = error_management.HandleErrorEmployeeService(err)
 	}
 
 	return
 }
 
-func (service *EmployeeService) GetReportInboundOrdersByEmployee(employeeId string) (employees []models.EmployeeReportInboundOrders, err error) {
+func (_service *EmployeeService) GetReportInboundOrdersByEmployee(employeeId string) (employees []models.EmployeeReportInboundOrders, err error) {
 	if employeeId != "" {
-		fmt.Printf("ID LLEGA: %s", employeeId)
 		id, err := strconv.Atoi(employeeId)
 		if err != nil {
-			return nil, errors.New("ID-DEC-ERR")
+			return nil, error_management.HandleErrorEmployeeService(err)
 		}
-		employee, err := service.repository.GetInboundOrdersCountByEmployeeId(id)
+		employee, err := _service.repository.GetInboundOrdersCountByEmployeeId(id)
 		if err != nil {
-			if err.Error() == "ENF-DB" {
-				return nil, errors.New("ENF-SV")
-			} else {
-				return nil, errors.New("internal server error")
-			}
+			return nil, error_management.HandleErrorEmployeeService(err)
 		}
 		employees = append(employees, employee)
 	} else {
-		allEmployees, err := service.repository.GetInboundOrdersCountAllEmployees()
+		allEmployees, err := _service.repository.GetInboundOrdersCountAllEmployees()
 
 		if err != nil {
-			return nil, errors.New("employee-repo-error")
+			return nil, error_management.HandleErrorEmployeeService(err)
 		}
 
 		employees = append(employees, allEmployees...)
