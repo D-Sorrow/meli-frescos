@@ -1,4 +1,4 @@
-package internal
+package service
 
 import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
@@ -15,18 +15,18 @@ func (_m *ProductServiceMock) GetProducts() (map[int]models.Product, error) {
 }
 
 func (_m *ProductServiceMock) GetProductByID(id int) (models.Product, error) {
-	//TODO implement me
-	panic("implement me")
+	args := _m.Called(id)
+	return args.Get(0).(models.Product), args.Error(1)
 }
 
 func (_m *ProductServiceMock) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
-	//TODO implement me
-	panic("implement me")
+	args := _m.Called(id, attributes)
+	return args.Get(0).(models.Product), args.Error(1)
 }
 
 func (_m *ProductServiceMock) DeleteProduct(id int) error {
-	//TODO implement me
-	panic("implement me")
+	args := _m.Called(id)
+	return args.Error(0)
 }
 
 func (_m *ProductServiceMock) SaveProduct(productSave models.Product) error {

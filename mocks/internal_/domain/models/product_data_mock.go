@@ -1,4 +1,4 @@
-package internal
+package models
 
 import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"

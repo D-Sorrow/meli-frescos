@@ -39,11 +39,11 @@ func (p ProductService) SaveProduct(productSave models.Product) error {
 	return nil
 }
 func (p ProductService) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
-	err := p.repo.UpdateProduct(id, attributes)
+	product, err := p.repo.GetProductByID(id)
 	if err != nil {
 		return models.Product{}, error_management.HandlerServiceProductError(err)
 	}
-	product, err := p.repo.GetProductByID(id)
+	err = p.repo.UpdateProduct(id, attributes)
 	if err != nil {
 		return models.Product{}, error_management.HandlerServiceProductError(err)
 	}
