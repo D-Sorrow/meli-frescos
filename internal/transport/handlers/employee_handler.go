@@ -32,7 +32,7 @@ func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
 		employees, err := handler.service.GetEmployees()
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 		var employeesDto []dto.EmployeeDTO
@@ -41,9 +41,7 @@ func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
 			employeesDto = append(employeesDto, *employeeDto)
 		}
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": employeesDto,
-		})
+		handler.respondWithJSON(w, http.StatusOK, "Success", employeesDto)
 	}
 }
 
@@ -52,8 +50,7 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			fmt.Printf("this error: %v", err.Error())
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 
@@ -61,14 +58,11 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		employeeDto := mappers.EmployeeModelToDTO(employee)
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": employeeDto,
-		})
-
+		handler.respondWithJSON(w, http.StatusOK, "Success", employeeDto)
 	}
 }
 
@@ -79,12 +73,12 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&employeeToCreate); err != nil {
-			error_management.HandleErrorEmployee(w, error_management.ErrEmployeeBodyDecoding)
+			handler.handleError(w, error_management.ErrEmployeeBodyDecoding)
 			return
 		}
 
 		if err := handler.validator.Struct(employeeToCreate); err != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 
@@ -92,14 +86,12 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		employeeCreated, err := handler.service.CreateEmployee(*employeeModel)
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 
 		employeeDto := mappers.EmployeeModelToDTO(employeeCreated)
-		response.JSON(w, http.StatusCreated, map[string]any{
-			"data": employeeDto,
-		})
+		handler.respondWithJSON(w, http.StatusOK, "Success", employeeDto)
 	}
 }
 
@@ -108,7 +100,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 
@@ -116,7 +108,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 		if err := decoder.Decode(&employeePatchRequestDTO); err != nil {
-			error_management.HandleErrorEmployee(w, error_management.ErrEmployeeBodyDecoding)
+			handler.handleError(w, error_management.ErrEmployeeBodyDecoding)
 			return
 		}
 
@@ -124,13 +116,11 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		employeeUpdated, err := handler.service.UpdateEmployee(id, *employeePatchRequestModel)
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": employeeUpdated,
-		})
+		handler.respondWithJSON(w, http.StatusOK, "Success", employeeUpdated)
 	}
 }
 
@@ -139,19 +129,17 @@ func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
 		employeeIdString := chi.URLParam(r, "id")
 		employeeId, err := strconv.Atoi(employeeIdString)
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 
 		errorService := handler.service.DeleteEmployee(employeeId)
 		if errorService != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, errorService)
 			return
 		}
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"message": "Empleado elimindo correctamente",
-		})
+		handler.respondWithJSON(w, http.StatusOK, "Empleado eliminado correctamente", nil)
 	}
 }
 
@@ -168,12 +156,23 @@ func (handler *EmployeeHandler) GetReportInboundOrdersByEmployee() http.HandlerF
 		}
 
 		if err != nil {
-			error_management.HandleErrorEmployee(w, err)
+			handler.handleError(w, err)
 			return
 		}
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": employeesDTO,
-		})
+		handler.respondWithJSON(w, http.StatusOK, "Success", employeesDTO)
 	}
+}
+
+func (handler *EmployeeHandler) respondWithJSON(w http.ResponseWriter, code int, msg string, data interface{}) {
+	response.JSON(w, code, dto.ResponseDTO{
+		Code: code,
+		Msg:  msg,
+		Data: data,
+	})
+}
+
+func (handler *EmployeeHandler) handleError(w http.ResponseWriter, err error) {
+	errorEmployee := error_management.HandleErrorEmployee(err)
+	handler.respondWithJSON(w, errorEmployee.Code, errorEmployee.Message, nil)
 }

@@ -31,14 +31,12 @@ func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&inboundOrderToCreate); err != nil {
-			inboundOrderError := error_management.HandleErrorInboundOrder(error_management.ErrInboundOrderBodyDecoding)
-			response.JSON(w, inboundOrderError.Code, inboundOrderError.Message)
+			handler.handleError(w, error_management.ErrInboundOrderBodyDecoding)
 			return
 		}
 
 		if err := handler.validator.Struct(inboundOrderToCreate); err != nil {
-			inboundOrderError := error_management.HandleErrorInboundOrder(err)
-			response.JSON(w, inboundOrderError.Code, inboundOrderError.Message)
+			handler.handleError(w, err)
 			return
 		}
 
@@ -46,14 +44,24 @@ func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
 		err := handler.service.CreateInboundOrder(inboundOrderModel)
 
 		if err != nil {
-			inboundOrderError := error_management.HandleErrorInboundOrder(err)
-			response.JSON(w, inboundOrderError.Code, inboundOrderError.Message)
+			handler.handleError(w, err)
 			return
 		}
 
 		inboundOrderResponseDto := mappers.InboundOrderModelToResponseDTO(*inboundOrderModel)
-		response.JSON(w, http.StatusCreated, map[string]any{
-			"data": inboundOrderResponseDto,
-		})
+		handler.respondWithJSON(w, http.StatusCreated, "Success", inboundOrderResponseDto)
 	}
+}
+
+func (handler *InboundOrderHandler) respondWithJSON(w http.ResponseWriter, code int, msg string, data interface{}) {
+	response.JSON(w, code, dto.ResponseDTO{
+		Code: code,
+		Msg:  msg,
+		Data: data,
+	})
+}
+
+func (handler *InboundOrderHandler) handleError(w http.ResponseWriter, err error) {
+	inboundOrderError := error_management.HandleErrorInboundOrder(err)
+	handler.respondWithJSON(w, inboundOrderError.Code, inboundOrderError.Message, nil)
 }

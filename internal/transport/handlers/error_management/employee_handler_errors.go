@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -45,22 +44,27 @@ func getErrorEmployee(err error) HandlerErrorEmployee {
 	return employeeHandlerErrors[ErrEmployeeHandlerDefault]
 }
 
-func HandleErrorEmployee(w http.ResponseWriter, err error) {
+func HandleErrorEmployee(err error) HandlerErrorEmployee {
 	switch e := err.(type) {
 	case *strconv.NumError:
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"error": messageEmployeeIdNotValidError,
-		})
-	case validator.ValidationErrors:
-		errors := make(map[string]string)
-		for _, fieldErr := range e {
-			errors[fieldErr.Field()] = fmt.Sprintf("Validación fallida: %s", fieldErr.Tag())
+		return HandlerErrorEmployee{
+			Code:    http.StatusBadRequest,
+			Message: messageEmployeeIdNotValidError,
 		}
-		response.JSON(w, http.StatusBadRequest, map[string]any{"error": errors})
+	case validator.ValidationErrors:
+		errors := "Validación fallida: "
+		for _, fieldErr := range e {
+			errors = fmt.Sprintf("%v %v %v, ", errors, fieldErr.Tag(), fieldErr.Field())
+		}
+		return HandlerErrorEmployee{
+			Code:    http.StatusBadRequest,
+			Message: errors,
+		}
 	default:
 		handlerEmployeeError := getErrorEmployee(err)
-		response.JSON(w, handlerEmployeeError.Code, map[string]any{
-			"error": handlerEmployeeError.Message,
-		})
+		return HandlerErrorEmployee{
+			Code:    handlerEmployeeError.Code,
+			Message: handlerEmployeeError.Message,
+		}
 	}
 }
