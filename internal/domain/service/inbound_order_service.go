@@ -1,10 +1,9 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 )
 
 type InboundOrderService struct {
@@ -18,13 +17,7 @@ func NewInboundOrderService(repository repository.InboundOrderRepository) *Inbou
 func (service *InboundOrderService) CreateInboundOrder(inboundOrder *models.InboundOrder) error {
 	err := service.repository.CreateInboundOrder(inboundOrder)
 	if err != nil {
-		if err.Error() == "ONAE_DB" {
-			return errors.New("ONAE_SV")
-		}
-		if err.Error() == "EIDNF_DB" {
-			return errors.New("EIDNF_SV")
-		}
-		return err
+		return error_management.HandleInboundOrderServiceError(err)
 	}
 	return nil
 }

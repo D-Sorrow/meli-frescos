@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
@@ -33,8 +31,7 @@ func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&inboundOrderToCreate); err != nil {
-			fmt.Printf("ERROR: %s", err.Error())
-			error_management.HandleErrorInboundOrder(w, errors.New("BODY-DEC-ERR"))
+			error_management.HandleErrorInboundOrder(w, error_management.ErrInboundOrderBodyDecoding)
 			return
 		}
 
@@ -47,7 +44,6 @@ func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
 		err := handler.service.CreateInboundOrder(inboundOrderModel)
 
 		if err != nil {
-			fmt.Printf("ERROR3: %s", err.Error())
 			error_management.HandleErrorInboundOrder(w, err)
 			return
 		}

@@ -1,6 +1,10 @@
 package repository
 
-import "github.com/D-Sorrow/meli-frescos/internal/domain/models"
+import (
+	"errors"
+
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+)
 
 type EmployeeRepository interface {
 	GetEmployees() (map[int]models.Employee, error)
@@ -11,3 +15,8 @@ type EmployeeRepository interface {
 	GetInboundOrdersCountByEmployeeId(employeeId int) (models.EmployeeReportInboundOrders, error)
 	GetInboundOrdersCountAllEmployees() ([]models.EmployeeReportInboundOrders, error)
 }
+
+var (
+	ErrEmployeeNotFound            = errors.New("employee not found in the database with the id provided")
+	ErrEmployeeInternalServerError = errors.New("repository internal server error")
+)
