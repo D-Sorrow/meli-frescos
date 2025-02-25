@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -49,18 +48,15 @@ func getInboundOrderErrorMessage(err error) HandlerErrorInboundOrder {
 	return inboundOrderServiceErrors[service.ErrInboundOrderServiceGeneric]
 }
 
-func HandleErrorInboundOrder(w http.ResponseWriter, err error) {
+func HandleErrorInboundOrder(err error) HandlerErrorInboundOrder {
 	switch e := err.(type) {
 	case validator.ValidationErrors:
-		errors := make(map[string]string)
+		errors := "Validación fallida: "
 		for _, fieldErr := range e {
-			errors[fieldErr.Field()] = fmt.Sprintf("Validación fallida: %s", fieldErr.Tag())
+			errors = fmt.Sprintf("%v %v %v, ", errors, fieldErr.Tag(), fieldErr.Field())
 		}
-		response.JSON(w, http.StatusBadRequest, map[string]any{"error": errors})
+		return HandlerErrorInboundOrder{Code: http.StatusBadRequest, Message: errors}
 	default:
-		handlerEmployeeError := getInboundOrderErrorMessage(err)
-		response.JSON(w, handlerEmployeeError.Code, map[string]any{
-			"error": handlerEmployeeError.Message,
-		})
+		return getInboundOrderErrorMessage(err)
 	}
 }

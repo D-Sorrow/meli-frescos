@@ -31,12 +31,14 @@ func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&inboundOrderToCreate); err != nil {
-			error_management.HandleErrorInboundOrder(w, error_management.ErrInboundOrderBodyDecoding)
+			inboundOrderError := error_management.HandleErrorInboundOrder(error_management.ErrInboundOrderBodyDecoding)
+			response.JSON(w, inboundOrderError.Code, inboundOrderError.Message)
 			return
 		}
 
 		if err := handler.validator.Struct(inboundOrderToCreate); err != nil {
-			error_management.HandleErrorInboundOrder(w, err)
+			inboundOrderError := error_management.HandleErrorInboundOrder(err)
+			response.JSON(w, inboundOrderError.Code, inboundOrderError.Message)
 			return
 		}
 
@@ -44,7 +46,8 @@ func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
 		err := handler.service.CreateInboundOrder(inboundOrderModel)
 
 		if err != nil {
-			error_management.HandleErrorInboundOrder(w, err)
+			inboundOrderError := error_management.HandleErrorInboundOrder(err)
+			response.JSON(w, inboundOrderError.Code, inboundOrderError.Message)
 			return
 		}
 
