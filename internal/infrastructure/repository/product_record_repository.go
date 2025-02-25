@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	recordRepo "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entity"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
 	"log"
 )
 
@@ -19,7 +19,7 @@ func NewProductRecordRepository(db *sql.DB) *ProductRecordRepository {
 }
 
 func (repository *ProductRecordRepository) SaveProductRecord(productRecord models.ProductRecord) error {
-	var productRecordEntity entity.ProductRecordEntity
+	var productRecordEntity entities.ProductRecordEntity
 	_, err := repository.db.Exec(productRecordEntity.SaveProductRecord(), productRecord.LastUpdateTime, productRecord.PurchasePrice, productRecord.SalePrice, productRecord.ProductId)
 	if err != nil {
 		return recordRepo.CodeSaveErr
@@ -27,7 +27,7 @@ func (repository *ProductRecordRepository) SaveProductRecord(productRecord model
 	return nil
 }
 func (repository *ProductRecordRepository) GetProductRecord(productId int) (map[int]models.ProductRecordResponse, error) {
-	var productRecordEntity entity.ProductRecordEntity
+	var productRecordEntity entities.ProductRecordEntity
 	productRecordMap := make(map[int]models.ProductRecordResponse)
 
 	rows, err := repository.db.Query(productRecordEntity.GetRecord(productId))

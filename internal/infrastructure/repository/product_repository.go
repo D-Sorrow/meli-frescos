@@ -2,9 +2,11 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entity"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
+	"github.com/go-sql-driver/mysql"
 	"log"
 )
 
@@ -18,11 +20,11 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 
 func (p ProductRepository) GetProducts() (map[int]models.Product, error) {
 	productMap := make(map[int]models.Product)
-	productEntity := entity.ProductEntity{}
+	productEntity := entities.ProductEntity{}
 	rows, err := p.db.Query(productEntity.GetAllProducts())
 	if err != nil {
 		log.Println(err)
-		return nil, repository.CodeQueryConsult
+		return nil, repository.ErrRepositoryProductUnknown
 	}
 	defer rows.Close()
 
@@ -30,7 +32,7 @@ func (p ProductRepository) GetProducts() (map[int]models.Product, error) {
 		var product models.Product
 		err := rows.Scan(&product.Id, &product.Attributes.Description, &product.Attributes.ExpirationRate, &product.Attributes.FreezingRate, &product.Attributes.Dimensions.Height, &product.Attributes.Dimensions.Length, &product.Attributes.NetWeight, &product.Attributes.ProductCode, &product.Attributes.TemperatureFreezing, &product.Attributes.Dimensions.Width, &product.Attributes.ProductTypeId, &product.SellerId)
 		if err != nil {
-			return nil, repository.CodeGetProduct
+			return nil, repository.ErrRepositoryProductUnknown
 		}
 		productMap[product.Id] = product
 	}
@@ -40,19 +42,20 @@ func (p ProductRepository) GetProducts() (map[int]models.Product, error) {
 
 func (p ProductRepository) GetProductByID(id int) (models.Product, error) {
 	var product models.Product
-	productEntity := entity.ProductEntity{}
+	productEntity := entities.ProductEntity{}
 	row := p.db.QueryRow(productEntity.GetProductById(id))
 	err := row.Scan(&product.Id, &product.Attributes.Description, &product.Attributes.ExpirationRate, &product.Attributes.FreezingRate, &product.Attributes.Dimensions.Height, &product.Attributes.Dimensions.Length, &product.Attributes.NetWeight, &product.Attributes.ProductCode, &product.Attributes.TemperatureFreezing, &product.Attributes.Dimensions.Width, &product.Attributes.ProductTypeId, &product.SellerId)
 
 	if err != nil {
-		return models.Product{}, repository.CodeGetProduct
+		return models.Product{}, repository.ErrRepositoryProductNotFound
 	}
 	return product, nil
 }
 
 func (p ProductRepository) SaveProduct(productSave models.Product) error {
 
-	var productEntity entity.ProductEntity
+	var productEntity entities.ProductEntity
+	var errSql *mysql.MySQLError
 	_, err := p.db.Exec(productEntity.SaveProduct(), productSave.Attributes.Description,
 		productSave.Attributes.ExpirationRate, productSave.Attributes.FreezingRate,
 		productSave.Attributes.Dimensions.Height, productSave.Attributes.Dimensions.Length,
@@ -60,37 +63,43 @@ func (p ProductRepository) SaveProduct(productSave models.Product) error {
 		productSave.Attributes.TemperatureFreezing, productSave.Attributes.Dimensions.Width, productSave.Attributes.ProductTypeId, productSave.SellerId)
 	if err != nil {
 		log.Println(err)
-		return repository.CodeNoRowsAffected
+		if errors.As(err, &errSql) {
+			switch errSql.Number {
+			case 1062:
+				return repository.ErrRepositoryProductAlreadyExists
+			default:
+				return repository.ErrRepositoryProductUnknown
+			}
+		}
 	}
 	return nil
 }
-func (p ProductRepository) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
-	var productEntity entity.ProductEntity
-	query, values := productEntity.UpdateProduct(attributes, id)
-	result, _ := p.db.Exec(query, values...)
+func (p ProductRepository) UpdateProduct(id int, attributes map[string]any) error {
+	var productEntity entities.ProductEntity
+	var errSql *mysql.MySQLError
 
-	if result != nil {
-		if count, _ := result.RowsAffected(); count == 0 {
-			return models.Product{}, repository.CodeNoRowsAffected
+	query, values := productEntity.UpdateProduct(attributes, id)
+	_, err := p.db.Exec(query, values...)
+	if errors.As(err, &errSql) {
+		switch errSql.Number {
+		case 1062:
+			return repository.ErrRepositoryProductAlreadyExists
+		default:
+			return repository.ErrRepositoryProductUnknown
 		}
 	}
-	product, errGet := p.GetProductByID(id)
-
-	if errGet != nil {
-		return models.Product{}, errGet
-	}
-	return product, nil
+	return nil
 }
 func (p ProductRepository) DeleteProduct(id int) error {
-	var productEntity entity.ProductEntity
+	var productEntity entities.ProductEntity
 	result, err := p.db.Exec(productEntity.DeleteProduct(id))
 	if result != nil {
 		if count, _ := result.RowsAffected(); count == 0 {
-			return repository.CodeDelete
+			return repository.ErrRepositoryProductNotFound
 		}
 	}
 	if err != nil {
-		return repository.CodeDeleteIsNotPossible
+		return repository.ErrRepositoryProductUnknown
 	}
 	return nil
 }
