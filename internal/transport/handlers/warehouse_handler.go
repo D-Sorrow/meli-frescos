@@ -12,8 +12,9 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/validation"
 
 	// "github.com/D-Sorrow/meli-frescos/internal/domain/validation"
-	serviceErrors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
+
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
@@ -31,9 +32,10 @@ func (wh *WarehouseHandler) GetWarehouses() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		warehouses, err := wh.service.GetWarehouses()
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
-				Code: http.StatusInternalServerError,
-				Msg:  "Server Error",
+			handler_err := handler_errors.HandleErrorWarehouse(err)
+			response.JSON(w, handler_err.Code, dto.ResponseDTO{
+				Code: handler_err.Code,
+				Msg:  handler_err.Message,
 				Data: nil,
 			})
 			return
@@ -64,9 +66,10 @@ func (wh *WarehouseHandler) GetWarehouseById() http.HandlerFunc {
 
 		warehouse, err := wh.service.GetWarehouseById(id)
 		if err != nil {
-			response.JSON(w, http.StatusNotFound, dto.ResponseDTO{
-				Code: http.StatusNotFound,
-				Msg:  "id not found",
+			handler_err := handler_errors.HandleErrorWarehouse(err)
+			response.JSON(w, handler_err.Code, dto.ResponseDTO{
+				Code: handler_err.Code,
+				Msg:  handler_err.Message,
 				Data: nil,
 			})
 			return
@@ -106,36 +109,13 @@ func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
 
 		newWarehouse, err := wh.service.CreateWarehouse(mappers.MapperToWarehouseModel(reqBody))
 		if err != nil {
-			switch {
-			case err.Error() == serviceErrors.ErrIdDuplicate().Error():
-				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
-					Code: http.StatusConflict,
-					Msg:  "id already exists",
-					Data: nil,
-				})
-				return
-			case err.Error() == serviceErrors.ErrWarehouseCodeDuplicate().Error():
-				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
-					Code: http.StatusConflict,
-					Msg:  "warehouse code already exists",
-					Data: nil,
-				})
-				return
-			case err.Error() == serviceErrors.ErrEntityId().Error():
-				response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-					Code: http.StatusBadRequest,
-					Msg:  "entity id faild",
-					Data: nil,
-				})
-				return
-			default:
-				response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
-					Code: http.StatusInternalServerError,
-					Msg:  "internal server error",
-					Data: nil,
-				})
-				return
-			}
+			handler_err := handler_errors.HandleErrorWarehouse(err)
+			response.JSON(w, handler_err.Code, dto.ResponseDTO{
+				Code: handler_err.Code,
+				Msg:  handler_err.Message,
+				Data: nil,
+			})
+			return
 		}
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
 			Code: http.StatusCreated,
@@ -178,43 +158,13 @@ func (wh *WarehouseHandler) PatchWarehouse() http.HandlerFunc {
 
 		warehouse, err := wh.service.PatchWarehouse(id, jsonBody)
 		if err != nil {
-			switch {
-			case err.Error() == serviceErrors.ErrIdNotFound().Error():
-				response.JSON(w, http.StatusNotFound, dto.ResponseDTO{
-					Code: http.StatusNotFound,
-					Msg:  "id not found",
-					Data: nil,
-				})
-				return
-			case err.Error() == serviceErrors.ErrWarehouseCodeDuplicate().Error():
-				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
-					Code: http.StatusConflict,
-					Msg:  "warehouse code already exists",
-					Data: nil,
-				})
-				return
-			case err.Error() == serviceErrors.ErrUpdateBySameData().Error():
-				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
-					Code: http.StatusConflict,
-					Msg:  "enter different data to update",
-					Data: nil,
-				})
-				return
-			case err.Error() == serviceErrors.ErrEntityId().Error():
-				response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-					Code: http.StatusBadRequest,
-					Msg:  "entity id faild",
-					Data: nil,
-				})
-				return
-			default:
-				response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
-					Code: http.StatusInternalServerError,
-					Msg:  "internal server error",
-					Data: nil,
-				})
-				return
-			}
+			handler_err := handler_errors.HandleErrorWarehouse(err)
+			response.JSON(w, handler_err.Code, dto.ResponseDTO{
+				Code: handler_err.Code,
+				Msg:  handler_err.Message,
+				Data: nil,
+			})
+			return
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
@@ -239,29 +189,13 @@ func (wh *WarehouseHandler) DeleteWarehouse() http.HandlerFunc {
 
 		err = wh.service.DeleteWarehouse(id)
 		if err != nil {
-			switch {
-			case err.Error() == serviceErrors.ErrIdNotFound().Error():
-				response.JSON(w, http.StatusNotFound, dto.ResponseDTO{
-					Code: http.StatusNotFound,
-					Msg:  "id not found",
-					Data: nil,
-				})
-				return
-			case err.Error() == serviceErrors.ErrFKConstraintFail().Error():
-				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
-					Code: http.StatusConflict,
-					Msg:  fmt.Sprintf("This warehouse with id %d is use for other entities", id),
-					Data: nil,
-				})
-				return
-			default:
-				response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
-					Code: http.StatusInternalServerError,
-					Msg:  "internal server error",
-					Data: nil,
-				})
-				return
-			}
+			handler_err := handler_errors.HandleErrorWarehouse(err)
+			response.JSON(w, handler_err.Code, dto.ResponseDTO{
+				Code: handler_err.Code,
+				Msg:  handler_err.Message,
+				Data: nil,
+			})
+			return
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
