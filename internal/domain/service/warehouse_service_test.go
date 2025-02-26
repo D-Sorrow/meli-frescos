@@ -5,7 +5,7 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	repositoryErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	serviceInterface "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	serviceErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -51,7 +51,7 @@ func TestGetWarehouses(t *testing.T) {
 
 		_, err := serviceImp.GetWarehouses()
 
-		require.ErrorIs(t, err, serviceInterface.ErrWarehouseServiceDefault)
+		require.ErrorIs(t, err, serviceErr.ErrWarehouseServiceDefault)
 		mockRepository.AssertCalled(t, "GetWarehouses")
 	})
 }
@@ -86,7 +86,7 @@ func TestGetWarehouseById(t *testing.T) {
 
 		response, err := serviceImp.GetWarehouseById(2)
 
-		require.ErrorIs(t, err, serviceInterface.ErrWarehouseNotFound)
+		require.ErrorIs(t, err, serviceErr.ErrWarehouseNotFound)
 		require.Equal(t, 0, response.Id)
 		mockRepository.AssertCalled(t, "GetWarehouseById", 2)
 	})
@@ -122,7 +122,7 @@ func TestCreateWarehouse(t *testing.T) {
 
 		response, err := serviceImp.CreateWarehouse(models.Warehouse{})
 
-		require.ErrorIs(t, err, serviceInterface.ErrWarehouseCodeDuplicate)
+		require.ErrorIs(t, err, serviceErr.ErrWarehouseCodeDuplicate)
 		require.IsType(t, models.Warehouse{}, response)
 		mockRepository.AssertCalled(t, "CreateWarehouse", models.Warehouse{})
 	})
@@ -175,7 +175,7 @@ func TestPatchWarehouse(t *testing.T) {
 
 		response, err := serviceImp.PatchWarehouse(1, warehouseFakeMap)
 
-		require.ErrorIs(t, err, serviceInterface.ErrWarehouseNotFound)
+		require.ErrorIs(t, err, serviceErr.ErrWarehouseNotFound)
 		require.IsType(t, models.Warehouse{}, response)
 		mockRepository.AssertExpectations(t)
 	})
@@ -196,8 +196,34 @@ func TestPatchWarehouse(t *testing.T) {
 
 		response, err := serviceImp.PatchWarehouse(1, warehouseFakeMap)
 
-		require.ErrorIs(t, err, serviceInterface.ErrWarehouseCodeDuplicate)
+		require.ErrorIs(t, err, serviceErr.ErrWarehouseCodeDuplicate)
 		require.IsType(t, models.Warehouse{}, response)
+		mockRepository.AssertExpectations(t)
+	})
+}
+
+func TestDeleteWarehouse(t *testing.T) {
+	t.Run("delete warehouse successful", func(t *testing.T) {
+		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository.On("DeleteWarehouse", 1).Return(error(nil))
+		serviceImp := NewWarehouseService(mockRepository)
+
+		err := serviceImp.DeleteWarehouse(1)
+
+		require.NoError(t, err)
+		mockRepository.AssertCalled(t, "DeleteWarehouse", 1)
+		mockRepository.AssertExpectations(t)
+	})
+
+	t.Run("delete warehouse not found", func(t *testing.T) {
+		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository.On("DeleteWarehouse", 1).Return(repositoryErr.ErrWarehouseNotFound)
+		serviceImp := NewWarehouseService(mockRepository)
+
+		err := serviceImp.DeleteWarehouse(1)
+
+		require.ErrorIs(t, err, serviceErr.ErrWarehouseNotFound)
+		mockRepository.AssertCalled(t, "DeleteWarehouse", 1)
 		mockRepository.AssertExpectations(t)
 	})
 }
