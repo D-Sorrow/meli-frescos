@@ -103,7 +103,7 @@
 				
 				<option value="file23">github.com/D-Sorrow/meli-frescos/internal/domain/service/product_record_service.go (0.0%)</option>
 				
-				<option value="file24">github.com/D-Sorrow/meli-frescos/internal/domain/service/product_service.go (0.0%)</option>
+				<option value="file24">github.com/D-Sorrow/meli-frescos/internal/domain/service/product_service.go (90.5%)</option>
 				
 				<option value="file25">github.com/D-Sorrow/meli-frescos/internal/domain/service/purchase_order_service.go (0.0%)</option>
 				
@@ -286,6 +286,8 @@
 				<option value="file114">github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models/product_data_mock.go (0.0%)</option>
 				
 				<option value="file115">github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service/product_service_mock.go (0.0%)</option>
+				
+				<option value="file116">github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository/product_repository_mock.go (0.0%)</option>
 				
 				</select>
 			</div>
@@ -1442,45 +1444,45 @@ type ProductService struct {
         repo repository.ProductRepository
 }
 
-func NewProductService(repo repository.ProductRepository) *ProductService <span class="cov0" title="0">{
+func NewProductService(repo repository.ProductRepository) *ProductService <span class="cov8" title="1">{
         return &amp;ProductService{repo: repo}
 }</span>
 
-func (p ProductService) GetProducts() (map[int]models.Product, error) <span class="cov0" title="0">{
+func (p ProductService) GetProducts() (map[int]models.Product, error) <span class="cov8" title="1">{
         return p.repo.GetProducts()
 }</span>
 
-func (p ProductService) GetProductByID(id int) (models.Product, error) <span class="cov0" title="0">{
+func (p ProductService) GetProductByID(id int) (models.Product, error) <span class="cov8" title="1">{
         product, err := p.repo.GetProductByID(id)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return models.Product{}, error_management.HandlerServiceProductError(err)
         }</span>
-        <span class="cov0" title="0">return product, nil</span>
+        <span class="cov8" title="1">return product, nil</span>
 }
 
-func (p ProductService) SaveProduct(productSave models.Product) error <span class="cov0" title="0">{
+func (p ProductService) SaveProduct(productSave models.Product) error <span class="cov8" title="1">{
         err := productSave.ValidateProduct()
         if err != nil </span><span class="cov0" title="0">{
                 return service.ErrServiceProductBusinessRules
         }</span>
-        <span class="cov0" title="0">err = p.repo.SaveProduct(productSave)
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">err = p.repo.SaveProduct(productSave)
+        if err != nil </span><span class="cov8" title="1">{
                 return error_management.HandlerServiceProductError(err)
         }</span>
-        <span class="cov0" title="0">return nil</span>
+        <span class="cov8" title="1">return nil</span>
 }
-func (p ProductService) UpdateProduct(id int, attributes map[string]any) (models.Product, error) <span class="cov0" title="0">{
+func (p ProductService) UpdateProduct(id int, attributes map[string]any) (models.Product, error) <span class="cov8" title="1">{
         product, err := p.repo.GetProductByID(id)
+        if err != nil </span><span class="cov8" title="1">{
+                return models.Product{}, error_management.HandlerServiceProductError(err)
+        }</span>
+        <span class="cov8" title="1">err = p.repo.UpdateProduct(id, attributes)
         if err != nil </span><span class="cov0" title="0">{
                 return models.Product{}, error_management.HandlerServiceProductError(err)
         }</span>
-        <span class="cov0" title="0">err = p.repo.UpdateProduct(id, attributes)
-        if err != nil </span><span class="cov0" title="0">{
-                return models.Product{}, error_management.HandlerServiceProductError(err)
-        }</span>
-        <span class="cov0" title="0">return product, nil</span>
+        <span class="cov8" title="1">return product, nil</span>
 }
-func (p ProductService) DeleteProduct(id int) error <span class="cov0" title="0">{
+func (p ProductService) DeleteProduct(id int) error <span class="cov8" title="1">{
         return p.repo.DeleteProduct(id)
 }</span>
 </pre>
@@ -7846,6 +7848,43 @@ func (_m *ProductServiceMock) DeleteProduct(id int) error <span class="cov0" tit
 }</span>
 
 func (_m *ProductServiceMock) SaveProduct(productSave models.Product) error <span class="cov0" title="0">{
+        args := _m.Called(productSave)
+        return args.Error(0)
+}</span>
+</pre>
+		
+		<pre class="file" id="file116" style="display: none">package repository
+
+import (
+        "github.com/D-Sorrow/meli-frescos/internal/domain/models"
+        "github.com/stretchr/testify/mock"
+)
+
+type ProductRepositoryMock struct {
+        mock.Mock
+}
+
+func (_m *ProductRepositoryMock) GetProducts() (map[int]models.Product, error) <span class="cov0" title="0">{
+        args := _m.Called()
+        return args.Get(0).(map[int]models.Product), args.Error(1)
+}</span>
+
+func (_m *ProductRepositoryMock) GetProductByID(id int) (models.Product, error) <span class="cov0" title="0">{
+        args := _m.Called(id)
+        return args.Get(0).(models.Product), args.Error(1)
+}</span>
+
+func (_m *ProductRepositoryMock) UpdateProduct(id int, attributes map[string]any) error <span class="cov0" title="0">{
+        args := _m.Called(id, attributes)
+        return args.Error(0)
+}</span>
+
+func (_m *ProductRepositoryMock) DeleteProduct(id int) error <span class="cov0" title="0">{
+        args := _m.Called(id)
+        return args.Error(0)
+}</span>
+
+func (_m *ProductRepositoryMock) SaveProduct(productSave models.Product) error <span class="cov0" title="0">{
         args := _m.Called(productSave)
         return args.Error(0)
 }</span>
