@@ -33,7 +33,6 @@ func TestGetWarehouses(t *testing.T) {
 			LocalityId:         2,
 		}
 		mockRepository.On("GetWarehouses").Return(warehousesFake, error(nil))
-
 		serviceImp := NewWarehouseService(mockRepository)
 
 		response, err := serviceImp.GetWarehouses()
@@ -46,9 +45,7 @@ func TestGetWarehouses(t *testing.T) {
 
 	t.Run("find all warehouses fail", func(t *testing.T) {
 		mockRepository := repository.NewWarehouseRepositoryMock()
-
 		mockRepository.On("GetWarehouses").Return(nil, error(repositoryErr.ErrWarehouseDataBase))
-
 		serviceImp := NewWarehouseService(mockRepository)
 
 		_, err := serviceImp.GetWarehouses()
@@ -71,7 +68,6 @@ func TestGetWarehouseById(t *testing.T) {
 			LocalityId:         1,
 		}
 		mockRepository.On("GetWarehouseById", 1).Return(warehouseFake, error(nil))
-
 		serviceImp := NewWarehouseService(mockRepository)
 
 		response, err := serviceImp.GetWarehouseById(1)
@@ -84,9 +80,7 @@ func TestGetWarehouseById(t *testing.T) {
 
 	t.Run("warehouse not found", func(t *testing.T) {
 		mockRepository := repository.NewWarehouseRepositoryMock()
-
 		mockRepository.On("GetWarehouseById", 2).Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
-
 		serviceImp := NewWarehouseService(mockRepository)
 
 		response, err := serviceImp.GetWarehouseById(2)
@@ -94,5 +88,41 @@ func TestGetWarehouseById(t *testing.T) {
 		require.ErrorIs(t, err, serviceInterface.ErrWarehouseNotFound)
 		require.Equal(t, 0, response.Id)
 		mockRepository.AssertCalled(t, "GetWarehouseById", 2)
+	})
+}
+
+func TestCreateWarehouse(t *testing.T) {
+	t.Run("create warehouse ok", func(t *testing.T) {
+		mockRepository := repository.NewWarehouseRepositoryMock()
+		warehouseFake := models.Warehouse{
+			Id:                 1,
+			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+			Address:            "Apt 1639",
+			Telephone:          "(639) 5350508",
+			MinimunCapacity:    99,
+			MinimunTemperature: -14,
+			LocalityId:         1,
+		}
+		mockRepository.On("CreateWarehouse", warehouseFake).Return(warehouseFake, error(nil))
+		serviceImp := NewWarehouseService(mockRepository)
+
+		response, err := serviceImp.CreateWarehouse(warehouseFake)
+
+		require.NoError(t, err)
+		require.Equal(t, warehouseFake, response)
+		mockRepository.AssertCalled(t, "CreateWarehouse", warehouseFake)
+		mockRepository.AssertExpectations(t)
+	})
+
+	t.Run("create warehouse conflict", func(t *testing.T) {
+		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository.On("CreateWarehouse", models.Warehouse{}).Return(models.Warehouse{}, repositoryErr.ErrWarehouseCodeDuplicate)
+		serviceImp := NewWarehouseService(mockRepository)
+
+		response, err := serviceImp.CreateWarehouse(models.Warehouse{})
+
+		require.ErrorIs(t, err, serviceInterface.ErrWarehouseCodeDuplicate)
+		require.IsType(t, models.Warehouse{}, response)
+		mockRepository.AssertCalled(t, "CreateWarehouse", models.Warehouse{})
 	})
 }
