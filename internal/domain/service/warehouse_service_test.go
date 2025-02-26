@@ -39,6 +39,7 @@ func TestGetWarehouses(t *testing.T) {
 		response, err := serviceImp.GetWarehouses()
 
 		require.Equal(t, warehousesFake, response)
+		require.Equal(t, 2, len(response))
 		require.NoError(t, err)
 		mockRepository.AssertCalled(t, "GetWarehouses")
 	})
@@ -54,5 +55,44 @@ func TestGetWarehouses(t *testing.T) {
 
 		require.ErrorIs(t, err, serviceInterface.ErrWarehouseServiceDefault)
 		mockRepository.AssertCalled(t, "GetWarehouses")
+	})
+}
+
+func TestGetWarehouseById(t *testing.T) {
+	t.Run("find warehouse successfull", func(t *testing.T) {
+		mockRepository := repository.NewWarehouseRepositoryMock()
+		warehouseFake := models.Warehouse{
+			Id:                 1,
+			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+			Address:            "Apt 1639",
+			Telephone:          "(639) 5350508",
+			MinimunCapacity:    99,
+			MinimunTemperature: -14,
+			LocalityId:         1,
+		}
+		mockRepository.On("GetWarehouseById", 1).Return(warehouseFake, error(nil))
+
+		serviceImp := NewWarehouseService(mockRepository)
+
+		response, err := serviceImp.GetWarehouseById(1)
+
+		require.NoError(t, err)
+		require.Equal(t, warehouseFake, response)
+		require.Equal(t, warehouseFake.WarehouseCode, response.WarehouseCode)
+		mockRepository.AssertCalled(t, "GetWarehouseById", 1)
+	})
+
+	t.Run("warehouse not found", func(t *testing.T) {
+		mockRepository := repository.NewWarehouseRepositoryMock()
+
+		mockRepository.On("GetWarehouseById", 2).Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
+
+		serviceImp := NewWarehouseService(mockRepository)
+
+		response, err := serviceImp.GetWarehouseById(2)
+
+		require.ErrorIs(t, err, serviceInterface.ErrWarehouseNotFound)
+		require.Equal(t, 0, response.Id)
+		mockRepository.AssertCalled(t, "GetWarehouseById", 2)
 	})
 }
