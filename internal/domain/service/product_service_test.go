@@ -55,7 +55,7 @@ func TestProductService_GetProductByID_NonExistent(t *testing.T) {
 	_, err := serviceTest.GetProductByID(1)
 
 	mockRepository.AssertExpectations(t)
-	assert.Equal(t, err, repository2.ErrRepositoryProductNotFound)
+	assert.Equal(t, err, service2.ErrServiceProductNotFound)
 }
 
 func TestProductService_GetProductByID_Existent(t *testing.T) {
