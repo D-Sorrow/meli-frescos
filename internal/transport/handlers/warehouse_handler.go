@@ -171,7 +171,7 @@ func (wh *WarehouseHandler) PatchWarehouse() http.HandlerFunc {
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
 			Msg:  "Warehouse updated",
-			Data: warehouse,
+			Data: mappers.MapperToWarehouseDto(warehouse),
 		})
 	}
 }
