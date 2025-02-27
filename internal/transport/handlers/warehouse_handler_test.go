@@ -409,6 +409,99 @@ func TestPatchWarehouse(t *testing.T) {
 		require.JSONEq(t, expectedBody, res.Body.String())
 		serviceMock.AssertExpectations(t)
 	})
+
+	t.Run("update warehouse- invalid id", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse())
+
+		res := httptest.NewRecorder()
+		reqBody := `{
+			"warehouse_code": "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+			"address": "Apt 1639",
+			"telephone": "(639) 5350508",
+			"minimum_capacity": 99,
+			"minimum_temperature": -14,
+			"locality_id": 1
+			}`
+		req := httptest.NewRequest(http.MethodPatch, "/api/v1/warehouses/m", bytes.NewBuffer([]byte(reqBody)))
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusBadRequest
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 400,
+							"message": "invalid id",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+	})
+
+	t.Run("update warehouse - invalid request body", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse())
+
+		res := httptest.NewRecorder()
+		reqBody := `{
+			"warehouse_cod": "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+			"address": "Apt 1639",
+			"telephone": "(639) 5350508",
+			"minimum_capacity": 99,
+			"minimum_temperature": -14,
+			"locality_id": 1
+			}`
+		req := httptest.NewRequest(http.MethodPatch, "/api/v1/warehouses/1", bytes.NewBuffer([]byte(reqBody)))
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusUnprocessableEntity
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 422,
+							"message": "wrong key warehouse_cod",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+	})
+
+	t.Run("update warehouse - empty body values", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse())
+
+		res := httptest.NewRecorder()
+		reqBody := `{
+			"warehouse_code": "",
+			"address": "Apt 1639",
+			"telephone": "(639) 5350508",
+			"minimum_capacity": 99,
+			"minimum_temperature": -14,
+			"locality_id": 1
+			}`
+		req := httptest.NewRequest(http.MethodPatch, "/api/v1/warehouses/1", bytes.NewBuffer([]byte(reqBody)))
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusBadRequest
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 400,
+							"message": "warehouse code can not be empty",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+	})
 }
 
 func TestDeleteWarehouse(t *testing.T) {
