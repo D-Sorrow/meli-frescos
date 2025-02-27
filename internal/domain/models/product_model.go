@@ -25,31 +25,31 @@ type Dimensions struct {
 	Length float64 `json:"length,omitempty"`
 }
 
-const ExpirationInvalid = "Rates must not be negative"
-const FreezingInvalid = "FreezingRate must not be positive"
-const DimensionsInvalid = "Invalid dimensions"
-const NetWeightInvalid = "Net weight must be positive"
-const ProductTypeInvalid = "ProductTypeId must not be negative"
-const SellerIdInvalid = "SellerId must not be negative"
+const expirationInvalid = "rates must not be negative"
+const freezingInvalid = "freezingRate must not be positive"
+const dimensionsInvalid = "invalid dimensions"
+const netWeightInvalid = "net weight must be positive"
+const productTypeInvalid = "productTypeId must not be negative"
+const sellerIdInvalid = "sellerId must not be negative"
 
 func (p *Product) ValidateProduct() error {
 	if p.Attributes.ExpirationRate < 0 {
-		return errors.New(ExpirationInvalid)
+		return errors.New(expirationInvalid)
 	}
 	if p.Attributes.FreezingRate >= 0 {
-		return errors.New(FreezingInvalid)
+		return errors.New(freezingInvalid)
 	}
 	if p.Attributes.Dimensions.Height <= 0 || p.Attributes.Dimensions.Length <= 0 || p.Attributes.Dimensions.Width <= 0 {
-		return errors.New(DimensionsInvalid)
+		return errors.New(dimensionsInvalid)
 	}
 	if p.Attributes.NetWeight <= 0 {
-		return errors.New(NetWeightInvalid)
+		return errors.New(netWeightInvalid)
 	}
 	if p.Attributes.ProductTypeId <= 0 {
-		return errors.New(ProductTypeInvalid)
+		return errors.New(productTypeInvalid)
 	}
 	if p.SellerId <= 0 {
-		return errors.New(SellerIdInvalid)
+		return errors.New(sellerIdInvalid)
 	}
 	return nil
 }

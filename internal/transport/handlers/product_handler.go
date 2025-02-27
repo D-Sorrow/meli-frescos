@@ -165,7 +165,6 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 			Msg:  "Product successfully updated",
 			Data: productDto,
 		})
-		return
 	}
 }
 
