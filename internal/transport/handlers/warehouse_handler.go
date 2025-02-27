@@ -100,8 +100,8 @@ func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
 		}
 
 		if err := reqBody.Validate(); err != nil {
-			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-				Code: http.StatusBadRequest,
+			response.JSON(w, http.StatusUnprocessableEntity, dto.ResponseDTO{
+				Code: http.StatusUnprocessableEntity,
 				Msg:  err.Error(),
 				Data: nil,
 			})
@@ -121,7 +121,7 @@ func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
 			Code: http.StatusCreated,
 			Msg:  "Warehouse created successsfully",
-			Data: newWarehouse,
+			Data: mappers.MapperToWarehouseDto(newWarehouse),
 		})
 	}
 }

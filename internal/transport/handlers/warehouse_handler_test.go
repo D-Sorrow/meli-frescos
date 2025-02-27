@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -191,5 +192,122 @@ func TestGetWarehouseById(t *testing.T) {
 		require.Equal(t, expectedStatusCode, res.Code)
 		require.Equal(t, expectedHeader, res.Header())
 		require.JSONEq(t, expectedBody, res.Body.String())
+	})
+}
+
+func TestCreateWarehouse(t *testing.T) {
+	t.Run("create warehouse ok", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		warehouseFake := models.Warehouse{
+			Id:                 1,
+			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+			Address:            "Apt 1639",
+			Telephone:          "(639) 5350508",
+			MinimunCapacity:    99,
+			MinimunTemperature: -14,
+			LocalityId:         1,
+		}
+		serviceMock.On("CreateWarehouse", mock.Anything).Return(warehouseFake, error(nil))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Post("/api/v1/warehouses", handler.CreateWarehouse())
+
+		res := httptest.NewRecorder()
+
+		reqBody := `{
+					"warehouse_code": "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+					"address": "Apt 1639",
+					"telephone": "(639) 5350508",
+					"minimun_capacity": 99,
+					"minimun_temperature": -14,
+					"locality_id": 1
+					}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/warehouses", bytes.NewBuffer([]byte(reqBody)))
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusCreated
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 201,
+							"message": "Warehouse created successsfully",
+							"data": 
+							{
+								"id": 1,
+								"warehouse_code": "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+								"address": "Apt 1639",
+								"telephone": "(639) 5350508",
+								"minimum_capacity": 99,
+								"minimum_temperature": -14,
+								"locality_id": 1
+							}
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+		serviceMock.AssertExpectations(t)
+	})
+
+	t.Run("create warehouse fail - incorrect body", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Post("/api/v1/warehouses", handler.CreateWarehouse())
+
+		res := httptest.NewRecorder()
+
+		reqBody := `{
+					"address": "Apt 1639",
+					"telephone": "(639) 5350508",
+					"minimun_capacity": 99,
+					"minimun_temperature": -14,
+					"locality_id": 1
+					}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/warehouses", bytes.NewBuffer([]byte(reqBody)))
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusUnprocessableEntity
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 422,
+							"message": "warehouse code is required",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+	})
+
+	t.Run("create warehouse fail - conflic", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("CreateWarehouse", mock.Anything).Return(models.Warehouse{}, error(serviceErr.ErrWarehouseCodeDuplicate))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Post("/api/v1/warehouses", handler.CreateWarehouse())
+
+		res := httptest.NewRecorder()
+
+		reqBody := `{
+					"warehouse_code": "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+					"address": "Apt 1639",
+					"telephone": "(639) 5350508",
+					"minimun_capacity": 99,
+					"minimun_temperature": -14,
+					"locality_id": 1
+					}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/warehouses", bytes.NewBuffer([]byte(reqBody)))
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusConflict
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 409,
+							"message": "warehouse code already exists",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+		serviceMock.AssertExpectations(t)
 	})
 }
