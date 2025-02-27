@@ -41,7 +41,7 @@ func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
 			employeesDto = append(employeesDto, *employeeDto)
 		}
 
-		handler.respondWithJSON(w, http.StatusOK, "Success", employeesDto)
+		respondWithJSON(w, http.StatusOK, "Success", employeesDto)
 	}
 }
 
@@ -62,7 +62,7 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 			return
 		}
 
-		handler.respondWithJSON(w, http.StatusOK, "Success", employeeDto)
+		respondWithJSON(w, http.StatusOK, "Success", employeeDto)
 	}
 }
 
@@ -91,7 +91,7 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		}
 
 		employeeDto := mappers.EmployeeModelToDTO(employeeCreated)
-		handler.respondWithJSON(w, http.StatusOK, "Success", employeeDto)
+		respondWithJSON(w, http.StatusOK, "Success", employeeDto)
 	}
 }
 
@@ -120,7 +120,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 			return
 		}
 
-		handler.respondWithJSON(w, http.StatusOK, "Success", employeeUpdated)
+		respondWithJSON(w, http.StatusOK, "Success", employeeUpdated)
 	}
 }
 
@@ -139,7 +139,7 @@ func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
 			return
 		}
 
-		handler.respondWithJSON(w, http.StatusOK, "Empleado eliminado correctamente", nil)
+		respondWithJSON(w, http.StatusOK, "Empleado eliminado correctamente", "")
 	}
 }
 
@@ -160,12 +160,12 @@ func (handler *EmployeeHandler) GetReportInboundOrdersByEmployee() http.HandlerF
 			return
 		}
 
-		handler.respondWithJSON(w, http.StatusOK, "Success", employeesDTO)
+		respondWithJSON(w, http.StatusOK, "Success", employeesDTO)
 	}
 }
 
-func (handler *EmployeeHandler) respondWithJSON(w http.ResponseWriter, code int, msg string, data interface{}) {
-	response.JSON(w, code, dto.ResponseDTO{
+func respondWithJSON[T any](w http.ResponseWriter, code int, msg string, data T) {
+	response.JSON(w, code, dto.EmployeeResponseDto[T]{
 		Code: code,
 		Msg:  msg,
 		Data: data,
@@ -174,5 +174,5 @@ func (handler *EmployeeHandler) respondWithJSON(w http.ResponseWriter, code int,
 
 func (handler *EmployeeHandler) handleError(w http.ResponseWriter, err error) {
 	errorEmployee := error_management.HandleErrorEmployee(err)
-	handler.respondWithJSON(w, errorEmployee.Code, errorEmployee.Message, nil)
+	respondWithJSON(w, errorEmployee.Code, errorEmployee.Message, (*dto.EmployeeDTO)(nil))
 }
