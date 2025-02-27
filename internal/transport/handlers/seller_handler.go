@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -85,7 +84,6 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 		var sellerDto dto.SellerDto
 
 		if err := json.NewDecoder(r.Body).Decode(&sellerDto); err != nil {
-			log.Printf("%w", err.Error())
 			sellerError := error_management.HandleErrorSeller(err)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,

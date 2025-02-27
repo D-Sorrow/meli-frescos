@@ -2,14 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
@@ -29,25 +27,34 @@ func (hand LocalityHandler) CreateLocality() http.HandlerFunc {
 		var localityDto dto.LocalityDto
 
 		if err := json.NewDecoder(r.Body).Decode(&localityDto); err != nil {
-			handler_errors.ResponseErrorLocality(err, w)
+			localityError := error_management.HandleErrorLocality(err)
+			response.JSON(w, localityError.Code, dto.ResponseDTO{
+				Code: localityError.Code,
+				Msg:  localityError.Msg,
+				Data: nil,
+			})
 			return
 		}
 
 		if err := hand.validate.Struct(localityDto); err != nil {
-			handler_errors.ResponseErrorLocality(err, w)
+			localityError := error_management.HandleErrorLocality(err)
+			response.JSON(w, localityError.Code, dto.ResponseDTO{
+				Code: localityError.Code,
+				Msg:  localityError.Msg,
+				Data: nil,
+			})
 			return
 		}
 
 		locality, err := hand.service.CreateLocality(mappers.MapperToLocality(localityDto))
 		if err != nil {
-			if errors.Is(err, service_errors.ErrLocalityAlreadyExists) {
-				handler_errors.ResponseErrorLocality(handler_errors.ErrLocalityAlreadyExists, w)
-				return
-			}
-			if errors.Is(err, service_errors.ErrProvinceNotFound) {
-				handler_errors.ResponseErrorLocality(handler_errors.ErrProvinceNotFound, w)
-				return
-			}
+			localityError := error_management.HandleErrorLocality(err)
+			response.JSON(w, localityError.Code, dto.ResponseDTO{
+				Code: localityError.Code,
+				Msg:  localityError.Msg,
+				Data: nil,
+			})
+			return
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
@@ -72,10 +79,13 @@ func (hand LocalityHandler) GetSellersByLocality() http.HandlerFunc {
 		}
 		localitySellers, err := hand.service.GetSellersByLocality(id)
 		if err != nil {
-			if errors.Is(err, service_errors.ErrLocalityNotFound) {
-				handler_errors.ResponseErrorLocality(handler_errors.ErrLocalityNotFound, w)
-				return
-			}
+			localityError := error_management.HandleErrorLocality(err)
+			response.JSON(w, localityError.Code, dto.ResponseDTO{
+				Code: localityError.Code,
+				Msg:  localityError.Msg,
+				Data: nil,
+			})
+			return
 		}
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
@@ -91,14 +101,13 @@ func (hand LocalityHandler) GetCarriersByLocality() http.HandlerFunc {
 		if idStr == "" {
 			carriersByLocalities, err := hand.service.GetCarriersByAllLocalities()
 			if err != nil {
-				if errors.Is(err, service_errors.ErrGetAllLocalities) {
-					response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
-						Code: http.StatusInternalServerError,
-						Msg:  "could not get localities",
-						Data: nil,
-					})
-					return
-				}
+				localityError := error_management.HandleErrorLocality(err)
+				response.JSON(w, localityError.Code, dto.ResponseDTO{
+					Code: localityError.Code,
+					Msg:  localityError.Msg,
+					Data: nil,
+				})
+				return
 			}
 
 			carriersByLocalitiesDto := mappers.MapperToLocalitiesCarriersDTO(carriersByLocalities)
@@ -121,14 +130,13 @@ func (hand LocalityHandler) GetCarriersByLocality() http.HandlerFunc {
 
 		localityCarriers, err := hand.service.GetCarriersByLocality(id)
 		if err != nil {
-			if errors.Is(err, service_errors.ErrLocalityNotFound) {
-				response.JSON(w, http.StatusNotFound, dto.ResponseDTO{
-					Code: http.StatusNotFound,
-					Msg:  "locality id not found",
-					Data: nil,
-				})
-				return
-			}
+			localityError := error_management.HandleErrorLocality(err)
+			response.JSON(w, localityError.Code, dto.ResponseDTO{
+				Code: localityError.Code,
+				Msg:  localityError.Msg,
+				Data: nil,
+			})
+			return
 		}
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,

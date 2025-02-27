@@ -1,9 +1,20 @@
 package error_management
 
-import "errors"
+import (
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/go-sql-driver/mysql"
+)
 
-var ErrLocalityNotFound = errors.New("not found error")
-var ErrLocalityAlreadyExists = errors.New("locality already exists")
-var ErrLocalityCannotBeCreated = errors.New("locality cant be created")
-var ErrGetAllLocalities = errors.New("could not get all localities")
-var ErrProvinceNotFound = errors.New("not found error")
+func HandleLocalityRepositoryError(err error) error {
+	switch e := err.(type) {
+	case *mysql.MySQLError:
+		switch e.Number {
+		case 1062:
+			return repository.ErrLocalityAlreadyExists
+		default:
+			return repository.ErrLocalityRepositoryGeneric
+		}
+	default:
+		return repository.ErrLocalityRepositoryGeneric
+	}
+}
