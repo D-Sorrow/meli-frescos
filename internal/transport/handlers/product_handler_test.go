@@ -202,6 +202,39 @@ func TestProductHandler_UpdateProduct_IdInvalid(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
+func TestProductHandler_UpdateProduct_DecoderErr(t *testing.T) {
+	mockService := new(service.ProductServiceMock)
+
+	handler := handlers.NewProductHandler(mockService)
+	router := chi.NewRouter()
+
+	attributeJSON, _ := json.Marshal(modelsMock.ReturnMockProductModel())
+	router.Put("/api/v1/products/{id}", handler.UpdateProduct())
+	req := httptest.NewRequest("PUT", "/api/v1/products/1A", bytes.NewBuffer(attributeJSON))
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	mockService.AssertNumberOfCalls(t, "UpdateProduct", 0)
+}
+
+func TestProductHandler_UpdateProduct_ErrValidation(t *testing.T) {
+	mockService := new(service.ProductServiceMock)
+	att := modelsMock.ReturnAttributesModel()
+	att.FreezingRate = 10
+
+	handler := handlers.NewProductHandler(mockService)
+	router := chi.NewRouter()
+
+	attributeJSON, _ := json.Marshal(att)
+	router.Put("/api/v1/products/{id}", handler.UpdateProduct())
+	req := httptest.NewRequest("PUT", "/api/v1/products/1A", bytes.NewBuffer(attributeJSON))
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	mockService.AssertNumberOfCalls(t, "UpdateProduct", 0)
+}
 func TestProductHandler_DeleteProduct_NonExistent(t *testing.T) {
 	mockService := new(service.ProductServiceMock)
 	mockService.On("DeleteProduct", 1).Return(service2.ErrServiceProductNotFound)

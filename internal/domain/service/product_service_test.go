@@ -36,6 +36,19 @@ func TestProductService_SaveProduct_Conflict(t *testing.T) {
 	mockRepository.AssertExpectations(t)
 	assert.Equal(t, err, service2.ErrServiceProductAlreadyExists)
 }
+func TestProductService_SaveProduct_ErrValidation(t *testing.T) {
+	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository.On("SaveProduct", mock.Anything).Return(nil)
+	product := models.ReturnMockProductModel()
+	product.Attributes.FreezingRate = 10
+
+	serviceTest := service.NewProductService(mockRepository)
+
+	err := serviceTest.SaveProduct(product)
+
+	assert.Equal(t, err, service2.ErrServiceProductBusinessRules)
+	mockRepository.AssertNotCalled(t, "SaveProduct", mock.Anything)
+}
 func TestProductService_GetProducts(t *testing.T) {
 	mockRepository := new(repository.ProductRepositoryMock)
 	mockRepository.On("GetProducts").Return(models.ReturnProductModelMap(), nil)
@@ -97,6 +110,21 @@ func TestProductService_UpdateProduct_NonExistent(t *testing.T) {
 	})
 
 	mockRepository.AssertNotCalled(t, "UpdateProduct")
+	assert.Equal(t, err, service2.ErrServiceProductNotFound)
+}
+
+func TestProductService_UpdateProduct_ErrUpdate(t *testing.T) {
+	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository.On("UpdateProduct", 1, mock.Anything).Return(service2.ErrServiceProductNotFound)
+	mockRepository.On("GetProductByID", 1).Return(models2.Product{}, nil)
+	att := models.ReturnMockProductModel()
+
+	serviceTest := service.NewProductService(mockRepository)
+	_, err := serviceTest.UpdateProduct(1, map[string]any{
+		"description": att.Attributes.Description,
+	})
+
+	mockRepository.AssertNotCalled(t, "GetProductByID")
 	assert.Equal(t, err, service2.ErrServiceProductNotFound)
 }
 
