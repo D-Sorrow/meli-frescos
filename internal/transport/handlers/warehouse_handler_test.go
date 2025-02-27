@@ -229,7 +229,7 @@ func TestCreateWarehouse(t *testing.T) {
 		serviceMock.AssertExpectations(t)
 	})
 
-	t.Run("create warehouse fail - incorrect body", func(t *testing.T) {
+	t.Run("create warehouse fail - incomplete body", func(t *testing.T) {
 		serviceMock := service.NewWarehouseServiceMock()
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
@@ -253,6 +253,38 @@ func TestCreateWarehouse(t *testing.T) {
 		expectedBody := `{
 							"code": 422,
 							"message": "warehouse code is required",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+	})
+
+	t.Run("create warehouse fail - incorrect body", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Post("/api/v1/warehouses", handler.CreateWarehouse())
+
+		res := httptest.NewRecorder()
+
+		reqBody := `{
+					"warehouse_code": 2334,
+					"address": "Apt 1639",
+					"telephone": "(639) 5350508",
+					"minimun_capacity": 99,
+					"minimun_temperature": -14,
+					"locality_id": 1
+					}`
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/warehouses", bytes.NewBuffer([]byte(reqBody)))
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusUnprocessableEntity
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 422,
+							"message": "Unprocessable Entity",
 							"data": null
 						}`
 		require.Equal(t, expectedStatusCode, res.Code)
