@@ -30,7 +30,7 @@ type HandlerErrorEmployee struct {
 
 var employeeHandlerErrors = map[error]HandlerErrorEmployee{
 	service.ErrEmployeeNotFound:       {Code: http.StatusNotFound, Message: messageEmployeeNotFoundError},
-	service.ErrEmployeeAlreadyExists:  {Code: http.StatusBadRequest, Message: messageEmployeeAlreadyExistsError},
+	service.ErrEmployeeAlreadyExists:  {Code: http.StatusConflict, Message: messageEmployeeAlreadyExistsError},
 	service.ErrEmployeeDecodingError:  {Code: http.StatusBadRequest, Message: messageEmployeeIdNotValidError},
 	service.ErrEmployeeServiceDefault: {Code: http.StatusInternalServerError, Message: messageEmployeeInternalError},
 	ErrEmployeeBodyDecoding:           {Code: http.StatusBadRequest, Message: messageEmployeeBodyMalformedError},
@@ -57,7 +57,7 @@ func HandleErrorEmployee(err error) HandlerErrorEmployee {
 			errors = fmt.Sprintf("%v %v %v, ", errors, fieldErr.Tag(), fieldErr.Field())
 		}
 		return HandlerErrorEmployee{
-			Code:    http.StatusBadRequest,
+			Code:    http.StatusUnprocessableEntity,
 			Message: errors,
 		}
 	default:
