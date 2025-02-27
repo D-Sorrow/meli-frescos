@@ -18,6 +18,10 @@ const (
 	msgWarehouseFKConstraintFail       = "This warehouse cannot be deleted, another entity is using it"
 )
 
+var (
+	ErrWarehouseIdNotValid = errors.New("invalid id")
+)
+
 type HandlerErrorWarehouse struct {
 	Code    int
 	Message string
@@ -60,6 +64,10 @@ var warehouseHandlerErrors = map[error]HandlerErrorWarehouse{
 		Code:    http.StatusConflict,
 		Message: msgWarehouseFKConstraintFail,
 	},
+	ErrWarehouseIdNotValid: {
+		Code:    http.StatusBadRequest,
+		Message: ErrWarehouseIdNotValid.Error(),
+	},
 }
 
 func HandleErrorWarehouse(err error) HandlerErrorWarehouse {
@@ -77,6 +85,8 @@ func HandleErrorWarehouse(err error) HandlerErrorWarehouse {
 	case errors.Is(err, service.ErrWarehouseGetUpdatedOrCreatedItem):
 		return warehouseHandlerErrors[err]
 	case errors.Is(err, service.ErrWarehouseFKConstraintFail):
+		return warehouseHandlerErrors[err]
+	case errors.Is(err, ErrWarehouseIdNotValid):
 		return warehouseHandlerErrors[err]
 	default:
 		return warehouseHandlerErrors[service.ErrWarehouseServiceDefault]

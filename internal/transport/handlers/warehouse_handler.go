@@ -56,9 +56,10 @@ func (wh *WarehouseHandler) GetWarehouseById() http.HandlerFunc {
 
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-				Code: http.StatusBadRequest,
-				Msg:  "invalid id",
+			handler_err := handler_errors.HandleErrorWarehouse(handler_errors.ErrWarehouseIdNotValid)
+			response.JSON(w, handler_err.Code, dto.ResponseDTO{
+				Code: handler_err.Code,
+				Msg:  handler_err.Message,
 				Data: nil,
 			})
 			return
