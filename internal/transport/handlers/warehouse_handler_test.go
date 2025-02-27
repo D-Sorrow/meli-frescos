@@ -378,3 +378,76 @@ func TestPatchWarehouse(t *testing.T) {
 		serviceMock.AssertExpectations(t)
 	})
 }
+
+func TestDeleteWarehouse(t *testing.T) {
+	t.Run("delete warehouse ok", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(nil))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse())
+
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodDelete, "/api/v1/warehouses/1", nil)
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusOK
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 200,
+							"message": "Werehouse with id 1 deleted",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+		serviceMock.AssertExpectations(t)
+	})
+
+	t.Run("delete warehouse not found", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(serviceErr.ErrWarehouseNotFound))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse())
+
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodDelete, "/api/v1/warehouses/1", nil)
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusNotFound
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 404,
+							"message": "warehouse not found",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+		serviceMock.AssertExpectations(t)
+	})
+
+	t.Run("invalid warehouse id", func(t *testing.T) {
+		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(nil))
+		handler := NewWarehouseHandler(serviceMock)
+		router := chi.NewRouter()
+		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse())
+
+		res := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodDelete, "/api/v1/warehouses/m", nil)
+		router.ServeHTTP(res, req)
+
+		expectedStatusCode := http.StatusBadRequest
+		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
+		expectedBody := `{
+							"code": 400,
+							"message": "invalid id",
+							"data": null
+						}`
+		require.Equal(t, expectedStatusCode, res.Code)
+		require.Equal(t, expectedHeader, res.Header())
+		require.JSONEq(t, expectedBody, res.Body.String())
+	})
+}
