@@ -31,7 +31,7 @@ func TestCreateInboundOrder(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("case 1: create success", func(t *testing.T) {
+	t.Run("case 2: create fails", func(t *testing.T) {
 		mockRepo := new(repoMock.MockInboundOrderRepository)
 
 		inboundOrder := &models.InboundOrder{
