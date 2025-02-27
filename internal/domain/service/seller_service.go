@@ -17,7 +17,7 @@ func NewSellerService(repository repository.SellerRepository) *SellerService {
 func (repo *SellerService) GetSellers() (map[int]models.Seller, error) {
 	_, err := repo.repository.GetSellers()
 	if err != nil {
-		return nil, service_errors.HandleErrorSellerService(err)
+		return map[int]models.Seller{}, service_errors.HandleErrorSellerService(err)
 	}
 	return repo.repository.GetSellers()
 }
