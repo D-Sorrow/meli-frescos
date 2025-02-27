@@ -60,11 +60,11 @@ func (_service *EmployeeService) CreateEmployee(employee models.Employee) (model
 }
 
 func (_service *EmployeeService) UpdateEmployee(employeeId int, employee models.EmployeePatchRequest) (employeeUpdated models.Employee, err error) {
-	employeeUpdated, err = _service.repository.GetEmployeeById(employeeId)
 	allEmployees, errorAll := _service.repository.GetEmployees()
 	if errorAll != nil {
-		return models.Employee{}, error_management.HandleErrorEmployeeService(err)
+		return models.Employee{}, error_management.HandleErrorEmployeeService(errorAll)
 	}
+	employeeUpdated, err = _service.repository.GetEmployeeById(employeeId)
 	if err != nil {
 		return models.Employee{}, error_management.HandleErrorEmployeeService(err)
 	}
@@ -72,7 +72,7 @@ func (_service *EmployeeService) UpdateEmployee(employeeId int, employee models.
 	if employee.CardNumberId != nil {
 		employeeUpdated.CardNumberId = *employee.CardNumberId
 		for _, emp := range allEmployees {
-			if emp.CardNumberId == *employee.CardNumberId {
+			if emp.Id != employeeId && (emp.CardNumberId == *employee.CardNumberId) {
 				return models.Employee{}, service.ErrEmployeeAlreadyExists
 			}
 		}
@@ -108,7 +108,7 @@ func (_service *EmployeeService) GetReportInboundOrdersByEmployee(employeeId str
 	if employeeId != "" {
 		id, err := strconv.Atoi(employeeId)
 		if err != nil {
-			return nil, error_management.HandleErrorEmployeeService(err)
+			return nil, service.ErrEmployeeDecodingError
 		}
 		employee, err := _service.repository.GetInboundOrdersCountByEmployeeId(id)
 		if err != nil {
