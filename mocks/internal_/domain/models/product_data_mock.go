@@ -75,5 +75,22 @@ func ReturnProductModelMap() map[int]models.Product {
 				},
 			},
 		},
+		2: models.Product{
+			SellerId: sellerId,
+			Attributes: models.ProductAttribute{
+				Description:         description,
+				ExpirationRate:      expirationRate,
+				FreezingRate:        20,
+				ProductCode:         productCode,
+				NetWeight:           netWeight,
+				TemperatureFreezing: temperatureFreezing,
+				ProductTypeId:       productTypeId,
+				Dimensions: models.Dimensions{
+					Width:  width,
+					Height: height,
+					Length: length,
+				},
+			},
+		},
 	}
 }

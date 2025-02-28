@@ -79,7 +79,7 @@ func (p ProductRepository) UpdateProduct(id int, attributes map[string]any) erro
 	var errSql *mysql.MySQLError
 
 	query, values := productEntity.UpdateProduct(attributes, id)
-	_, err := p.db.Exec(query, values...)
+	result, err := p.db.Exec(query, values...)
 	if errors.As(err, &errSql) {
 		switch errSql.Number {
 		case 1062:
@@ -87,6 +87,9 @@ func (p ProductRepository) UpdateProduct(id int, attributes map[string]any) erro
 		default:
 			return repository.ErrRepositoryProductUnknown
 		}
+	}
+	if row, _ := result.RowsAffected(); row == 0 {
+		return repository.ErrRepositoryProductNotFound
 	}
 	return nil
 }

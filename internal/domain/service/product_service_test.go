@@ -115,7 +115,7 @@ func TestProductService_UpdateProduct_NonExistent(t *testing.T) {
 
 func TestProductService_UpdateProduct_ErrUpdate(t *testing.T) {
 	mockRepository := new(repository.ProductRepositoryMock)
-	mockRepository.On("UpdateProduct", 1, mock.Anything).Return(service2.ErrServiceProductNotFound)
+	mockRepository.On("UpdateProduct", 1, mock.Anything).Return(repository2.ErrRepositoryProductNotFound)
 	mockRepository.On("GetProductByID", 1).Return(models2.Product{}, nil)
 	att := models.ReturnMockProductModel()
 
