@@ -69,11 +69,11 @@ func TestGetEmployees(t *testing.T) {
 		router.Handle("/api/v1/employees", handler.GetEmployees())
 		router.ServeHTTP(rr, req)
 
-		require.Equal(t, http.StatusOK, rr.Code)
+		require.Equal(t, expectedResponse.Code, rr.Code)
 		var response dto.EmployeeResponseDto[[]dto.EmployeeDTO]
 		json.NewDecoder(rr.Body).Decode(&response)
 
-		require.Equal(t, "Success", response.Msg)
+		require.Equal(t, expectedResponse.Msg, response.Msg)
 		require.Equal(t, expectedResponse, response)
 		mockService.AssertExpectations(t)
 	})
@@ -96,11 +96,11 @@ func TestGetEmployees(t *testing.T) {
 		router.Handle("/api/v1/employees", handler.GetEmployees())
 		router.ServeHTTP(rr, req)
 
-		require.Equal(t, http.StatusInternalServerError, rr.Code)
+		require.Equal(t, expectedResponse.Code, rr.Code)
 		var response dto.EmployeeResponseDto[[]dto.EmployeeDTO]
 		json.NewDecoder(rr.Body).Decode(&response)
 
-		require.Equal(t, "Internal server error", response.Msg)
+		require.Equal(t, expectedResponse.Msg, response.Msg)
 		require.Equal(t, expectedResponse, response)
 		mockService.AssertExpectations(t)
 	})
@@ -141,11 +141,11 @@ func TestGetEmployeeById(t *testing.T) {
 		router.Handle("/api/v1/employees/{id}", handler.GetEmployeeById())
 		router.ServeHTTP(rr, req)
 
-		require.Equal(t, http.StatusOK, rr.Code)
+		require.Equal(t, expectedResponse.Code, rr.Code)
 		var response dto.EmployeeResponseDto[dto.EmployeeDTO]
 		json.NewDecoder(rr.Body).Decode(&response)
 
-		require.Equal(t, "Success", response.Msg)
+		require.Equal(t, expectedResponse.Msg, response.Msg)
 		require.Equal(t, expectedResponse, response)
 		mockService.AssertExpectations(t)
 	})
@@ -166,7 +166,7 @@ func TestGetEmployeeById(t *testing.T) {
 		router.Handle("/api/v1/employees/{id}", handler.GetEmployeeById())
 		router.ServeHTTP(rr, req)
 
-		require.Equal(t, http.StatusBadRequest, rr.Code)
+		require.Equal(t, expectedResponse.Code, rr.Code)
 		var response dto.EmployeeResponseDto[dto.EmployeeDTO]
 		json.NewDecoder(rr.Body).Decode(&response)
 
@@ -193,7 +193,7 @@ func TestGetEmployeeById(t *testing.T) {
 		router.Handle("/api/v1/employees/{id}", handler.GetEmployeeById())
 		router.ServeHTTP(rr, req)
 
-		require.Equal(t, http.StatusNotFound, rr.Code)
+		require.Equal(t, expectedResponse.Code, rr.Code)
 		var response dto.EmployeeResponseDto[dto.EmployeeDTO]
 		json.NewDecoder(rr.Body).Decode(&response)
 
@@ -246,11 +246,11 @@ func TestCreateEmployee(t *testing.T) {
 		router.Handle("/api/v1/employees", handler.CreateEmployee())
 		router.ServeHTTP(rr, req)
 
-		require.Equal(t, http.StatusOK, rr.Code)
+		require.Equal(t, expectedResponse.Code, rr.Code)
 		var response dto.EmployeeResponseDto[dto.EmployeeDTO]
 		json.NewDecoder(rr.Body).Decode(&response)
 
-		require.Equal(t, "Success", response.Msg)
+		require.Equal(t, expectedResponse.Msg, response.Msg)
 		require.Equal(t, expectedResponse, response)
 		mockService.AssertExpectations(t)
 	})
@@ -398,11 +398,11 @@ func TestUpdateEmployee(t *testing.T) {
 		router.Handle("/api/v1/employees/{id}", handler.UpdateEmployee())
 		router.ServeHTTP(rr, req)
 
-		require.Equal(t, http.StatusOK, rr.Code)
+		require.Equal(t, expectedResponse.Code, rr.Code)
 		var response dto.EmployeeResponseDto[dto.EmployeeDTO]
 		json.NewDecoder(rr.Body).Decode(&response)
 
-		require.Equal(t, "Success", response.Msg)
+		require.Equal(t, expectedResponse.Msg, response.Msg)
 		require.Equal(t, expectedResponse, response)
 		mockService.AssertExpectations(t)
 	})
@@ -438,7 +438,7 @@ func TestUpdateEmployee(t *testing.T) {
 		router.Handle("/api/v1/employees/{id}", handler.UpdateEmployee())
 		router.ServeHTTP(rr, req)
 
-		require.Equal(t, http.StatusNotFound, rr.Code)
+		require.Equal(t, expectedResponse.Code, rr.Code)
 		var response dto.EmployeeResponseDto[dto.EmployeeDTO]
 		json.NewDecoder(rr.Body).Decode(&response)
 
