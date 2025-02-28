@@ -17,12 +17,12 @@ type BuyerDTO struct {
 
 type BuyerCreateDTO struct {
 	CardNumberID *string `json:"card_number_id" validate:"required,cardnumber"`
-	FirstName    *string `json:"first_name" validate:"required,str_not_empty"`
-	LastName     *string `json:"last_name" validate:"required,str_not_empty"`
+	FirstName    *string `json:"first_name"     validate:"required,str_not_empty"`
+	LastName     *string `json:"last_name"      validate:"required,str_not_empty"`
 }
 
 type BuyerPatchDTO struct {
 	CardNumberID *string `json:"card_number_id" validate:"omitempty,cardnumber"`
-	FirstName    *string `json:"first_name" validate:"omitempty,str_not_empty"`
-	LastName     *string `json:"last_name" validate:"omitempty,str_not_empty"`
+	FirstName    *string `json:"first_name"     validate:"omitempty,str_not_empty"`
+	LastName     *string `json:"last_name"      validate:"omitempty,str_not_empty"`
 }
