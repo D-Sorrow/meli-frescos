@@ -1,12 +1,9 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
-	repository_errors "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 )
 
 type LocalityService struct {
@@ -19,27 +16,25 @@ func NewLocalityService(repo repository.LocalityRepository) *LocalityService {
 
 func (repo *LocalityService) CreateLocality(locality models.Locality) (models.Locality, error) {
 	locality, err := repo.repo.CreateLocality(locality)
-	if errors.Is(err, repository_errors.ErrLocalityAlreadyExists) {
-		return models.Locality{}, service_errors.ErrLocalityAlreadyExists
-	}
-	if errors.Is(err, repository_errors.ErrProvinceNotFound) {
-		return models.Locality{}, service_errors.ErrProvinceNotFound
+	if err != nil {
+		return models.Locality{}, error_management.HandleErrorLocalitiesService(err)
 	}
 	return locality, nil
 }
 
 func (repo *LocalityService) GetSellersByLocality(localityId int) (models.LocalitySellers, error) {
 	localitySellers, err := repo.repo.GetSellersByLocality(localityId)
-	if errors.Is(err, repository_errors.ErrLocalityNotFound) {
-		return models.LocalitySellers{}, service_errors.ErrLocalityNotFound
+	if err != nil {
+		return models.LocalitySellers{}, error_management.HandleErrorLocalitiesService(err)
 	}
+
 	return localitySellers, nil
 }
 
 func (ls *LocalityService) GetCarriersByAllLocalities() ([]models.LocalityCarriers, error) {
 	carriersByLocalities, err := ls.repo.GetCarriersByAllLocalities()
-	if errors.Is(err, repository_errors.ErrGetAllLocalities) {
-		return nil, service_errors.ErrGetAllLocalities
+	if err != nil {
+		return nil, error_management.HandleErrorLocalitiesService(err)
 	}
 
 	return carriersByLocalities, nil
@@ -47,8 +42,8 @@ func (ls *LocalityService) GetCarriersByAllLocalities() ([]models.LocalityCarrie
 
 func (ls *LocalityService) GetCarriersByLocality(id int) (models.LocalityCarriers, error) {
 	localityCarriers, err := ls.repo.GetCarriersByLocality(id)
-	if errors.Is(err, repository_errors.ErrLocalityNotFound) {
-		return models.LocalityCarriers{}, service_errors.ErrLocalityNotFound
+	if err != nil {
+		return models.LocalityCarriers{}, error_management.HandleErrorLocalitiesService(err)
 	}
 	return localityCarriers, nil
 }

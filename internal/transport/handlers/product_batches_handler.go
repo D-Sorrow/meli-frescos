@@ -43,7 +43,7 @@ func (h ProductBatchesHandler) AddProductBatches() http.HandlerFunc {
 		product, err := h.s.AddProductBatches(mappers.MapperToProductBatches(ProductBatchesDto))
 		if err != nil {
 			if errors.Is(err, serr.ErrProductBatchesAlredyExists) {
-				herr.ResponseErrorProductBatches(herr.ErrLocalityAlreadyExists, w)
+				herr.ResponseErrorProductBatches(herr.LocalityAlreadyExists, w)
 				return
 			}
 		}

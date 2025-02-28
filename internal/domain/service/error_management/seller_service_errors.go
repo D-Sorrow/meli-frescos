@@ -1,21 +1,22 @@
 package error_management
 
 import (
-	"fmt"
+	"errors"
+
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 )
 
-type SellerErrors struct {
-	Msg string
-}
-
-func (se *SellerErrors) Error() string {
-	return fmt.Sprintf("%s", se.Msg)
-}
-
-var ErrSellerNotFound *SellerErrors = &SellerErrors{
-	Msg: "not found error",
-}
-
-var ErrSellerAlreadyExists *SellerErrors = &SellerErrors{
-	Msg: "seller already exists",
+func HandleErrorSellerService(err error) error {
+	if err != nil {
+		switch {
+		case errors.Is(err, repository.ErrSellerNotFound):
+			return service.ErrSellerNotFound
+		case errors.Is(err, repository.ErrSellerAlreadyExists):
+			return service.ErrSellerAlreadyExists
+		default:
+			return service.ErrSellerServiceGeneric
+		}
+	}
+	return nil
 }

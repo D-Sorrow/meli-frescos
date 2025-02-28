@@ -3,11 +3,10 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"log"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	repository_errors "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
-	"github.com/go-sql-driver/mysql"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type LocalityRepository struct {
@@ -23,29 +22,25 @@ func (repo *LocalityRepository) CreateLocality(locality models.Locality) (models
 	var provinceId int
 	row := repo.db.QueryRow("select p.id from countries c join provinces p on c.id = p.id_country_fk where country_name = ? and province_name = ?", locality.CountryName, locality.ProvinceName)
 	if err := row.Err(); err != nil {
-		log.Print(err)
-		return models.Locality{}, repository_errors.ErrProvinceNotFound
+		return models.Locality{}, error_management.HandleRepositoryError(repository.ErrProvinceNotFound, err)
 	}
 	err := row.Scan(&provinceId)
-	if errors.Is(err, sql.ErrNoRows) {
-		log.Print(err)
-		return models.Locality{}, repository_errors.ErrProvinceNotFound
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Locality{}, error_management.HandleRepositoryError(repository.ErrProvinceNotFound, err)
+		}
+		return models.Locality{}, error_management.HandleRepositoryError(repository.ErrLocalityRepositoryGeneric, err)
 	}
 
 	result, err := repo.db.Exec("INSERT INTO localities (locality_name,province_id,zip_code) values (?,?,?)", locality.Name, provinceId, locality.ZipCode)
 
 	if err != nil {
-		log.Print(err)
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
-			return models.Locality{}, repository_errors.ErrLocalityAlreadyExists
-		}
-		return models.Locality{}, repository_errors.ErrLocalityCannotBeCreated
+		return models.Locality{}, error_management.HandleRepositoryError(error_management.HandleLocalityRepositoryError(err), err)
 	}
 
 	lastInsertId, err := result.LastInsertId()
 	if err != nil {
-		log.Print(err)
-		return models.Locality{}, repository_errors.ErrLocalityCannotBeCreated
+		return models.Locality{}, error_management.HandleRepositoryError(repository.ErrLocalityRepositoryGeneric, err)
 	}
 
 	locality.Id = int(lastInsertId)
@@ -57,18 +52,19 @@ func (repo *LocalityRepository) GetSellersByLocality(localityId int) (models.Loc
 
 	row := repo.db.QueryRow("SELECT l.id, l.zip_code, l.locality_name, count(s.id) as seller_count FROM localities l LEFT JOIN sellers s ON s.locality_id = l.id WHERE l.id = ? GROUP BY l.id, l.zip_code, l.locality_name", localityId)
 	if err := row.Err(); err != nil {
-		log.Print(err)
-		return models.LocalitySellers{}, repository_errors.ErrLocalityNotFound
+		return models.LocalitySellers{}, error_management.HandleRepositoryError(error_management.HandleLocalityRepositoryError(err), err)
 	}
 
 	err := row.Scan(&localitySellers.LocalityId, &localitySellers.ZipCode, &localitySellers.Name, &localitySellers.SellersCount)
-	if errors.Is(err, sql.ErrNoRows) {
-		log.Print(err)
-		return models.LocalitySellers{}, repository_errors.ErrLocalityNotFound
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.LocalitySellers{}, error_management.HandleRepositoryError(repository.ErrLocalityNotFound, err)
+		}
+		return models.LocalitySellers{}, error_management.HandleRepositoryError(repository.ErrLocalityRepositoryGeneric, err)
+
 	}
 
 	return localitySellers, nil
-
 }
 
 func (repo *LocalityRepository) GetCarriersByAllLocalities() ([]models.LocalityCarriers, error) {
@@ -80,8 +76,7 @@ func (repo *LocalityRepository) GetCarriersByAllLocalities() ([]models.LocalityC
 
 	rows, err := repo.db.Query(query)
 	if err != nil {
-		log.Print(err)
-		return nil, repository_errors.ErrGetAllLocalities
+		return nil, error_management.HandleRepositoryError(repository.ErrGetAllLocalities, err)
 	}
 	defer rows.Close()
 
@@ -92,7 +87,7 @@ func (repo *LocalityRepository) GetCarriersByAllLocalities() ([]models.LocalityC
 			&carrierLocality.Name,
 			&carrierLocality.CarriersCount)
 		if err != nil {
-			return nil, repository_errors.ErrGetAllLocalities
+			return nil, error_management.HandleRepositoryError(repository.ErrGetAllLocalities, err)
 		}
 		carriersByLocalities = append(carriersByLocalities, carrierLocality)
 	}
@@ -107,18 +102,18 @@ func (repo *LocalityRepository) GetCarriersByLocality(id int) (models.LocalityCa
 				WHERE l.id = ? GROUP BY l.id`
 	row := repo.db.QueryRow(query, id)
 	if err := row.Err(); err != nil {
-		log.Print(err)
-		return models.LocalityCarriers{}, repository_errors.ErrLocalityNotFound
+		return models.LocalityCarriers{}, error_management.HandleRepositoryError(repository.ErrLocalityNotFound, err)
 	}
 
 	err := row.Scan(&localityCarriers.LocalityId,
 		&localityCarriers.ZipCode,
 		&localityCarriers.Name,
 		&localityCarriers.CarriersCount)
-	if errors.Is(err, sql.ErrNoRows) {
-		log.Print(err)
-		return models.LocalityCarriers{}, repository_errors.ErrLocalityNotFound
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.LocalityCarriers{}, error_management.HandleRepositoryError(repository.ErrLocalityNotFound, err)
+		}
+		return models.LocalityCarriers{}, error_management.HandleRepositoryError(repository.ErrLocalityRepositoryGeneric, err)
 	}
-
 	return localityCarriers, nil
 }

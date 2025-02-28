@@ -1,29 +1,26 @@
 package error_management
 
 import (
-	"fmt"
+	"errors"
+
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 )
 
-type LocalityErrors struct {
-	Msg string
-}
-
-func (se *LocalityErrors) Error() string {
-	return fmt.Sprintf("%s", se.Msg)
-}
-
-var ErrLocalityNotFound *LocalityErrors = &LocalityErrors{
-	Msg: "not found error",
-}
-
-var ErrLocalityAlreadyExists *LocalityErrors = &LocalityErrors{
-	Msg: "locality already exists",
-}
-
-var ErrGetAllLocalities *LocalityErrors = &LocalityErrors{
-	Msg: "could not get localities",
-}
-
-var ErrProvinceNotFound *LocalityErrors = &LocalityErrors{
-	Msg: "province not found",
+func HandleErrorLocalitiesService(err error) error {
+	if err != nil {
+		switch {
+		case errors.Is(err, repository.ErrLocalityNotFound):
+			return service.ErrLocalityNotFound
+		case errors.Is(err, repository.ErrLocalityAlreadyExists):
+			return service.ErrLocalityAlreadyExists
+		case errors.Is(err, repository.ErrGetAllLocalities):
+			return service.ErrGetAllLocalities
+		case errors.Is(err, repository.ErrProvinceNotFound):
+			return service.ErrProvinceNotFound
+		default:
+			return service.ErrLocalityRepositoryGeneric
+		}
+	}
+	return nil
 }
