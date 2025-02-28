@@ -25,6 +25,7 @@ type Dimensions struct {
 	Length float64 `json:"length,omitempty"`
 }
 
+
 const expirationInvalid = "rates must not be negative"
 const freezingInvalid = "freezingRate must not be positive"
 const dimensionsInvalid = "invalid dimensions"

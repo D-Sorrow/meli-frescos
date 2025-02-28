@@ -2,13 +2,19 @@ package error_management
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
+)
+
+const (
+	messageSellerAlreadyExistsError  = "seller already exist"
+	messageSellerIdNotExistsError    = "seller id not found"
+	messageSellerInternalServerError = "internal server error"
 )
 
 type SellerHandlerErrors struct {
@@ -16,50 +22,37 @@ type SellerHandlerErrors struct {
 	Msg  string
 }
 
-func (se *SellerHandlerErrors) Error() string {
-	return fmt.Sprintf("%d: %s", se.Code, se.Msg)
+var sellerServiceErrors = map[error]SellerHandlerErrors{
+	service.ErrSellerAlreadyExists:  {Code: http.StatusConflict, Msg: messageSellerAlreadyExistsError},
+	service.ErrSellerNotFound:       {Code: http.StatusNotFound, Msg: messageSellerIdNotExistsError},
+	service.ErrSellerServiceGeneric: {Code: http.StatusInternalServerError, Msg: messageSellerInternalServerError},
 }
 
-var ErrSellerNotFound *SellerHandlerErrors = &SellerHandlerErrors{
-	Code: http.StatusNotFound,
-	Msg:  "not found error",
-}
-
-var ErrSellerAlreadyExists *SellerHandlerErrors = &SellerHandlerErrors{
-	Code: http.StatusConflict,
-	Msg:  "seller already exists",
-}
-
-func ResponseErrorSeller(err error, w http.ResponseWriter) {
-	var sellerErr *SellerHandlerErrors
-	if errors.As(err, &sellerErr) {
-		response.JSON(w, sellerErr.Code, dto.ResponseDTO{
-			Code: sellerErr.Code,
-			Msg:  sellerErr.Msg,
-			Data: nil,
-		})
+func getSellerErrorMessage(err error) SellerHandlerErrors {
+	if e, exists := sellerServiceErrors[err]; exists {
+		return e
 	}
+	return sellerServiceErrors[service.ErrSellerServiceGeneric]
+}
 
-	var validatorErr validator.ValidationErrors
-	if errors.As(err, &validatorErr) {
-		var validationErrors []string
-		for _, validationErr := range err.(validator.ValidationErrors) {
-			validationErrors = append(validationErrors, fmt.Sprintf("%s is %s and must be a %s", validationErr.Field(), validationErr.ActualTag(), validationErr.Kind()))
+func HandleErrorSeller(err error) SellerHandlerErrors {
+	switch e := err.(type) {
+	case *json.UnmarshalTypeError:
+		return SellerHandlerErrors{Code: http.StatusBadRequest, Msg: fmt.Sprintf("the field '%s' must be a '%s'", err.(*json.UnmarshalTypeError).Field, err.(*json.UnmarshalTypeError).Type)}
+	case validator.ValidationErrors:
+		errors := "The request is invalid because it does not contain the necessary fields: "
+		for _, fieldErr := range e {
+			fieldName := fieldErr.Field()
+			if field, ok := reflect.TypeOf(dto.SellerDto{}).FieldByName(fieldName); ok {
+				errors += fmt.Sprintf("'%s' is %s and must be a %s, ", field.Tag.Get("json"), fieldErr.Tag(), fieldErr.Kind())
+			} else {
+				errors += fmt.Sprintf("'%s' is %s and must be a %s, ", fieldName, fieldErr.Tag(), fieldErr.Kind())
+			}
 		}
-		response.JSON(w, http.StatusUnprocessableEntity, dto.ResponseDTO{
-			Code: http.StatusUnprocessableEntity,
-			Msg:  "The request is invalid because it does not contain the necessary fields",
-			Data: validationErrors,
-		})
+		return SellerHandlerErrors{Code: http.StatusUnprocessableEntity, Msg: errors}
+	case *json.SyntaxError:
+		return SellerHandlerErrors{Code: http.StatusBadRequest, Msg: "Bad Request - invalid JSON structure"}
+	default:
+		return getSellerErrorMessage(err)
 	}
-
-	var syntaxErr *json.SyntaxError
-	if errors.As(err, &syntaxErr) {
-		response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-			Code: http.StatusBadRequest,
-			Msg:  "Bad Request - invalid JSON structure",
-			Data: nil,
-		})
-	}
-
 }
