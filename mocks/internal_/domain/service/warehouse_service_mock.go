@@ -1,4 +1,4 @@
-package service
+package service_mock
 
 import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"

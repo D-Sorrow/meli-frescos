@@ -53,8 +53,8 @@ func (p *productBatchesService) Create(product models.ProductBatches2AttributesF
 
 	newProductBatchEntity, err := p.repo.Create(*purchaseOrderEntity)
 	if err != nil {
-		if errors.Is(err, repository.ErrForeignKeysNotValid) {
-			err = service.ForeignKeysNotValid
+		if errors.Is(err, repository.ErrForeignKeysNotValidProductBatches) {
+			err = service.ForeignKeysNotValidProductBatches
 		}
 		return
 	}

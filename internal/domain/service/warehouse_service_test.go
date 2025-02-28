@@ -14,7 +14,7 @@ import (
 
 func TestGetWarehouses(t *testing.T) {
 	t.Run("find all warehouses", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		mockRepository.On("GetWarehouses").Return(fakeModels.WarehousesFake, error(nil))
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -27,7 +27,7 @@ func TestGetWarehouses(t *testing.T) {
 	})
 
 	t.Run("find all warehouses fail", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		mockRepository.On("GetWarehouses").Return(nil, error(repositoryErr.ErrWarehouseDataBase))
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -40,7 +40,7 @@ func TestGetWarehouses(t *testing.T) {
 
 func TestGetWarehouseById(t *testing.T) {
 	t.Run("find warehouse successfull", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		warehouseFake := fakeModels.WarehousesFake[1]
 		mockRepository.On("GetWarehouseById", 1).Return(warehouseFake, error(nil))
 		serviceImp := NewWarehouseService(mockRepository)
@@ -54,7 +54,7 @@ func TestGetWarehouseById(t *testing.T) {
 	})
 
 	t.Run("warehouse not found", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		mockRepository.On("GetWarehouseById", 2).Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -68,7 +68,7 @@ func TestGetWarehouseById(t *testing.T) {
 
 func TestCreateWarehouse(t *testing.T) {
 	t.Run("create warehouse ok", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		warehouseFake := fakeModels.WarehousesFake[1]
 		mockRepository.On("CreateWarehouse", warehouseFake).Return(warehouseFake, error(nil))
 		serviceImp := NewWarehouseService(mockRepository)
@@ -82,7 +82,7 @@ func TestCreateWarehouse(t *testing.T) {
 	})
 
 	t.Run("create warehouse conflict", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		mockRepository.On("CreateWarehouse", models.Warehouse{}).Return(models.Warehouse{}, repositoryErr.ErrWarehouseCodeDuplicate)
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -96,7 +96,7 @@ func TestCreateWarehouse(t *testing.T) {
 
 func TestPatchWarehouse(t *testing.T) {
 	t.Run("update warehouse successful", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		warehouseFakeMap := fakeModels.WarehouseFakeMap
 		warehouseFake := fakeModels.WarehousesFake[1]
 		mockRepository.On("PatchWarehouse", 1, mock.Anything).Return(warehouseFake, error(nil))
@@ -110,7 +110,7 @@ func TestPatchWarehouse(t *testing.T) {
 	})
 
 	t.Run("update warehouse not found", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		warehouseFakeMap := fakeModels.WarehouseFakeMap
 		mockRepository.On("PatchWarehouse", 1, mock.Anything).Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
 		serviceImp := NewWarehouseService(mockRepository)
@@ -123,7 +123,7 @@ func TestPatchWarehouse(t *testing.T) {
 	})
 
 	t.Run("update warehouse conflict", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		warehouseFakeMap := fakeModels.WarehouseFakeMap
 		mockRepository.On("PatchWarehouse", 1, mock.Anything).Return(models.Warehouse{}, repositoryErr.ErrWarehouseCodeDuplicate)
 		serviceImp := NewWarehouseService(mockRepository)
@@ -138,7 +138,7 @@ func TestPatchWarehouse(t *testing.T) {
 
 func TestDeleteWarehouse(t *testing.T) {
 	t.Run("delete warehouse successful", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		mockRepository.On("DeleteWarehouse", 1).Return(error(nil))
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -150,7 +150,7 @@ func TestDeleteWarehouse(t *testing.T) {
 	})
 
 	t.Run("delete warehouse not found", func(t *testing.T) {
-		mockRepository := repository.NewWarehouseRepositoryMock()
+		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		mockRepository.On("DeleteWarehouse", 1).Return(repositoryErr.ErrWarehouseNotFound)
 		serviceImp := NewWarehouseService(mockRepository)
 

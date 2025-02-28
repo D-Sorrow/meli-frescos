@@ -13,7 +13,7 @@ import (
 )
 
 func TestProductService_SaveProduct_Create(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("SaveProduct", mock.Anything).Return(nil)
 
 	serviceTest := service.NewProductService(mockRepository)
@@ -26,7 +26,7 @@ func TestProductService_SaveProduct_Create(t *testing.T) {
 }
 
 func TestProductService_SaveProduct_Conflict(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("SaveProduct", mock.Anything).Return(repository2.ErrRepositoryProductAlreadyExists)
 
 	serviceTest := service.NewProductService(mockRepository)
@@ -37,7 +37,7 @@ func TestProductService_SaveProduct_Conflict(t *testing.T) {
 	assert.Equal(t, err, service2.ErrServiceProductAlreadyExists)
 }
 func TestProductService_SaveProduct_ErrValidation(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("SaveProduct", mock.Anything).Return(nil)
 	product := models.ReturnMockProductModel()
 	product.Attributes.FreezingRate = 10
@@ -50,7 +50,7 @@ func TestProductService_SaveProduct_ErrValidation(t *testing.T) {
 	mockRepository.AssertNotCalled(t, "SaveProduct", mock.Anything)
 }
 func TestProductService_GetProducts(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("GetProducts").Return(models.ReturnProductModelMap(), nil)
 
 	serviceTest := service.NewProductService(mockRepository)
@@ -61,7 +61,7 @@ func TestProductService_GetProducts(t *testing.T) {
 	assert.Equal(t, len(products), len(models.ReturnProductModelMap()))
 }
 func TestProductService_GetProductByID_NonExistent(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("GetProductByID", 1).Return(models2.Product{}, repository2.ErrRepositoryProductNotFound)
 
 	serviceTest := service.NewProductService(mockRepository)
@@ -72,7 +72,7 @@ func TestProductService_GetProductByID_NonExistent(t *testing.T) {
 }
 
 func TestProductService_GetProductByID_Existent(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("GetProductByID", 1).Return(models.ReturnMockProductModel(), nil)
 
 	serviceTest := service.NewProductService(mockRepository)
@@ -83,7 +83,7 @@ func TestProductService_GetProductByID_Existent(t *testing.T) {
 	assert.Equal(t, product, models.ReturnMockProductModel())
 }
 func TestProductService_UpdateProduct_Existent(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("UpdateProduct", 1, mock.Anything).Return(nil)
 	mockRepository.On("GetProductByID", 1).Return(models.ReturnMockProductModel(), nil)
 	att := models.ReturnMockProductModel()
@@ -99,7 +99,7 @@ func TestProductService_UpdateProduct_Existent(t *testing.T) {
 }
 
 func TestProductService_UpdateProduct_NonExistent(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("UpdateProduct", 1, mock.Anything).Return(nil)
 	mockRepository.On("GetProductByID", 1).Return(models2.Product{}, repository2.ErrRepositoryProductNotFound)
 	att := models.ReturnMockProductModel()
@@ -114,7 +114,7 @@ func TestProductService_UpdateProduct_NonExistent(t *testing.T) {
 }
 
 func TestProductService_UpdateProduct_ErrUpdate(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("UpdateProduct", 1, mock.Anything).Return(repository2.ErrRepositoryProductNotFound)
 	mockRepository.On("GetProductByID", 1).Return(models2.Product{}, nil)
 	att := models.ReturnMockProductModel()
@@ -129,7 +129,7 @@ func TestProductService_UpdateProduct_ErrUpdate(t *testing.T) {
 }
 
 func TestProductService_DeleteProduct_NonExistent(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("DeleteProduct", 1).Return(repository2.ErrRepositoryProductNotFound)
 
 	serviceTest := service.NewProductService(mockRepository)
@@ -139,7 +139,7 @@ func TestProductService_DeleteProduct_NonExistent(t *testing.T) {
 	assert.Equal(t, err, repository2.ErrRepositoryProductNotFound)
 }
 func TestProductService_DeleteProduct_Existent(t *testing.T) {
-	mockRepository := new(repository.ProductRepositoryMock)
+	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("DeleteProduct", 1).Return(nil)
 
 	serviceTest := service.NewProductService(mockRepository)

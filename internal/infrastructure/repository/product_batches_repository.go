@@ -76,7 +76,7 @@ func (b *ProductBatchesRepository) Create(productBatches entities.ProductBatches
 	if err != nil {
 		var mySqlErr *mysql.MySQLError
 		if errors.As(err, &mySqlErr) && mySqlErr.Number == 1452 {
-			err = repository.ErrForeignKeysNotValid
+			err = repository.ErrForeignKeysNotValidProductBatches
 			return
 		}
 

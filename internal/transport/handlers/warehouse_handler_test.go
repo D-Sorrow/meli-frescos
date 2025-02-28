@@ -18,7 +18,7 @@ import (
 
 func TestGetWarehouses(t *testing.T) {
 	t.Run("find all warehouses", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		warehousesFake := fakeModels.WarehousesFake
 		serviceMock.On("GetWarehouses").Return(warehousesFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
@@ -62,7 +62,7 @@ func TestGetWarehouses(t *testing.T) {
 	})
 
 	t.Run("find all warehouses fail", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 
 		serviceMock.On("GetWarehouses").Return(nil, error(serviceErr.ErrWarehouseServiceDefault))
 		handler := NewWarehouseHandler(serviceMock)
@@ -89,7 +89,7 @@ func TestGetWarehouses(t *testing.T) {
 
 func TestGetWarehouseById(t *testing.T) {
 	t.Run("find warehouse by id", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("GetWarehouseById", mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
@@ -123,7 +123,7 @@ func TestGetWarehouseById(t *testing.T) {
 	})
 
 	t.Run("warehouse not found", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("GetWarehouseById", mock.Anything).Return(models.Warehouse{}, error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -147,7 +147,7 @@ func TestGetWarehouseById(t *testing.T) {
 	})
 
 	t.Run("invalid warehouse id", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("GetWarehouseById", mock.Anything).Return(models.Warehouse{}, error(handlerErr.ErrWarehouseIdNotValid))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -172,7 +172,7 @@ func TestGetWarehouseById(t *testing.T) {
 
 func TestCreateWarehouse(t *testing.T) {
 	t.Run("create warehouse ok", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
@@ -215,7 +215,7 @@ func TestCreateWarehouse(t *testing.T) {
 	})
 
 	t.Run("create warehouse fail - incomplete body", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -246,7 +246,7 @@ func TestCreateWarehouse(t *testing.T) {
 	})
 
 	t.Run("create warehouse fail - incorrect body", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -278,7 +278,7 @@ func TestCreateWarehouse(t *testing.T) {
 	})
 
 	t.Run("create warehouse fail - conflic", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(models.Warehouse{}, error(serviceErr.ErrWarehouseCodeDuplicate))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -313,7 +313,7 @@ func TestCreateWarehouse(t *testing.T) {
 
 func TestPatchWarehouse(t *testing.T) {
 	t.Run("update warehouse ok", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
@@ -356,7 +356,7 @@ func TestPatchWarehouse(t *testing.T) {
 	})
 
 	t.Run("update warehouse not found", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -388,7 +388,7 @@ func TestPatchWarehouse(t *testing.T) {
 	})
 
 	t.Run("update warehouse- invalid id", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -419,7 +419,7 @@ func TestPatchWarehouse(t *testing.T) {
 	})
 
 	t.Run("update warehouse - invalid request body", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -450,7 +450,7 @@ func TestPatchWarehouse(t *testing.T) {
 	})
 
 	t.Run("update warehouse - empty body values", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -483,7 +483,7 @@ func TestPatchWarehouse(t *testing.T) {
 
 func TestDeleteWarehouse(t *testing.T) {
 	t.Run("delete warehouse ok", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -507,7 +507,7 @@ func TestDeleteWarehouse(t *testing.T) {
 	})
 
 	t.Run("delete warehouse not found", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -531,7 +531,7 @@ func TestDeleteWarehouse(t *testing.T) {
 	})
 
 	t.Run("invalid warehouse id", func(t *testing.T) {
-		serviceMock := service.NewWarehouseServiceMock()
+		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
