@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	repoErros "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
-	"github.com/go-sql-driver/mysql"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	repoErrors "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type CarrierRepository struct {
@@ -28,7 +28,7 @@ func (cr *CarrierRepository) GetAllCarriers() ([]models.Carrier, error) {
 				FROM carriers`
 	rows, err := cr.db.Query(query)
 	if err != nil {
-		return nil, repoErros.ErrDataBase
+		return nil, repoErrors.HandleRepositoryError(repository.ErrCarrierDataBase, err)
 	}
 	defer rows.Close()
 
@@ -41,7 +41,7 @@ func (cr *CarrierRepository) GetAllCarriers() ([]models.Carrier, error) {
 			&carrier.Telephone,
 			&carrier.LocalityId)
 		if err != nil {
-			return nil, repoErros.ErrDataBase
+			return nil, repoErrors.HandleRepositoryError(repository.ErrCarrierDataBase, err)
 		}
 		carriers = append(carriers, carrier)
 	}
@@ -66,7 +66,7 @@ func (cr *CarrierRepository) GetCarrierById(id int) (models.Carrier, error) {
 		&carrier.Telephone,
 		&carrier.LocalityId)
 	if err != nil {
-		return models.Carrier{}, repoErros.ErrIdNotFound
+		return models.Carrier{}, repoErrors.HandleRepositoryError(repository.ErrCarrierNotFound, err)
 	}
 
 	return carrier, nil
@@ -87,22 +87,13 @@ func (cr *CarrierRepository) CreateCarrier(carrier models.Carrier) (models.Carri
 		carrier.Telephone,
 		carrier.LocalityId)
 	if err != nil {
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
-			switch mysqlErr.Number {
-			case 1062:
-				return models.Carrier{}, repoErros.ErrCarrierCidDuplicate
-			case 1452:
-				return models.Carrier{}, repoErros.ErrLocalityId
-			case 1451:
-				return models.Carrier{}, repoErros.ErrFKConstraintFail
-			default:
-				return models.Carrier{}, repoErros.ErrDataBase
-			}
-
-		}
+		return models.Carrier{}, repoErrors.HandleRepositoryError(repoErrors.HandleCarrierRepositoryError(err), err)
 	}
 
-	id, _ := result.LastInsertId()
+	id, err := result.LastInsertId()
+	if err != nil {
+		return models.Carrier{}, repoErrors.HandleRepositoryError(repository.ErrCarrierGetUpdatedOrCreatedItem, err)
+	}
 	newCarrier, _ := cr.GetCarrierById(int(id))
 	return newCarrier, nil
 }
