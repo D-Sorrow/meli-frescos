@@ -22,7 +22,7 @@ func TestSellerService_CreateSeller(t *testing.T) {
 			LocalityId:  1,
 		}
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("CreateSeller", sellerFake).Return(
 			sellerFake, nil,
 		)
@@ -46,7 +46,7 @@ func TestSellerService_CreateSeller(t *testing.T) {
 			LocalityId:  1,
 		}
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("CreateSeller", sellerFake).Return(
 			models.Seller{}, repository_errors.ErrSellerAlreadyExists,
 		)
@@ -82,7 +82,7 @@ func TestSellerService_ReadSellers(t *testing.T) {
 			LocalityId:  2,
 		}
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("GetSellers").Return(
 			sellersFake, nil,
 		)
@@ -100,7 +100,7 @@ func TestSellerService_ReadSellers(t *testing.T) {
 
 	t.Run("GetAll Sellers - not found sellers", func(t *testing.T) {
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("GetSellers").Return(
 			map[int]models.Seller{}, repository_errors.ErrSellerNotFound,
 		)
@@ -127,7 +127,7 @@ func TestSellerService_ReadSellers(t *testing.T) {
 			LocalityId:  1,
 		}
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("GetSellerById", sellerToFind).Return(
 			sellerFake, nil,
 		)
@@ -146,7 +146,7 @@ func TestSellerService_ReadSellers(t *testing.T) {
 	t.Run("FindById Sellers not exist", func(t *testing.T) {
 		sellerToFind := 10
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("GetSellerById", sellerToFind).Return(
 			models.Seller{}, repository_errors.ErrSellerNotFound,
 		)
@@ -188,7 +188,7 @@ func TestSellerService_Update(t *testing.T) {
 			LocalityId:  localityId,
 		}
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("UpdateSeller", id, sellerToUpdateFake).Return(
 			sellerExpected, nil,
 		)
@@ -221,7 +221,7 @@ func TestSellerService_Update(t *testing.T) {
 
 		sellerExpected := models.Seller{}
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("UpdateSeller", id, sellerToUpdateFake).Return(
 			sellerExpected, repository_errors.ErrSellerNotFound,
 		)
@@ -241,7 +241,7 @@ func TestSellerService_Delete(t *testing.T) {
 	t.Run("Delete seller successfully", func(t *testing.T) {
 		id := 1
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("DeleteSeller", id).Return(
 			nil,
 		)
@@ -258,7 +258,7 @@ func TestSellerService_Delete(t *testing.T) {
 	t.Run("Delete seller fail - seller not exist", func(t *testing.T) {
 		id := 1
 
-		mockRepository := new(repository.SellerRepositoryMock)
+		mockRepository := new(repository_mock.SellerRepositoryMock)
 		mockRepository.On("DeleteSeller", id).Return(
 			repository_errors.ErrSellerNotFound,
 		)

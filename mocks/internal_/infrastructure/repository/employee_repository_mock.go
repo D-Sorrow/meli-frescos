@@ -1,4 +1,4 @@
-package repository
+package repository_mock
 
 import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
