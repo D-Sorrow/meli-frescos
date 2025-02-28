@@ -1,10 +1,25 @@
 package error_management
 
-import "net/http"
+import (
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"net/http"
+)
 
 type ErrHandlerProductRecord struct {
 	Message string
 	Code    int
+}
+
+const (
+	messageProductRecordNotFound = "product not found"
+	messageProductRecordUnknown  = "product record unknown error"
+	messageProductRecordBusiness = "product record business error"
+)
+
+var productRecordHandlerErrors = map[error]ErrHandlerProductRecord{
+	service.ErrServiceProductRecordNotFound:      {Message: messageProductRecordNotFound, Code: http.StatusConflict},
+	service.ErrServiceProductRecordBusinessRules: {Message: messageProductRecordBusiness, Code: http.StatusUnprocessableEntity},
+	service.ErrServiceProductRecordUnknown:       {Message: messageProductRecordUnknown, Code: http.StatusInternalServerError},
 }
 
 func (e *ErrHandlerProductRecord) Error() string {
@@ -13,25 +28,15 @@ func (e *ErrHandlerProductRecord) Error() string {
 func (e *ErrHandlerProductRecord) GetCode() int {
 	return e.Code
 }
-func HandlerErrProductRecord(err error) ErrHandlerProductRecord {
-	if err.Error() == "001" {
-		return ErrHandlerProductRecord{
-			Message: "Error get Product",
-			Code:    http.StatusInternalServerError,
-		}
-	} else if err.Error() == "002" {
-		return ErrHandlerProductRecord{
-			Message: "Error business rules",
-			Code:    http.StatusBadRequest,
-		}
-	} else if err.Error() == "003" {
-		return ErrHandlerProductRecord{
-			Message: "Error get report",
-			Code:    http.StatusBadRequest,
-		}
+func getErrorProductRecord(err error) ErrHandlerProductRecord {
+	if e, exists := productRecordHandlerErrors[err]; exists {
+		return e
 	}
-	return ErrHandlerProductRecord{
-		Message: "an unknown error occurred",
-		Code:    http.StatusInternalServerError,
+	return productRecordHandlerErrors[service.ErrServiceProductRecordUnknown]
+}
+func HandlerErrProductRecord(err error) ErrHandlerProductRecord {
+	switch err.(type) {
+	default:
+		return getErrorProductRecord(err)
 	}
 }

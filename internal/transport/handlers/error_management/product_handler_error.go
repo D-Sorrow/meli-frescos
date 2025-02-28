@@ -1,54 +1,42 @@
 package error_management
 
 import (
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"net/http"
 )
 
-type ErrHandler struct {
+type ErrHandlerProduct struct {
 	Message string
 	Code    int
 }
 
-func (e *ErrHandler) Error() string {
+const (
+	messageProductNotFound      = "Product not found"
+	messageProductUnknown       = "Product unknown"
+	messageProductAlreadyExists = "Product already exists"
+)
+
+var productHandlerErrors = map[error]ErrHandlerProduct{
+	service.ErrServiceProductNotFound:      {Message: messageProductNotFound, Code: http.StatusNotFound},
+	service.ErrServiceProductUnknown:       {Message: messageProductUnknown, Code: http.StatusInternalServerError},
+	service.ErrServiceProductAlreadyExists: {Message: messageProductAlreadyExists, Code: http.StatusConflict},
+}
+
+func (e *ErrHandlerProduct) Error() string {
 	return e.Message
 }
-func (e *ErrHandler) GetCode() int {
+func (e *ErrHandlerProduct) GetCode() int {
 	return e.Code
 }
-func HandlerErr(err error) ErrHandler {
-	if err.Error() == "001" {
-		return ErrHandler{
-			Message: "Error get Product",
-			Code:    http.StatusInternalServerError,
-		}
-	} else if err.Error() == "002" {
-		return ErrHandler{
-			Message: "Error get Product",
-			Code:    http.StatusNotFound,
-		}
-	} else if err.Error() == "003" {
-		return ErrHandler{
-			Message: "Error in this operation",
-			Code:    http.StatusBadRequest,
-		}
-	} else if err.Error() == "004" {
-		return ErrHandler{
-			Message: "Error business rules",
-			Code:    http.StatusBadRequest,
-		}
-	} else if err.Error() == "005" {
-		return ErrHandler{
-			Message: "Error delete product",
-			Code:    http.StatusNotFound,
-		}
-	} else if err.Error() == "006" {
-		return ErrHandler{
-			Message: "Error delete isn't possible",
-			Code:    http.StatusBadRequest,
-		}
+func getErrorProduct(err error) ErrHandlerProduct {
+	if e, exists := productHandlerErrors[err]; exists {
+		return e
 	}
-	return ErrHandler{
-		Message: "an unknown error occurred",
-		Code:    http.StatusInternalServerError,
+	return productHandlerErrors[service.ErrServiceProductNotFound]
+}
+func HandlerErrorProduct(err error) ErrHandlerProduct {
+	switch err.(type) {
+	default:
+		return getErrorProduct(err)
 	}
 }

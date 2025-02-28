@@ -42,15 +42,15 @@ func (hand *ProductRecordHandler) SaveProductRecord() http.HandlerFunc {
 		}
 		errValidate := productRecord.Validation()
 		if errValidate != nil {
-			response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
-				Code: http.StatusInternalServerError,
+			response.JSON(w, http.StatusUnprocessableEntity, dto.ResponseDTO{
+				Code: http.StatusUnprocessableEntity,
 				Msg:  errValidate.Error(),
 				Data: nil,
 			})
 			return
 		}
 
-		errSave := hand.service.SaveProductRecord(mappers.ToProductRecordModel(&productRecord))
+		record, errSave := hand.service.SaveProductRecord(mappers.ToProductRecordModel(&productRecord))
 		if errSave != nil {
 			errSpe := error_management.HandlerErrProductRecord(errSave)
 			response.JSON(w, errSpe.Code, dto.ResponseDTO{
@@ -63,9 +63,8 @@ func (hand *ProductRecordHandler) SaveProductRecord() http.HandlerFunc {
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
 			Code: http.StatusCreated,
 			Msg:  "Product record saved",
-			Data: nil,
+			Data: record,
 		})
-		return
 	}
 }
 func (hand *ProductRecordHandler) GetProductRecord() http.HandlerFunc {
@@ -88,6 +87,5 @@ func (hand *ProductRecordHandler) GetProductRecord() http.HandlerFunc {
 			Code: http.StatusOK,
 			Data: records,
 		})
-		return
 	}
 }
