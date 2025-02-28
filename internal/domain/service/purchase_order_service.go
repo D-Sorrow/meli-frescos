@@ -1,12 +1,11 @@
 package service
 
 import (
-	"errors"
 	"time"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service/mappers"
 	"github.com/google/uuid"
 )
@@ -22,10 +21,10 @@ func NewPurchaseOrderService(repository repository.PurchaseOrderRepository) *Pur
 func (p *PurchaseOrderService) GetById(id int) (purchaseOrder models.PurchaseOrder, err error) {
 	purchaseOrderEntity, err := p.repo.GetById(id)
 	if err != nil {
-		if errors.Is(err, repository.ErrPurchaseOrderNotFoundWithID) {
-			err = service.PurchaseOrderDoesNotExist
-		}
-
+		err = error_management.HandleServiceError(
+			error_management.HandlePurchaseOrderServiceError(err),
+			err,
+		)
 		return
 	}
 
@@ -34,7 +33,9 @@ func (p *PurchaseOrderService) GetById(id int) (purchaseOrder models.PurchaseOrd
 	return
 }
 
-func (p *PurchaseOrderService) Create(buyer models.PurchaseOrderAttributesFKs) (newPurchaseOrder models.PurchaseOrder, err error) {
+func (p *PurchaseOrderService) Create(
+	buyer models.PurchaseOrderAttributesFKs,
+) (newPurchaseOrder models.PurchaseOrder, err error) {
 	newUUID := uuid.New().String()
 	utcNow := time.Now().UTC()
 	buyer.PurchaseOrderAttributes.TrackingCode = newUUID
@@ -44,9 +45,10 @@ func (p *PurchaseOrderService) Create(buyer models.PurchaseOrderAttributesFKs) (
 
 	newPurchaseOrderEntity, err := p.repo.Create(*purchaseOrderEntity)
 	if err != nil {
-		if errors.Is(err, repository.ErrForeignKeysNotValid) {
-			err = service.ForeignKeysNotValid
-		}
+		err = error_management.HandleServiceError(
+			error_management.HandlePurchaseOrderServiceError(err),
+			err,
+		)
 		return
 	}
 
