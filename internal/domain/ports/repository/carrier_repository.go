@@ -1,0 +1,21 @@
+package repository
+
+import (
+	"errors"
+
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+)
+
+type CarrierRepositoryInterface interface {
+	GetAllCarriers() ([]models.Carrier, error)
+	CreateCarrier(carrier models.Carrier) (models.Carrier, error)
+}
+
+var (
+	ErrCarrierDataBase                = errors.New("database error")
+	ErrCarrierCidDuplicate            = errors.New("carrier cid duplicate")
+	ErrCarrierNotFound                = errors.New("carrier id not found")
+	ErrCarrierLocalityId              = errors.New("locality id not found")
+	ErrCarrierFKConstraintFail        = errors.New("foreign key constraint fails")
+	ErrCarrierGetUpdatedOrCreatedItem = errors.New("error getting updated or created carrier")
+)
