@@ -51,7 +51,7 @@ var SellerFake models.Seller = models.Seller{
 	LocalityId:  1,
 }
 
-type testCase struct {
+type testCaseSeller struct {
 	name               string
 	requestUrlParams   interface{}
 	requestPayloadBody interface{}
@@ -69,7 +69,7 @@ type testCaseServiceMock struct {
 
 func TestSellerHandlerCreate(t *testing.T) {
 
-	testCases := []testCase{
+	testCases := []testCaseSeller{
 		{name: "Create Seller - Successfully",
 			testCaseServiceMock: testCaseServiceMock{
 				requestServiceMock:  SellerFake,
@@ -129,7 +129,7 @@ func TestSellerHandlerCreate(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockService := new(service.SellerServiceMock)
+			mockService := new(service_mock.SellerServiceMock)
 
 			mockService.On("CreateSeller", tc.requestServiceMock).Return(tc.responseServiceMock, tc.errorServiceMock)
 
@@ -161,7 +161,7 @@ func TestSellerHandlerReadAll(t *testing.T) {
 	sellersFakeMap := make(map[int]models.Seller)
 	sellersFakeMap[1] = SellerFake
 
-	testCases := []testCase{
+	testCases := []testCaseSeller{
 		{name: "Find All - Successfully",
 			testCaseServiceMock: testCaseServiceMock{
 				requestServiceMock:  nil,
@@ -188,7 +188,7 @@ func TestSellerHandlerReadAll(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockService := new(service.SellerServiceMock)
+			mockService := new(service_mock.SellerServiceMock)
 
 			mockService.On("GetSellers").Return(tc.responseServiceMock, tc.errorServiceMock)
 
@@ -208,7 +208,7 @@ func TestSellerHandlerReadAll(t *testing.T) {
 }
 
 func TestSellerHandlerRead(t *testing.T) {
-	testCases := []testCase{
+	testCases := []testCaseSeller{
 		{name: "Find By ID - Seller No Exists",
 			testCaseServiceMock: testCaseServiceMock{
 				requestServiceMock:  1000,
@@ -247,7 +247,7 @@ func TestSellerHandlerRead(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockService := new(service.SellerServiceMock)
+			mockService := new(service_mock.SellerServiceMock)
 
 			mockService.On("GetSellerById", tc.requestServiceMock).Return(tc.responseServiceMock, tc.errorServiceMock)
 
@@ -267,7 +267,7 @@ func TestSellerHandlerRead(t *testing.T) {
 }
 
 func TestSellerHandlerUpdate(t *testing.T) {
-	testCases := []testCase{
+	testCases := []testCaseSeller{
 		{name: "Update Seller by Id - Successfully",
 			testCaseServiceMock: testCaseServiceMock{
 				requestServiceMock:  SellerPatch,
@@ -332,7 +332,7 @@ func TestSellerHandlerUpdate(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockService := new(service.SellerServiceMock)
+			mockService := new(service_mock.SellerServiceMock)
 
 			mockService.On("UpdateSeller", tc.requestUrlParams, tc.requestServiceMock).Return(tc.responseServiceMock, tc.errorServiceMock)
 
@@ -360,7 +360,7 @@ func TestSellerHandlerUpdate(t *testing.T) {
 }
 
 func TestSellerHandlerDelete(t *testing.T) {
-	testCases := []testCase{
+	testCases := []testCaseSeller{
 		{name: "Delete Seller by Id - Successfully",
 			testCaseServiceMock: testCaseServiceMock{
 				requestServiceMock:  1,
@@ -398,7 +398,7 @@ func TestSellerHandlerDelete(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockService := new(service.SellerServiceMock)
+			mockService := new(service_mock.SellerServiceMock)
 
 			mockService.On("DeleteSeller", tc.requestUrlParams).Return(tc.errorServiceMock)
 

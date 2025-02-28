@@ -68,7 +68,7 @@ func TestProductHandler_SaveProduct(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockService := new(service.ProductServiceMock)
+			mockService := new(service_mock.ProductServiceMock)
 			if tc.mockServiceReturn == nil {
 				mockService.On("SaveProduct", modelsMock.ReturnMockProductModel()).Return(tc.mockServiceReturn[0])
 			} else {
@@ -129,7 +129,7 @@ func TestProductHandler_GetProductByID(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockService := new(service.ProductServiceMock)
+			mockService := new(service_mock.ProductServiceMock)
 			if tc.mockServiceReturn != nil {
 				mockService.On("GetProductByID", 1).Return(tc.mockServiceReturn[0], tc.mockServiceReturn[1])
 			}
@@ -149,7 +149,7 @@ func TestProductHandler_GetProductByID(t *testing.T) {
 	}
 }
 func TestProductHandler_GetProducts(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("GetProducts").Return(modelsMock.ReturnProductModelMap(), nil)
 
 	handler := handlers.NewProductHandler(mockService)
@@ -165,7 +165,7 @@ func TestProductHandler_GetProducts(t *testing.T) {
 	mockService.AssertNumberOfCalls(t, "GetProducts", 1)
 }
 func TestProductHandler_GetProducts_Err(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("GetProducts").Return(modelsMock.ReturnProductModelMap(), service2.ErrServiceProductUnknown)
 
 	handler := handlers.NewProductHandler(mockService)
@@ -182,7 +182,7 @@ func TestProductHandler_GetProducts_Err(t *testing.T) {
 }
 
 func TestProductHandler_UpdateProduct(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("UpdateProduct", mock.Anything, mock.Anything).Return(modelsMock.ReturnMockProductModel(), nil)
 
 	handler := handlers.NewProductHandler(mockService)
@@ -199,7 +199,7 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 }
 
 func TestProductHandler_UpdateProduct_NonExistent(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("UpdateProduct", mock.Anything, mock.Anything).Return(modelsMock.ReturnMockProductModel(), service2.ErrServiceProductNotFound)
 
 	handler := handlers.NewProductHandler(mockService)
@@ -215,7 +215,7 @@ func TestProductHandler_UpdateProduct_NonExistent(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 func TestProductHandler_UpdateProduct_IdInvalid(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
@@ -230,7 +230,7 @@ func TestProductHandler_UpdateProduct_IdInvalid(t *testing.T) {
 }
 
 func TestProductHandler_UpdateProduct_DecoderErr(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
@@ -245,7 +245,7 @@ func TestProductHandler_UpdateProduct_DecoderErr(t *testing.T) {
 }
 
 func TestProductHandler_UpdateProduct_ErrValidation(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 	att := modelsMock.ReturnAttributesModel()
 	att.FreezingRate = 10
 
@@ -263,7 +263,7 @@ func TestProductHandler_UpdateProduct_ErrValidation(t *testing.T) {
 }
 
 func TestProductHandler_DeleteProduct_NonExistent(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("DeleteProduct", 1).Return(service2.ErrServiceProductNotFound)
 
 	handler := handlers.NewProductHandler(mockService)
@@ -278,7 +278,7 @@ func TestProductHandler_DeleteProduct_NonExistent(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 func TestProductHandler_DeleteProduct_Existent(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("DeleteProduct", 1).Return(nil)
 
 	handler := handlers.NewProductHandler(mockService)
@@ -294,7 +294,7 @@ func TestProductHandler_DeleteProduct_Existent(t *testing.T) {
 }
 
 func TestProductHandler_DeleteProduct_IdInvalid(t *testing.T) {
-	mockService := new(service.ProductServiceMock)
+	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()

@@ -12,8 +12,5 @@ type ProductRecordRepository interface {
 }
 
 var (
-	CodeSaveErr                        = errors.New("001")
-	CodeGetErr                         = errors.New("003")
 	ErrRepositoryProductRecordNotFound = errors.New("product record not found")
-	ErrRepositoryProductRecordUnknown  = errors.New("product record unknown error")
 )
