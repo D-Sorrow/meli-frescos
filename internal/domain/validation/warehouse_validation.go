@@ -35,8 +35,8 @@ func validateJsonKeys(data map[string]interface{}) (err error) {
 		"address":             {},
 		"telephone":           {},
 		"warehouse_code":      {},
-		"minimun_capacity":    {},
-		"minimun_temperature": {},
+		"minimum_capacity":    {},
+		"minimum_temperature": {},
 		"locality_id":         {},
 	}
 
@@ -66,11 +66,11 @@ func validateValuesJsonType(data map[string]interface{}) (err error) {
 			if _, ok := value.(string); !ok {
 				err = errors.New("telophone must be a string")
 			}
-		case "minimun_capacity":
+		case "minimum_capacity":
 			if _, ok := value.(float64); !ok {
 				err = errors.New("minimun capacity must be a int")
 			}
-		case "minimun_temperature":
+		case "minimum_temperature":
 			if _, ok := value.(float64); !ok {
 				err = errors.New("minimun temperature must be a int")
 			}
@@ -98,13 +98,13 @@ func ValidatePatchValues(data map[string]interface{}) error {
 			if value == "" {
 				return errors.New("telephone can not be empty")
 			}
-		case "minimun_capacity":
+		case "minimum_capacity":
 			if val, ok := value.(float64); ok {
 				if val < 0 {
 					return errors.New("capacity can not be less than cero")
 				}
 			}
-		case "minimun_temperature":
+		case "minimum_temperature":
 			if val, ok := value.(float64); ok {
 				if val < -18 || val > 15 {
 					return errors.New("temperatura must be between -18 and 15 degrees")

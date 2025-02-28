@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	repoErros "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
-	"github.com/go-sql-driver/mysql"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	repoErrors "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type WarehouseRepository struct {
@@ -31,7 +31,7 @@ func (wr *WarehouseRepository) GetWarehouses() (map[int]models.Warehouse, error)
 				FROM warehouses`
 	rows, err := wr.db.Query(query)
 	if err != nil {
-		return nil, repoErros.ErrDataBase
+		return nil, repoErrors.HandleRepositoryError(repository.ErrWarehouseDataBase, err)
 	}
 	defer rows.Close()
 
@@ -45,7 +45,7 @@ func (wr *WarehouseRepository) GetWarehouses() (map[int]models.Warehouse, error)
 			&warehouse.MinimunTemperature,
 			&warehouse.LocalityId)
 		if err != nil {
-			return nil, repoErros.ErrDataBase
+			return nil, repoErrors.HandleRepositoryError(repository.ErrWarehouseDataBase, err)
 		}
 		warehousesMap[warehouse.Id] = warehouse
 	}
@@ -72,7 +72,7 @@ func (wr *WarehouseRepository) GetWarehouseById(id int) (models.Warehouse, error
 		&warehouse.MinimunTemperature,
 		&warehouse.LocalityId)
 	if err != nil {
-		return warehouse, repoErros.ErrIdNotFound
+		return warehouse, repository.ErrWarehouseNotFound
 	}
 
 	return warehouse, nil
@@ -95,14 +95,16 @@ func (wr *WarehouseRepository) CreateWarehouse(warehouse models.Warehouse) (mode
 		warehouse.MinimunTemperature,
 		warehouse.LocalityId)
 	if err != nil {
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
-			return models.Warehouse{}, repoErros.MySqlErrors(*mysqlErr)
-		} else {
-			return models.Warehouse{}, repoErros.ErrDataBase
-		}
+		return models.Warehouse{}, repoErrors.HandleWarehouseRepositoryError(err)
 	}
-	id, _ := result.LastInsertId()
-	NewWarehouse, _ := wr.GetWarehouseById(int(id))
+	id, err := result.LastInsertId()
+	if err != nil {
+		return models.Warehouse{}, repository.ErrWarehouseLastInsertId
+	}
+	NewWarehouse, err := wr.GetWarehouseById(int(id))
+	if err != nil {
+		return models.Warehouse{}, repository.ErrWarehouseGetUpdatedOrCreatedItem
+	}
 	return NewWarehouse, nil
 
 }
@@ -111,11 +113,11 @@ func (wr *WarehouseRepository) PatchWarehouse(id int, data map[string]interface{
 
 	idExists, err := wr.verifyIdExist(id)
 	if err != nil {
-		return models.Warehouse{}, repoErros.ErrDataBase
+		return models.Warehouse{}, repoErrors.HandleRepositoryError(repository.ErrWarehouseDataBase, err)
 	}
 
 	if !idExists {
-		return models.Warehouse{}, repoErros.ErrIdNotFound
+		return models.Warehouse{}, repository.ErrWarehouseNotFound
 	}
 
 	// query parts
@@ -136,26 +138,29 @@ func (wr *WarehouseRepository) PatchWarehouse(id int, data map[string]interface{
 			args = append(args, int(v))
 		}
 	}
+	fmt.Println(setClauses)
+	fmt.Println(args...)
 
 	query := fmt.Sprintf("UPDATE warehouses SET %s WHERE id = ?", strings.Join(setClauses, ","))
 	args = append(args, id)
 
 	result, err := wr.db.Exec(query, args...)
-
 	if err != nil {
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
-			return models.Warehouse{}, repoErros.MySqlErrors(*mysqlErr)
-		} else {
-			return models.Warehouse{}, repoErros.ErrDataBase
-		}
+		return models.Warehouse{}, repoErrors.HandleRepositoryError(repoErrors.HandleWarehouseRepositoryError(err), err)
 	}
 
-	rowsAfected, _ := result.RowsAffected()
+	rowsAfected, err := result.RowsAffected()
+	if err != nil {
+		return models.Warehouse{}, repoErrors.HandleRepositoryError(repository.ErrWarehouseDataBase, err)
+	}
 	if rowsAfected == 0 {
-		return models.Warehouse{}, repoErros.ErrUpdateBySameData
+		return models.Warehouse{}, repository.ErrWarehouseUpdateBySameData
 	}
 
-	UpdatedWarehouse, _ := wr.GetWarehouseById(id)
+	UpdatedWarehouse, err := wr.GetWarehouseById(id)
+	if err != nil {
+		return models.Warehouse{}, repoErrors.HandleRepositoryError(repository.ErrWarehouseGetUpdatedOrCreatedItem, err)
+	}
 	return UpdatedWarehouse, nil
 
 }
@@ -163,22 +168,18 @@ func (wr *WarehouseRepository) PatchWarehouse(id int, data map[string]interface{
 func (wr *WarehouseRepository) DeleteWarehouse(id int) error {
 	idExists, err := wr.verifyIdExist(id)
 	if err != nil {
-		return repoErros.ErrDataBase
+		return repoErrors.HandleRepositoryError(repository.ErrWarehouseDataBase, err)
 	}
 
 	if !idExists {
-		return repoErros.ErrIdNotFound
+		return repository.ErrWarehouseNotFound
 	}
 
 	query := "DELETE FROM warehouses WHERE id = ?"
 
 	_, err = wr.db.Exec(query, id)
 	if err != nil {
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
-			return repoErros.MySqlErrors(*mysqlErr)
-		} else {
-			return repoErros.ErrDataBase
-		}
+		return repoErrors.HandleRepositoryError(repoErrors.HandleWarehouseRepositoryError(err), err)
 	}
 
 	return nil
