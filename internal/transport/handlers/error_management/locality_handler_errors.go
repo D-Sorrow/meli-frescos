@@ -2,13 +2,20 @@ package error_management
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
+)
+
+const (
+	messageLocalityAlreadyExistsError  = "locality already exist"
+	messageLocalityIdNotExistsError    = "locality id not found"
+	messageProvinceNotExistsError      = "province not exist"
+	messageLocalityInternalServerError = "internal server error"
 )
 
 type LocalityHandlerErrors struct {
@@ -16,55 +23,38 @@ type LocalityHandlerErrors struct {
 	Msg  string
 }
 
-func (se *LocalityHandlerErrors) Error() string {
-	return fmt.Sprintf("%d: %s", se.Code, se.Msg)
+var localityServiceErrors = map[error]LocalityHandlerErrors{
+	service.ErrLocalityAlreadyExists:     {Code: http.StatusConflict, Msg: messageLocalityAlreadyExistsError},
+	service.ErrLocalityNotFound:          {Code: http.StatusNotFound, Msg: messageLocalityIdNotExistsError},
+	service.ErrProvinceNotFound:          {Code: http.StatusNotFound, Msg: messageProvinceNotExistsError},
+	service.ErrLocalityRepositoryGeneric: {Code: http.StatusInternalServerError, Msg: messageLocalityInternalServerError},
 }
 
-var ErrLocalityNotFound *LocalityHandlerErrors = &LocalityHandlerErrors{
-	Code: http.StatusNotFound,
-	Msg:  "not found error",
-}
-
-var ErrProvinceNotFound *LocalityHandlerErrors = &LocalityHandlerErrors{
-	Code: http.StatusNotFound,
-	Msg:  "province not found",
-}
-
-var ErrLocalityAlreadyExists *LocalityHandlerErrors = &LocalityHandlerErrors{
-	Code: http.StatusConflict,
-	Msg:  "locality already exists",
-}
-
-func ResponseErrorLocality(err error, w http.ResponseWriter) {
-	var localityErr *LocalityHandlerErrors
-	if errors.As(err, &localityErr) {
-		response.JSON(w, localityErr.Code, dto.ResponseDTO{
-			Code: localityErr.Code,
-			Msg:  localityErr.Msg,
-			Data: nil,
-		})
+func getLocalityErrorMessage(err error) LocalityHandlerErrors {
+	if e, exists := localityServiceErrors[err]; exists {
+		return e
 	}
+	return localityServiceErrors[service.ErrLocalityRepositoryGeneric]
+}
 
-	var validatorErr validator.ValidationErrors
-	if errors.As(err, &validatorErr) {
-		var validationErrors []string
-		for _, validationErr := range err.(validator.ValidationErrors) {
-			validationErrors = append(validationErrors, fmt.Sprintf("%s is %s and must be a %s", validationErr.Field(), validationErr.ActualTag(), validationErr.Kind()))
+func HandleErrorLocality(err error) LocalityHandlerErrors {
+	switch e := err.(type) {
+	case *json.UnmarshalTypeError:
+		return LocalityHandlerErrors{Code: http.StatusBadRequest, Msg: fmt.Sprintf("the field '%s' must be a '%s'", err.(*json.UnmarshalTypeError).Field, err.(*json.UnmarshalTypeError).Type)}
+	case validator.ValidationErrors:
+		errors := "The request is invalid because it does not contain the necessary fields: "
+		for _, fieldErr := range e {
+			fieldName := fieldErr.Field()
+			if field, ok := reflect.TypeOf(dto.SellerDto{}).FieldByName(fieldName); ok {
+				errors += fmt.Sprintf("'%s' is %s and must be a %s, ", field.Tag.Get("json"), fieldErr.Tag(), fieldErr.Kind())
+			} else {
+				errors += fmt.Sprintf("'%s' is %s and must be a %s, ", fieldName, fieldErr.Tag(), fieldErr.Kind())
+			}
 		}
-		response.JSON(w, http.StatusUnprocessableEntity, dto.ResponseDTO{
-			Code: http.StatusUnprocessableEntity,
-			Msg:  "The request is invalid because it does not contain the necessary fields",
-			Data: validationErrors,
-		})
+		return LocalityHandlerErrors{Code: http.StatusUnprocessableEntity, Msg: errors}
+	case *json.SyntaxError:
+		return LocalityHandlerErrors{Code: http.StatusBadRequest, Msg: "Bad Request - invalid JSON structure"}
+	default:
+		return getLocalityErrorMessage(err)
 	}
-
-	var syntaxErr *json.SyntaxError
-	if errors.As(err, &syntaxErr) {
-		response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-			Code: http.StatusBadRequest,
-			Msg:  "Bad Request - invalid JSON structure",
-			Data: nil,
-		})
-	}
-
 }

@@ -11,5 +11,6 @@ type OrderStatusRepository interface {
 }
 
 var (
-	ErrNoRegisteredOrderStatusesYet = errors.New("No registered order statuses yet")
+	ErrOrderStatusNoRegisteredOrderStatusesYet = errors.New("ERR_REPO_OS_NO_REG_OS_YET")
+	ErrOrderStatusUnexpectedError              = errors.New("ERR_REPO_OS_UNEXPECTED_ERROR")
 )

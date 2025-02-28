@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
@@ -23,14 +22,13 @@ func (b *OrderStatusHandler) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		orderStatus, getAllErr := b.service.GetAll()
 		if getAllErr != nil {
-			if errors.Is(getAllErr, service.NoRegisteredOrderStatusesYet) {
-				getAllErr = handler_errors.HandlerError{
-					Code: http.StatusOK,
-					Msg:  service.NoRegisteredOrderStatusesYet.Error(),
-				}
-			}
-
-			handler_errors.HandlerResponseError(getAllErr, &w)
+			getAllErr = handler_errors.HandleHandlerError(getAllErr)
+			handlerErr := handler_errors.HandleOrderStatusHandlerError(getAllErr, nil, nil)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 

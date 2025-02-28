@@ -16,3 +16,7 @@ type SellerUpdateDto struct {
 	Telephone   *string `json:"telephone" validate:"omitempty"`
 	LocalityId  *int    `json:"locality_id" validate:"omitempty"`
 }
+
+func IsEmptySellerUpdateDto(dto SellerUpdateDto) bool {
+	return dto.Cid == nil && dto.CompanyName == nil && dto.Address == nil && dto.Telephone == nil && dto.LocalityId == nil
+}

@@ -41,7 +41,9 @@ func BuyerToBuyerDTO(v *models.Buyer) *dto.BuyerDTO {
 	}
 }
 
-func ReportPurchaseOrdersToReportPurchaseOrdersDTO(v *models.ReportPurchaseOrders) *dto.ReportPurchaseOrdersDTO {
+func ReportPurchaseOrdersToReportPurchaseOrdersDTO(
+	v *models.ReportPurchaseOrders,
+) *dto.ReportPurchaseOrdersDTO {
 	return &dto.ReportPurchaseOrdersDTO{
 		ID:                  v.ID,
 		CardNumberID:        v.CardNumberID,

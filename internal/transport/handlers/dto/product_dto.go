@@ -4,14 +4,14 @@ import (
 	"errors"
 )
 
-const DescriptionInvalid = "Description must not be empty."
-const ExpirationInvalid = "Rates must not be null"
-const FreezingInvalid = "FreezingRate must not be null"
-const DimensionsInvalid = "Dimensions must not be null"
-const NetWeightInvalid = "Net weight must be null"
-const ProductCodeInvalid = "ProductCode must not be empty"
-const ProductTypeInvalid = "ProductTypeId must not be null"
-const SellerIdInvalid = "SellerId must not be null"
+const descriptionInvalid = "description must not be empty"
+const expirationInvalid = "rates must not be null"
+const freezingInvalid = "freezingRate must not be null"
+const dimensionsInvalid = "dimensions must not be null"
+const netWeightInvalid = "net weight must be null"
+const productCodeInvalid = "productCode must not be empty"
+const productTypeInvalid = "productTypeId must not be null"
+const sellerIdInvalid = "sellerId must not be null"
 
 type ProductDto struct {
 	Id                  *int     `json:"id"`
@@ -30,28 +30,28 @@ type ProductDto struct {
 
 func (p *ProductDto) Validate() error {
 	if p.Description == nil {
-		return errors.New(DescriptionInvalid)
+		return errors.New(descriptionInvalid)
 	}
 	if p.ExpirationRate == nil {
-		return errors.New(ExpirationInvalid)
+		return errors.New(expirationInvalid)
 	}
 	if p.FreezingRate == nil {
-		return errors.New(FreezingInvalid)
+		return errors.New(freezingInvalid)
 	}
 	if p.Height == nil || p.Length == nil || p.Width == nil {
-		return errors.New(DimensionsInvalid)
+		return errors.New(dimensionsInvalid)
 	}
 	if p.NetWeight == nil {
-		return errors.New(NetWeightInvalid)
+		return errors.New(netWeightInvalid)
 	}
 	if p.ProductCode == nil {
-		return errors.New(ProductCodeInvalid)
+		return errors.New(productCodeInvalid)
 	}
 	if p.ProductTypeId == nil {
-		return errors.New(ProductTypeInvalid)
+		return errors.New(productTypeInvalid)
 	}
 	if p.SellerId == nil {
-		return errors.New(SellerIdInvalid)
+		return errors.New(sellerIdInvalid)
 	}
 	return nil
 }

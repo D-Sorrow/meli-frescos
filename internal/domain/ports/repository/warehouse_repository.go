@@ -1,6 +1,10 @@
 package repository
 
-import "github.com/D-Sorrow/meli-frescos/internal/domain/models"
+import (
+	"errors"
+
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+)
 
 type WarehouseRepositoryInterface interface {
 	GetWarehouses() (map[int]models.Warehouse, error)
@@ -9,3 +13,15 @@ type WarehouseRepositoryInterface interface {
 	CreateWarehouse(warehouse models.Warehouse) (models.Warehouse, error)
 	PatchWarehouse(id int, data map[string]interface{}) (models.Warehouse, error)
 }
+
+var (
+	ErrWarehouseNotFound                = errors.New("warehouse id not found")
+	ErrWarehouseIdDuplicate             = errors.New("warehouse id duplicate")
+	ErrWarehouseCodeDuplicate           = errors.New("warehouse code duplicate")
+	ErrWarehouseDataBase                = errors.New("database error")
+	ErrWarehouseLocalityIdNotFound      = errors.New("locality id not found")
+	ErrWarehouseUpdateBySameData        = errors.New("enter different values to update")
+	ErrWarehouseFKConstraintFail        = errors.New("foreign key constraint fails")
+	ErrWarehouseLastInsertId            = errors.New("error with last insert id")
+	ErrWarehouseGetUpdatedOrCreatedItem = errors.New("error getting updated or created warehouse")
+)

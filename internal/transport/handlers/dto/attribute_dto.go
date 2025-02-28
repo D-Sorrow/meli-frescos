@@ -19,52 +19,52 @@ type AttributeDto struct {
 func (attribute *AttributeDto) Validation() error {
 	if attribute.Description != nil {
 		if *attribute.Description == "" {
-			return errors.New(DescriptionInvalid)
+			return errors.New(descriptionInvalid)
 		}
 	}
 	if attribute.ExpirationRate != nil {
 		if *attribute.ExpirationRate < 0 {
-			return errors.New(ExpirationInvalid)
+			return errors.New(expirationInvalid)
 		}
 	}
 	if attribute.FreezingRate != nil {
 		if *attribute.FreezingRate >= 0 {
-			return errors.New(FreezingInvalid)
+			return errors.New(freezingInvalid)
 		}
 	}
 	if attribute.Height != nil {
 		if *attribute.Height <= 0 {
-			return errors.New(DimensionsInvalid)
+			return errors.New(dimensionsInvalid)
 		}
 	}
 	if attribute.Length != nil {
 		if *attribute.Length <= 0 {
-			return errors.New(DimensionsInvalid)
+			return errors.New(dimensionsInvalid)
 		}
 	}
 	if attribute.Width != nil {
 		if *attribute.Width <= 0 {
-			return errors.New(DimensionsInvalid)
+			return errors.New(dimensionsInvalid)
 		}
 	}
 	if attribute.NetWeight != nil {
 		if *attribute.NetWeight <= 0 {
-			return errors.New(NetWeightInvalid)
+			return errors.New(netWeightInvalid)
 		}
 	}
 	if attribute.ProductCode != nil {
 		if *attribute.ProductCode == "" {
-			return errors.New(ProductCodeInvalid)
+			return errors.New(productCodeInvalid)
 		}
 	}
 	if attribute.ProductTypeId != nil {
 		if *attribute.ProductTypeId <= 0 {
-			return errors.New(ProductTypeInvalid)
+			return errors.New(productTypeInvalid)
 		}
 	}
 	if attribute.SellerId != nil {
 		if *attribute.SellerId <= 0 {
-			return errors.New(SellerIdInvalid)
+			return errors.New(sellerIdInvalid)
 		}
 	}
 	return nil
