@@ -6,7 +6,7 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
-	"github.com/go-sql-driver/mysql"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type PurchaseOrderRepository struct {
@@ -17,7 +17,9 @@ func NewPurchaseOrderRepository(db *sql.DB) *PurchaseOrderRepository {
 	return &PurchaseOrderRepository{db: db}
 }
 
-func (b *PurchaseOrderRepository) GetById(id int) (purchaseOrder entities.PurchaseOrderEntity, err error) {
+func (b *PurchaseOrderRepository) GetById(
+	id int,
+) (purchaseOrder entities.PurchaseOrderEntity, err error) {
 	query, args := purchaseOrder.GetByIdQuery(id)
 
 	err = b.db.QueryRow(query, args...).Scan(
@@ -33,31 +35,43 @@ func (b *PurchaseOrderRepository) GetById(id int) (purchaseOrder entities.Purcha
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			err = repository.ErrPurchaseOrderNotFoundWithID
+			err = error_management.HandleRepositoryError(
+				repository.ErrPurchaseOrderNotFoundWithID,
+				err,
+			)
 			return
 		}
+
+		err = error_management.HandleRepositoryError(
+			repository.ErrPurchaseOrderUnexpectedError,
+			err,
+		)
 	}
 
 	return
 }
 
-func (b *PurchaseOrderRepository) Create(purchaseOrder entities.PurchaseOrderEntity) (newPurchaseOrder entities.PurchaseOrderEntity, err error) {
+func (b *PurchaseOrderRepository) Create(
+	purchaseOrder entities.PurchaseOrderEntity,
+) (newPurchaseOrder entities.PurchaseOrderEntity, err error) {
 	query, args := purchaseOrder.GetCreateQuery()
 	result, err := b.db.Exec(query, args...)
 
 	if err != nil {
-		var mySqlErr *mysql.MySQLError
-		if errors.As(err, &mySqlErr) && mySqlErr.Number == 1452 {
-			err = repository.ErrForeignKeysNotValid
-			return
-		}
-
+		err = error_management.HandleRepositoryError(
+			error_management.HandlePurchaseOrderRepositoryError(err),
+			err,
+		)
 		return
 	}
 
 	lastId, err := result.LastInsertId()
 
 	if err != nil {
+		err = error_management.HandleRepositoryError(
+			repository.ErrPurchaseOrderUnexpectedError,
+			err,
+		)
 		return
 	}
 
