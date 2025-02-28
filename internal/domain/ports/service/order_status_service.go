@@ -11,5 +11,6 @@ type OrderStatusService interface {
 }
 
 var (
-	NoRegisteredOrderStatusesYet = errors.New("No registered order statuses yet")
+	ErrOrderStatusNoRegisteredOrderStatusesYet = errors.New("ERR_SRV_OS_NO_REG_OS_YET")
+	ErrOrderStatusUnexpectedError              = errors.New("ERR_SRV_OS_UNEXPECTED_ERROR")
 )

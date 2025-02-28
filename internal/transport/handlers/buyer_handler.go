@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -28,14 +26,13 @@ func (b *BuyerHandler) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		buyers, getAllErr := b.service.GetAll()
 		if getAllErr != nil {
-			if errors.Is(getAllErr, service.NoRegisteredBuyersYet) {
-				getAllErr = handler_errors.HandlerError{
-					Code: http.StatusOK,
-					Msg:  service.NoRegisteredBuyersYet.Error(),
-				}
-			}
-
-			handler_errors.HandlerResponseError(getAllErr, &w)
+			getAllErr = handler_errors.HandleHandlerError(getAllErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(getAllErr, nil, nil)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
@@ -51,28 +48,41 @@ func (b *BuyerHandler) GetAll() http.HandlerFunc {
 		})
 	}
 }
+
 func (b *BuyerHandler) GetById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
-			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-				Code: http.StatusBadRequest,
-				Msg:  handler_errors.InvalidID,
+			handler_errors.HandleHandlerError(idErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				handler_errors.ErrBuyerInvalidID,
+				nil,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
 			})
 			return
 		}
 
 		buyer, getByIdErr := b.service.GetById(idInt)
 		if getByIdErr != nil {
-			if errors.Is(getByIdErr, service.BuyerDoesNotExist) {
-				getByIdErr = handler_errors.HandlerError{
-					Code: http.StatusNotFound,
-					Msg:  fmt.Sprintf(getByIdErr.Error(), idInt),
-				}
-			}
-
-			handler_errors.HandlerResponseError(getByIdErr, &w)
+			getByIdErr = handler_errors.HandleHandlerError(getByIdErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				getByIdErr,
+				nil,
+				map[string]interface{}{
+					"ID": idInt,
+				},
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
@@ -89,36 +99,55 @@ func (b *BuyerHandler) Create() http.HandlerFunc {
 		var buyerCreateDTO dto.BuyerCreateDTO
 
 		if jsonErr := json.NewDecoder(r.Body).Decode(&buyerCreateDTO); jsonErr != nil {
-			response.JSON(w, http.StatusBadRequest,
-				dto.ResponseDTO{
-					Code: http.StatusBadRequest,
-					Msg:  handler_errors.InvalidJSON,
-				})
+			handler_errors.HandleHandlerError(jsonErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				handler_errors.ErrBuyerInvalidJSON,
+				nil,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
 		validator := validation.BuyerValidator()
 
 		if err := validator.Struct(&buyerCreateDTO); err != nil {
+			err = handler_errors.HandleHandlerError(err)
 			errs := validation.MapValidatorErrors(err, buyerCreateDTO)
-			response.JSON(w, http.StatusUnprocessableEntity, dto.ResponseDTO{
-				Code: http.StatusUnprocessableEntity,
-				Msg:  handler_errors.InvalidBuyerCreate,
-				Data: errs,
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				handler_errors.ErrBuyerInvalidCreateDTO,
+				errs,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
 			})
 			return
 		}
 
-		newBuyer, createErr := b.service.Create(*mappers.BuyerCreateDTOToBuyerAttributes(&buyerCreateDTO))
+		newBuyer, createErr := b.service.Create(
+			*mappers.BuyerCreateDTOToBuyerAttributes(&buyerCreateDTO),
+		)
 		if createErr != nil {
-			if errors.Is(createErr, service.BuyerAlreadyExists) {
-				createErr = handler_errors.HandlerError{
-					Code: http.StatusConflict,
-					Msg:  fmt.Sprintf(createErr.Error(), *buyerCreateDTO.CardNumberID),
-				}
-			}
-
-			handler_errors.HandlerResponseError(createErr, &w)
+			createErr = handler_errors.HandleHandlerError(createErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				createErr,
+				nil,
+				map[string]interface{}{
+					"CardNumberID": *buyerCreateDTO.CardNumberID,
+				},
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
@@ -135,9 +164,16 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
-			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-				Code: http.StatusBadRequest,
-				Msg:  handler_errors.InvalidID,
+			handler_errors.HandleHandlerError(idErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				handler_errors.ErrBuyerInvalidID,
+				nil,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
 			})
 			return
 		}
@@ -145,41 +181,57 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 		var buyerPatchDTO dto.BuyerPatchDTO
 
 		if jsonErr := json.NewDecoder(r.Body).Decode(&buyerPatchDTO); jsonErr != nil {
-			response.JSON(w, http.StatusBadRequest,
-				dto.ResponseDTO{
-					Code: http.StatusBadRequest,
-					Msg:  handler_errors.InvalidJSON,
-				})
+			handler_errors.HandleHandlerError(jsonErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				handler_errors.ErrBuyerInvalidJSON,
+				nil,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
 		validator := validation.BuyerValidator()
 
 		if err := validator.Struct(&buyerPatchDTO); err != nil {
+			err = handler_errors.HandleHandlerError(err)
 			errs := validation.MapValidatorErrors(err, buyerPatchDTO)
-			response.JSON(w, http.StatusUnprocessableEntity, dto.ResponseDTO{
-				Code: http.StatusUnprocessableEntity,
-				Msg:  handler_errors.InvalidBuyerPatch,
-				Data: errs,
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				handler_errors.ErrBuyerInvalidPatchDTO,
+				errs,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
 			})
 			return
 		}
 
-		updatedBuyer, updatedErr := b.service.Patch(idInt, *mappers.BuyerPatchDTOToBuyerPatchAttributes(&buyerPatchDTO))
+		updatedBuyer, updatedErr := b.service.Patch(
+			idInt,
+			*mappers.BuyerPatchDTOToBuyerPatchAttributes(&buyerPatchDTO),
+		)
 		if updatedErr != nil {
-			if errors.Is(updatedErr, service.BuyerAlreadyExists) {
-				updatedErr = handler_errors.HandlerError{
-					Code: http.StatusConflict,
-					Msg:  fmt.Sprintf(updatedErr.Error(), *buyerPatchDTO.CardNumberID),
-				}
-			} else if errors.Is(updatedErr, service.BuyerDoesNotExist) {
-				updatedErr = handler_errors.HandlerError{
-					Code: http.StatusNotFound,
-					Msg:  fmt.Sprintf(updatedErr.Error(), idInt),
-				}
-			}
-
-			handler_errors.HandlerResponseError(updatedErr, &w)
+			updatedErr = handler_errors.HandleHandlerError(updatedErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				updatedErr,
+				nil,
+				map[string]interface{}{
+					"ID":           idInt,
+					"CardNumberID": *buyerPatchDTO.CardNumberID,
+				},
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
@@ -196,28 +248,35 @@ func (b *BuyerHandler) Delete() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
-			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-				Code: http.StatusBadRequest,
-				Msg:  handler_errors.InvalidID,
+			handler_errors.HandleHandlerError(idErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				handler_errors.ErrBuyerInvalidID,
+				nil,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
 			})
 			return
 		}
 
 		deleteErr := b.service.Delete(idInt)
 		if deleteErr != nil {
-			if errors.Is(deleteErr, service.BuyerDoesNotExist) {
-				deleteErr = handler_errors.HandlerError{
-					Code: http.StatusNotFound,
-					Msg:  fmt.Sprintf(deleteErr.Error(), idInt),
-				}
-			} else if errors.Is(deleteErr, service.CannotDeleteBuyerWithOrders) {
-				deleteErr = handler_errors.HandlerError{
-					Code: http.StatusConflict,
-					Msg:  deleteErr.Error(),
-				}
-			}
-
-			handler_errors.HandlerResponseError(deleteErr, &w)
+			deleteErr = handler_errors.HandleHandlerError(deleteErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				deleteErr,
+				nil,
+				map[string]interface{}{
+					"ID": idInt,
+				},
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
@@ -227,6 +286,7 @@ func (b *BuyerHandler) Delete() http.HandlerFunc {
 		})
 	}
 }
+
 func (b *BuyerHandler) GetReportPurchaseOrders() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var idP *int = nil
@@ -235,9 +295,16 @@ func (b *BuyerHandler) GetReportPurchaseOrders() http.HandlerFunc {
 		if id != "" {
 			idInt, idErr := strconv.Atoi(id)
 			if idErr != nil {
-				response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-					Code: http.StatusBadRequest,
-					Msg:  handler_errors.InvalidID,
+				handler_errors.HandleHandlerError(idErr)
+				handlerErr := handler_errors.HandleBuyerHandlerError(
+					handler_errors.ErrBuyerInvalidID,
+					nil,
+					nil,
+				)
+				response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+					Code: handlerErr.Code,
+					Msg:  handlerErr.Msg,
+					Data: handlerErr.Data,
 				})
 				return
 			}
@@ -247,19 +314,19 @@ func (b *BuyerHandler) GetReportPurchaseOrders() http.HandlerFunc {
 
 		report, getReportErr := b.service.GetReportPurchaseOrders(idP)
 		if getReportErr != nil {
-			if errors.Is(getReportErr, service.BuyerHasNoOrders) {
-				getReportErr = handler_errors.HandlerError{
-					Code: http.StatusOK,
-					Msg:  service.BuyerHasNoOrders.Error(),
-				}
-			} else if errors.Is(getReportErr, service.BuyerDoesNotExist) {
-				getReportErr = handler_errors.HandlerError{
-					Code: http.StatusNotFound,
-					Msg:  fmt.Sprintf(getReportErr.Error(), *idP),
-				}
-			}
-
-			handler_errors.HandlerResponseError(getReportErr, &w)
+			getReportErr = handler_errors.HandleHandlerError(getReportErr)
+			handlerErr := handler_errors.HandleBuyerHandlerError(
+				getReportErr,
+				nil,
+				map[string]interface{}{
+					"ID": *idP,
+				},
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 

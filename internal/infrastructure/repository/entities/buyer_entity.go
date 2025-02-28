@@ -68,7 +68,9 @@ func (p *BuyerEntity) GetDeleteQuery(id int) (query string, args []interface{}) 
 	return
 }
 
-func (p *ReportPurchaseOrdersEntity) GetReportPurchaseOrdersQuery(buyerID *int) (query string, args []interface{}) {
+func (p *ReportPurchaseOrdersEntity) GetReportPurchaseOrdersQuery(
+	buyerID *int,
+) (query string, args []interface{}) {
 	query = `SELECT
 		b.id,
 		b.card_number_id,

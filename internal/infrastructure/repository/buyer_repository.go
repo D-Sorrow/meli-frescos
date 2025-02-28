@@ -6,7 +6,7 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
-	"github.com/go-sql-driver/mysql"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type BuyerRepository struct {
@@ -24,19 +24,22 @@ func (b *BuyerRepository) GetAll() (buyers []entities.BuyerEntity, err error) {
 
 	rows, err := b.db.Query(query, args...)
 	if err != nil {
+		err = error_management.HandleRepositoryError(repository.ErrBuyerUnexpectedError, err)
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var buyer entities.BuyerEntity
-		err = rows.Scan(&buyer.ID,
+		err = rows.Scan(
+			&buyer.ID,
 			&buyer.CardNumberID,
 			&buyer.FirstName,
 			&buyer.LastName,
 		)
 
 		if err != nil {
+			err = error_management.HandleRepositoryError(repository.ErrBuyerUnexpectedError, err)
 			return
 		}
 
@@ -44,7 +47,7 @@ func (b *BuyerRepository) GetAll() (buyers []entities.BuyerEntity, err error) {
 	}
 
 	if len(buyers) == 0 {
-		err = repository.ErrNoRegisteredBuyersYet
+		err = repository.ErrBuyerNoRegisteredBuyersYet
 		return
 	}
 
@@ -54,7 +57,8 @@ func (b *BuyerRepository) GetAll() (buyers []entities.BuyerEntity, err error) {
 func (b *BuyerRepository) GetById(id int) (buyer entities.BuyerEntity, err error) {
 	query, args := buyer.GetByIdQuery(id)
 
-	err = b.db.QueryRow(query, args...).Scan(&buyer.ID,
+	err = b.db.QueryRow(query, args...).Scan(
+		&buyer.ID,
 		&buyer.CardNumberID,
 		&buyer.FirstName,
 		&buyer.LastName,
@@ -62,41 +66,46 @@ func (b *BuyerRepository) GetById(id int) (buyer entities.BuyerEntity, err error
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			err = repository.ErrBuyerNotFoundWithID
+			err = error_management.HandleRepositoryError(repository.ErrBuyerNotFoundWithID, err)
 			return
 		}
+
+		err = error_management.HandleRepositoryError(repository.ErrBuyerUnexpectedError, err)
 	}
 
 	return
 }
 
-func (b *BuyerRepository) Create(buyer entities.BuyerEntity) (newBuyer entities.BuyerEntity, err error) {
+func (b *BuyerRepository) Create(
+	buyer entities.BuyerEntity,
+) (newBuyer entities.BuyerEntity, err error) {
 	query, args := buyer.GetCreateQuery()
 
 	result, err := b.db.Exec(query, args...)
 
 	if err != nil {
-		var mySqlErr *mysql.MySQLError
-		if errors.As(err, &mySqlErr) && mySqlErr.Number == 1062 {
-			err = repository.ErrDuplicateCardNumberID
-			return
-		}
-
+		err = error_management.HandleRepositoryError(
+			error_management.HandleBuyerRepositoryError(err),
+			err,
+		)
 		return
 	}
 
 	lastId, err := result.LastInsertId()
 
 	if err != nil {
+		err = error_management.HandleRepositoryError(repository.ErrBuyerUnexpectedError, err)
 		return
 	}
 
 	newBuyer, err = b.GetById(int(lastId))
-
 	return
 }
 
-func (b *BuyerRepository) Patch(id int, buyerToPatch entities.BuyerEntity) (updatedBuyer entities.BuyerEntity, err error) {
+func (b *BuyerRepository) Patch(
+	id int,
+	buyerToPatch entities.BuyerEntity,
+) (updatedBuyer entities.BuyerEntity, err error) {
 	updatedBuyer, err = b.GetById(id)
 
 	if err != nil {
@@ -120,12 +129,10 @@ func (b *BuyerRepository) Patch(id int, buyerToPatch entities.BuyerEntity) (upda
 	_, err = b.db.Exec(query, args...)
 
 	if err != nil {
-		var mySqlErr *mysql.MySQLError
-		if errors.As(err, &mySqlErr) && mySqlErr.Number == 1062 {
-			err = repository.ErrDuplicateCardNumberID
-			return
-		}
-
+		err = error_management.HandleRepositoryError(
+			error_management.HandleBuyerRepositoryError(err),
+			err,
+		)
 		return
 	}
 
@@ -138,18 +145,16 @@ func (b *BuyerRepository) Delete(id int) (err error) {
 	result, err := b.db.Exec(query, args...)
 
 	if err != nil {
-		var mySqlErr *mysql.MySQLError
-		if errors.As(err, &mySqlErr) && mySqlErr.Number == 1451 {
-			err = repository.ErrCannotDeleteBuyerWithOrders
-			return
-		}
-
+		err = error_management.HandleRepositoryError(
+			error_management.HandleBuyerRepositoryError(err),
+			err,
+		)
 		return
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return
+		err = error_management.HandleRepositoryError(repository.ErrBuyerUnexpectedError, err)
 	}
 
 	if rowsAffected == 0 {
@@ -160,7 +165,9 @@ func (b *BuyerRepository) Delete(id int) (err error) {
 	return
 }
 
-func (b *BuyerRepository) GetReportPurchaseOrders(buyerID *int) (report []entities.ReportPurchaseOrdersEntity, err error) {
+func (b *BuyerRepository) GetReportPurchaseOrders(
+	buyerID *int,
+) (report []entities.ReportPurchaseOrdersEntity, err error) {
 	report = make([]entities.ReportPurchaseOrdersEntity, 0)
 
 	query, args := (&entities.ReportPurchaseOrdersEntity{}).GetReportPurchaseOrdersQuery(buyerID)
@@ -168,6 +175,7 @@ func (b *BuyerRepository) GetReportPurchaseOrders(buyerID *int) (report []entiti
 	rows, err := b.db.Query(query, args...)
 
 	if err != nil {
+		err = error_management.HandleRepositoryError(repository.ErrBuyerUnexpectedError, err)
 		return
 	}
 	defer rows.Close()
@@ -182,13 +190,19 @@ func (b *BuyerRepository) GetReportPurchaseOrders(buyerID *int) (report []entiti
 			&_report.PurchaseOrdersCount,
 		)
 		if err != nil {
+			err = error_management.HandleRepositoryError(repository.ErrBuyerUnexpectedError, err)
 			return
 		}
 		report = append(report, _report)
 	}
 
 	if len(report) == 0 {
-		err = repository.ErrBuyerNotFoundOrBuyerHasNoOrders
+		if buyerID == nil {
+			err = repository.ErrBuyerHasNoOrders
+			return
+		}
+
+		err = repository.ErrBuyerNotFoundWithID
 		return
 	}
 
