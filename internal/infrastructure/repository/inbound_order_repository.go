@@ -2,10 +2,10 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
-	"strings"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type InboundOrderRepository struct {
@@ -16,33 +16,19 @@ func NewInboundOrderRepository(db *sql.DB) *InboundOrderRepository {
 	return &InboundOrderRepository{db: db}
 }
 
-func (repository *InboundOrderRepository) CreateInboundOrder(inboundOrder *models.InboundOrder) error {
+func (_repository *InboundOrderRepository) CreateInboundOrder(inboundOrder *models.InboundOrder) error {
 
-	result, err := repository.db.Exec(
+	result, err := _repository.db.Exec(
 		"INSERT INTO inbound_orders (`order_date`, `order_number`, `employe_id`, `product_batch_id`, `wareHouse_id`) VALUES (?, ?, ?, ?, ?)",
 		(*inboundOrder).OrderDate, (*inboundOrder).OrderNumber, (*inboundOrder).EmployeeId, (*inboundOrder).ProductBatchId, (*inboundOrder).WarehouseId,
 	)
 	if err != nil {
-		if strings.Contains(err.Error(), "Duplicate entry") && strings.Contains(err.Error(), "for key 'inbound_orders.order_number'") {
-			return errors.New("ONAE_DB")
-		}
-		if strings.Contains(err.Error(), "foreign key constraint fails") {
-			if strings.Contains(err.Error(), "FOREIGN KEY (`employe_id`)") {
-				return errors.New("EIDNF_DB")
-			}
-			if strings.Contains(err.Error(), "FOREIGN KEY (`product_batch_id`)") {
-				return errors.New("PBIDNF_DB")
-			}
-			if strings.Contains(err.Error(), "FOREIGN KEY (`wareHouse_id`)") {
-				return errors.New("WHIDNF_DB")
-			}
-		}
-		return err
+		return error_management.HandleRepositoryError(error_management.HandleInboundOrderRepositoryError(err), err)
 	}
 
 	lastInsertId, err := result.LastInsertId()
 	if err != nil {
-		return err
+		return error_management.HandleRepositoryError(repository.ErrInboundOrderLastInsertId, err)
 	}
 
 	(*inboundOrder).Id = int(lastInsertId)

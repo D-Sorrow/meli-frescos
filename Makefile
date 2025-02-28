@@ -11,7 +11,7 @@ test:
 	$(GOTEST) ./...
 
 # Generar reporte de coverage
-coverage:
+coverage: 
 	$(GOTEST) -coverprofile=$(COVERAGE_OUT) ./...
 
 # Generar reporte de coverage en HTML
@@ -23,7 +23,7 @@ coverage-total: coverage
 	$(GO) tool cover -func=$(COVERAGE_OUT) | grep total
 
 # Ejecutar el linter
-lint:
+lint: 
 	$(GOLINT) run ./...
 
 .PHONY: test coverage coverage-html coverage-total lint

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -53,7 +52,8 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			error_management.HandleErrorEmployee(w, errors.New("ID-DEC-ERR"))
+			fmt.Printf("this error: %v", err.Error())
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 
@@ -79,7 +79,7 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&employeeToCreate); err != nil {
-			error_management.HandleErrorEmployee(w, errors.New("BODY-DEC-ERR"))
+			error_management.HandleErrorEmployee(w, error_management.ErrEmployeeBodyDecoding)
 			return
 		}
 
@@ -108,7 +108,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			error_management.HandleErrorEmployee(w, errors.New("ID-DEC-ERR"))
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 
@@ -116,7 +116,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 		if err := decoder.Decode(&employeePatchRequestDTO); err != nil {
-			error_management.HandleErrorEmployee(w, errors.New("BODY-DEC-ERR"))
+			error_management.HandleErrorEmployee(w, error_management.ErrEmployeeBodyDecoding)
 			return
 		}
 
@@ -139,7 +139,7 @@ func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
 		employeeIdString := chi.URLParam(r, "id")
 		employeeId, err := strconv.Atoi(employeeIdString)
 		if err != nil {
-			error_management.HandleErrorEmployee(w, errors.New("ID-DEC-ERR"))
+			error_management.HandleErrorEmployee(w, err)
 			return
 		}
 

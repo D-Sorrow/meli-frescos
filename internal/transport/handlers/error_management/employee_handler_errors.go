@@ -1,57 +1,66 @@
 package error_management
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
 )
 
+var (
+	ErrEmployeeBodyDecoding   = errors.New("error decoding body")
+	ErrEmployeeHandlerDefault = errors.New("internal server error")
+)
+
+const (
+	messageEmployeeNotFoundError      = "Empleado no encontrado"
+	messageEmployeeAlreadyExistsError = "Empleado con ese card ID ya existe"
+	messageEmployeeIdNotValidError    = "El formato del ID no es válido"
+	messageEmployeeInternalError      = "Internal server error"
+	messageEmployeeBodyMalformedError = "El cuerpo de la petición está mal formado"
+)
+
 type HandlerErrorEmployee struct {
-	Code    string
+	Code    int
 	Message string
 }
 
-var errorMessages = map[string]string{
-	"ENF-SV":       "Empleado no encontrado",
-	"EAE-SV":       "Empleado con ese card ID ya existe",
-	"ID-DEC-ERR":   "El formato del ID no es válido",
-	"BODY-DEC-ERR": "El cuerpo de la petición está mal formado",
-	"default":      "Internal server error",
+var employeeHandlerErrors = map[error]HandlerErrorEmployee{
+	service.ErrEmployeeNotFound:       {Code: http.StatusNotFound, Message: messageEmployeeNotFoundError},
+	service.ErrEmployeeAlreadyExists:  {Code: http.StatusBadRequest, Message: messageEmployeeAlreadyExistsError},
+	service.ErrEmployeeDecodingError:  {Code: http.StatusBadRequest, Message: messageEmployeeIdNotValidError},
+	service.ErrEmployeeServiceDefault: {Code: http.StatusInternalServerError, Message: messageEmployeeInternalError},
+	ErrEmployeeBodyDecoding:           {Code: http.StatusBadRequest, Message: messageEmployeeBodyMalformedError},
+	ErrEmployeeHandlerDefault:         {Code: http.StatusInternalServerError, Message: messageEmployeeInternalError},
 }
 
-func getErrorMessage(code string) string {
-	if msg, exists := errorMessages[code]; exists {
-		return msg
+func getErrorEmployee(err error) HandlerErrorEmployee {
+	if e, exists := employeeHandlerErrors[err]; exists {
+		return e
 	}
-	return errorMessages["default"]
-}
-
-func getHttpStatusCode(errorCode string) int {
-	fmt.Printf("errorCode: %s", errorCode)
-	switch errorCode {
-	case "ENF-SV":
-		return http.StatusNotFound
-	case "EAE-SV", "ID-DEC-ERR", "BODY-DEC-ERR":
-		return http.StatusBadRequest
-	default:
-		return http.StatusInternalServerError
-	}
+	return employeeHandlerErrors[ErrEmployeeHandlerDefault]
 }
 
 func HandleErrorEmployee(w http.ResponseWriter, err error) {
-	if validationErrors, ok := err.(validator.ValidationErrors); ok {
+	switch e := err.(type) {
+	case *strconv.NumError:
+		response.JSON(w, http.StatusBadRequest, map[string]any{
+			"error": messageEmployeeIdNotValidError,
+		})
+	case validator.ValidationErrors:
 		errors := make(map[string]string)
-		for _, fieldErr := range validationErrors {
-			errors[fieldErr.Field()] = fmt.Sprintf("Validación fallida:  %s", fieldErr.Tag())
+		for _, fieldErr := range e {
+			errors[fieldErr.Field()] = fmt.Sprintf("Validación fallida: %s", fieldErr.Tag())
 		}
 		response.JSON(w, http.StatusBadRequest, map[string]any{"error": errors})
-		return
+	default:
+		handlerEmployeeError := getErrorEmployee(err)
+		response.JSON(w, handlerEmployeeError.Code, map[string]any{
+			"error": handlerEmployeeError.Message,
+		})
 	}
-
-	httpStatusCode := getHttpStatusCode(err.Error())
-	response.JSON(w, httpStatusCode, map[string]any{
-		"error": getErrorMessage(err.Error()),
-	})
 }
