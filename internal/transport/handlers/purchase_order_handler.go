@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -28,23 +26,35 @@ func (b *PurchaseOrderHandler) GetById() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
-			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-				Code: http.StatusBadRequest,
-				Msg:  handler_errors.InvalidID,
+			handler_errors.HandleHandlerError(idErr)
+			handlerErr := handler_errors.HandlePurchaseOrderHandlerError(
+				handler_errors.ErrPurchaseOrderInvalidID,
+				nil,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
 			})
 			return
 		}
 
 		purchaseOrder, getByIdErr := b.service.GetById(idInt)
 		if getByIdErr != nil {
-			if errors.Is(getByIdErr, service.PurchaseOrderDoesNotExist) {
-				getByIdErr = handler_errors.HandlerError{
-					Code: http.StatusNotFound,
-					Msg:  fmt.Sprintf(getByIdErr.Error(), idInt),
-				}
-			}
-
-			handler_errors.HandlerResponseError(getByIdErr, &w)
+			getByIdErr = handler_errors.HandleHandlerError(getByIdErr)
+			handlerErr := handler_errors.HandlePurchaseOrderHandlerError(
+				getByIdErr,
+				nil,
+				map[string]interface{}{
+					"ID": idInt,
+				},
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
@@ -61,24 +71,35 @@ func (b *PurchaseOrderHandler) Create() http.HandlerFunc {
 		var purchaseOrderCreateDTO dto.PurchaseOrderCreateDTO
 
 		if jsonErr := json.NewDecoder(r.Body).Decode(&purchaseOrderCreateDTO); jsonErr != nil {
-			response.JSON(w, http.StatusBadRequest,
-				dto.ResponseDTO{
-					Code: http.StatusBadRequest,
-					Msg:  handler_errors.InvalidJSON,
-				})
+			handler_errors.HandleHandlerError(jsonErr)
+			handlerErr := handler_errors.HandlePurchaseOrderHandlerError(
+				handler_errors.ErrPurchaseOrderInvalidJSON,
+				nil,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 
-		newPurchaseOrder, createErr := b.service.Create(*mappers.PurchaseOrderCreateDTOToPurchaseOrderAttributesFKs(&purchaseOrderCreateDTO))
+		newPurchaseOrder, createErr := b.service.Create(
+			*mappers.PurchaseOrderCreateDTOToPurchaseOrderAttributesFKs(&purchaseOrderCreateDTO),
+		)
 		if createErr != nil {
-			if errors.Is(createErr, service.ForeignKeysNotValid) {
-				createErr = handler_errors.HandlerError{
-					Code: http.StatusConflict,
-					Msg:  createErr.Error(),
-				}
-			}
-
-			handler_errors.HandlerResponseError(createErr, &w)
+			createErr = handler_errors.HandleHandlerError(createErr)
+			handlerErr := handler_errors.HandlePurchaseOrderHandlerError(
+				createErr,
+				nil,
+				nil,
+			)
+			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
+				Code: handlerErr.Code,
+				Msg:  handlerErr.Msg,
+				Data: handlerErr.Data,
+			})
 			return
 		}
 

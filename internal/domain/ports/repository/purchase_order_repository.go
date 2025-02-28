@@ -12,6 +12,10 @@ type PurchaseOrderRepository interface {
 }
 
 var (
-	ErrForeignKeysNotValid         = errors.New("The foreign keys of the requested purchase order are not valid")
-	ErrPurchaseOrderNotFoundWithID = errors.New("The requested purchase order does not exist with ID provided")
+	ErrPurchaseOrderFKWareHouseIdNotValid   = errors.New("ERR_REPO_PO_FK_WAREHOUSE_ID_NOT_VALID")
+	ErrPurchaseOrderFKBuyerIdNotValid       = errors.New("ERR_REPO_PO_FK_BUYER_ID_NOT_VALID")
+	ErrPurchaseOrderFKOrderStatusIdNotValid = errors.New("ERR_REPO_PO_FK_ORDER_STATUS_ID_NOT_VALID")
+	ErrPurchaseOrderFKCarrierIdNotValid     = errors.New("ERR_REPO_PO_FK_CARRIER_ID_NOT_VALID")
+	ErrPurchaseOrderNotFoundWithID          = errors.New("ERR_REPO_PO_NOT_FOUND_ID")
+	ErrPurchaseOrderUnexpectedError         = errors.New("ERR_REPO_PO_UNEXPECTED_ERROR")
 )

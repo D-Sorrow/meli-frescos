@@ -12,6 +12,10 @@ type PurchaseOrderService interface {
 }
 
 var (
-	ForeignKeysNotValid       = errors.New("The foreign keys of the requested purchase order are not valid")
-	PurchaseOrderDoesNotExist = errors.New("The requested purchase order does not exist in the database for the ID: %d")
+	ErrPurchaseOrderFKWareHouseIdNotValid   = errors.New("ERR_SRV_PO_FK_WAREHOUSE_ID_NOT_VALID")
+	ErrPurchaseOrderFKBuyerIdNotValid       = errors.New("ERR_SRV_PO_FK_BUYER_ID_NOT_VALID")
+	ErrPurchaseOrderFKOrderStatusIdNotValid = errors.New("ERR_SRV_PO_FK_ORDER_STATUS_ID_NOT_VALID")
+	ErrPurchaseOrderFKCarrierIdNotValid     = errors.New("ERR_SRV_PO_FK_CARRIER_ID_NOT_VALID")
+	ErrPurchaseOrderDoesNotExist            = errors.New("ERR_SRV_PO_DOES_NOT_EXIST")
+	ErrPurchaseOrderUnexpectedError         = errors.New("ERR_SRV_PO_UNEXPECTED_ERROR")
 )

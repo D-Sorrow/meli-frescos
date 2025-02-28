@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 )
 
@@ -19,20 +20,34 @@ func (p ProductService) GetProducts() (map[int]models.Product, error) {
 }
 
 func (p ProductService) GetProductByID(id int) (models.Product, error) {
-	return p.repo.GetProductByID(id)
+	product, err := p.repo.GetProductByID(id)
+	if err != nil {
+		return models.Product{}, error_management.HandlerServiceProductError(err)
+	}
+	return product, nil
 }
 
 func (p ProductService) SaveProduct(productSave models.Product) error {
 	err := productSave.ValidateProduct()
 	if err != nil {
-		return &error_management.ErrService{
-			Code: error_management.CodeUseCaseError,
-		}
+		return service.ErrServiceProductBusinessRules
 	}
-	return p.repo.SaveProduct(productSave)
+	err = p.repo.SaveProduct(productSave)
+	if err != nil {
+		return error_management.HandlerServiceProductError(err)
+	}
+	return nil
 }
 func (p ProductService) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
-	return p.repo.UpdateProduct(id, attributes)
+	err := p.repo.UpdateProduct(id, attributes)
+	if err != nil {
+		return models.Product{}, error_management.HandlerServiceProductError(err)
+	}
+	product, err := p.repo.GetProductByID(id)
+	if err != nil {
+		return models.Product{}, error_management.HandlerServiceProductError(err)
+	}
+	return product, nil
 }
 func (p ProductService) DeleteProduct(id int) error {
 	return p.repo.DeleteProduct(id)

@@ -25,7 +25,7 @@ func (hand *ProductHandler) GetProducts() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		mapProduct, errGet := hand.serv.GetProducts()
 		if errGet != nil {
-			errSpe := error_management.HandlerErr(errGet)
+			errSpe := error_management.HandlerErrorProduct(errGet)
 			response.JSON(writer, errSpe.GetCode(), errSpe)
 			return
 		}
@@ -56,7 +56,7 @@ func (hand *ProductHandler) GetProductByID() http.HandlerFunc {
 
 		productDto := mapper.MapperToProductDto(product)
 		if err != nil {
-			errSpe := error_management.HandlerErr(err)
+			errSpe := error_management.HandlerErrorProduct(err)
 			response.JSON(writer, errSpe.GetCode(), dto.ResponseDTO{
 				Code: errSpe.GetCode(),
 				Msg:  errSpe.Message,
@@ -99,7 +99,7 @@ func (hand *ProductHandler) SaveProduct() http.HandlerFunc {
 
 		errSave := hand.serv.SaveProduct(mapper.MapperToProductModel(&product))
 		if errSave != nil {
-			errSpe := error_management.HandlerErr(errSave)
+			errSpe := error_management.HandlerErrorProduct(errSave)
 			response.JSON(writer, errSpe.GetCode(), dto.ResponseDTO{
 				Code: errSpe.Code,
 				Msg:  errSpe.Message,
@@ -107,6 +107,11 @@ func (hand *ProductHandler) SaveProduct() http.HandlerFunc {
 			})
 			return
 		}
+		response.JSON(writer, http.StatusCreated, dto.ResponseDTO{
+			Code: http.StatusCreated,
+			Msg:  "Product successfully saved",
+			Data: nil,
+		})
 	}
 }
 
@@ -147,7 +152,7 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 		productDto := mapper.MapperToProductDto(product)
 
 		if errUpdate != nil {
-			errSpe := error_management.HandlerErr(errUpdate)
+			errSpe := error_management.HandlerErrorProduct(errUpdate)
 			response.JSON(writer, errSpe.Code, dto.ResponseDTO{
 				Code: errSpe.Code,
 				Msg:  errSpe.Error(),
@@ -160,7 +165,6 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 			Msg:  "Product successfully updated",
 			Data: productDto,
 		})
-		return
 	}
 }
 
@@ -177,7 +181,7 @@ func (hand *ProductHandler) DeleteProduct() http.HandlerFunc {
 		}
 		errDelete := hand.serv.DeleteProduct(id)
 		if errDelete != nil {
-			errSp := error_management.HandlerErr(errDelete)
+			errSp := error_management.HandlerErrorProduct(errDelete)
 			response.JSON(writer, errSp.Code, dto.ResponseDTO{
 				Code: errSp.Code,
 				Msg:  errSp.Error(),

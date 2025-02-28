@@ -1,4 +1,4 @@
-package entity
+package entities
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func (entity *ProductEntity) GetAllProducts() string {
 		"id, description, expiration_rate, freezing_rate, " +
 		"height, length, netweight, product_code, recommended_freezing_temperature, " +
 		"width, product_type_id, seller_id " +
-		"FROM melifresh.products"
+		"FROM melifresh.products ORDER BY id ASC "
 }
 func (entity *ProductEntity) GetProductById(id int) string {
 	return "SELECT id, description, expiration_rate, freezing_rate, height, length, netweight, " +
