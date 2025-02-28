@@ -17,12 +17,12 @@ const (
 	msgCarrierFKConstraintFail       = "This carrier cannot be deleted, another entity is using it"
 )
 
-type HandlerErrorWarehouse struct {
+type HandlerErrorCarrier struct {
 	Code    int
 	Message string
 }
 
-var warehouseHandlerErrors = map[error]HandlerErrorWarehouse{
+var carrierHandlerErrors = map[error]HandlerErrorWarehouse{
 	service.ErrCarrierServiceDefault: {
 		Code:    http.StatusInternalServerError,
 		Message: msgCarrierInternalError,
@@ -49,19 +49,19 @@ var warehouseHandlerErrors = map[error]HandlerErrorWarehouse{
 	},
 }
 
-func HandleErrorWarehouse(err error) HandlerErrorWarehouse {
+func HandleErrorCarrier(err error) HandlerErrorWarehouse {
 	switch {
 	case errors.Is(err, service.ErrCarrierNotFound):
-		return warehouseHandlerErrors[err]
+		return carrierHandlerErrors[err]
 	case errors.Is(err, service.ErrCarrierCidDuplicate):
-		return warehouseHandlerErrors[err]
+		return carrierHandlerErrors[err]
 	case errors.Is(err, service.ErrCarrierLocalityIdNotFound):
-		return warehouseHandlerErrors[err]
+		return carrierHandlerErrors[err]
 	case errors.Is(err, service.ErrCarrierGetUpdatedOrCreatedItem):
-		return warehouseHandlerErrors[err]
+		return carrierHandlerErrors[err]
 	case errors.Is(err, service.ErrCarrierFKConstraintFail):
-		return warehouseHandlerErrors[err]
+		return carrierHandlerErrors[err]
 	default:
-		return warehouseHandlerErrors[service.ErrCarrierServiceDefault]
+		return carrierHandlerErrors[service.ErrCarrierServiceDefault]
 	}
 }
