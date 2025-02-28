@@ -25,12 +25,12 @@ type Dimensions struct {
 	Length float64 `json:"length,omitempty"`
 }
 
-const ExpirationInvalid = "Rates must not be negative"
-const FreezingInvalid = "FreezingRate must not be positive"
-const DimensionsInvalid = "Invalid dimensions"
-const NetWeightInvalid = "Net weight must be positive"
-const ProductTypeInvalid = "ProductTypeId must not be negative"
-const SellerIdInvalid = "SellerId must not be negative"
+const ExpirationInvalid = "rates must not be negative"
+const FreezingInvalid = "freezingRate must not be positive"
+const DimensionsInvalid = "invalid dimensions"
+const NetWeightInvalid = "net weight must be positive"
+const ProductTypeInvalid = "productTypeId must not be negative"
+const SellerIdInvalid = "sellerId must not be negative"
 
 func (p *Product) ValidateProduct() error {
 	if p.Attributes.ExpirationRate < 0 {

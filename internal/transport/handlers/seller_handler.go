@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -84,12 +86,20 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 		var sellerDto dto.SellerDto
 
 		if err := json.NewDecoder(r.Body).Decode(&sellerDto); err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
-			response.JSON(w, sellerError.Code, dto.ResponseDTO{
-				Code: sellerError.Code,
-				Msg:  sellerError.Msg,
-				Data: nil,
-			})
+			if errors.Is(err, io.EOF) {
+				response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
+					Code: http.StatusBadRequest,
+					Msg:  "Bad Request - body can not be null",
+					Data: nil,
+				})
+			} else {
+				sellerError := error_management.HandleErrorSeller(err)
+				response.JSON(w, sellerError.Code, dto.ResponseDTO{
+					Code: sellerError.Code,
+					Msg:  sellerError.Msg,
+					Data: nil,
+				})
+			}
 			return
 		}
 
@@ -168,8 +178,8 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 			return
 		}
 
-		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
-			Code: http.StatusCreated,
+		response.JSON(w, http.StatusOK, dto.ResponseDTO{
+			Code: http.StatusOK,
 			Msg:  "User Updated",
 			Data: mappers.MapperToSellerDTO(seller),
 		})

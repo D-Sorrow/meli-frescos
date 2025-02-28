@@ -16,9 +16,9 @@ type BuyerRepository interface {
 }
 
 var (
-	ErrNoRegisteredBuyersYet           = errors.New("No registered buyers yet")
-	ErrDuplicateCardNumberID           = errors.New("Duplicate card number ID provided")
-	ErrBuyerNotFoundWithID             = errors.New("The requested buyer does not exist with ID provided")
-	ErrCannotDeleteBuyerWithOrders     = errors.New("We cannot delete the requested buyer because it has orders")
-	ErrBuyerNotFoundOrBuyerHasNoOrders = errors.New("The requested buyer does not exist with ID or the requested buyer has no orders")
+	ErrNoRegisteredBuyersYet           = errors.New("no registered buyers yet")
+	ErrDuplicateCardNumberID           = errors.New("duplicate card number ID provided")
+	ErrBuyerNotFoundWithID             = errors.New("the requested buyer does not exist with ID provided")
+	ErrCannotDeleteBuyerWithOrders     = errors.New("we cannot delete the requested buyer because it has orders")
+	ErrBuyerNotFoundOrBuyerHasNoOrders = errors.New("the requested buyer does not exist with ID or the requested buyer has no orders")
 )

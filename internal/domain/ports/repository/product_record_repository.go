@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 )
 
@@ -11,6 +12,6 @@ type ProductRecordRepository interface {
 }
 
 var (
-	CodeSaveErr = errors.New("001")
-	CodeGetErr  = errors.New("003")
+	ErrCodeSaveErr = errors.New("001")
+	ErrCodeGetErr  = errors.New("003")
 )

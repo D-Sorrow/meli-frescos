@@ -2,10 +2,11 @@ package repository
 
 import (
 	"database/sql"
+	"log"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	recordRepo "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entity"
-	"log"
 )
 
 type ProductRecordRepository struct {
@@ -22,7 +23,7 @@ func (repository *ProductRecordRepository) SaveProductRecord(productRecord model
 	var productRecordEntity entity.ProductRecordEntity
 	_, err := repository.db.Exec(productRecordEntity.SaveProductRecord(), productRecord.LastUpdateTime, productRecord.PurchasePrice, productRecord.SalePrice, productRecord.ProductId)
 	if err != nil {
-		return recordRepo.CodeSaveErr
+		return recordRepo.ErrCodeSaveErr
 	}
 	return nil
 }
@@ -33,7 +34,7 @@ func (repository *ProductRecordRepository) GetProductRecord(productId int) (map[
 	rows, err := repository.db.Query(productRecordEntity.GetRecord(productId))
 	if err != nil {
 		log.Println(err)
-		return nil, recordRepo.CodeGetErr
+		return nil, recordRepo.ErrCodeGetErr
 	}
 	defer rows.Close()
 
@@ -41,7 +42,7 @@ func (repository *ProductRecordRepository) GetProductRecord(productId int) (map[
 		var productRecord models.ProductRecordResponse
 		err := rows.Scan(&productRecord.ProductId, &productRecord.Description, &productRecord.RecordsCount)
 		if err != nil {
-			return nil, recordRepo.CodeGetErr
+			return nil, recordRepo.ErrCodeGetErr
 		}
 		productRecordMap[productRecord.ProductId] = productRecord
 	}
