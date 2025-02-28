@@ -6,10 +6,9 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
-
-	serviceErrors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 )
 
 type CarryHandler struct {
@@ -66,36 +65,13 @@ func (ch *CarryHandler) CreateCarrier() http.HandlerFunc {
 
 		newCarrier, err := ch.service.CreateCarrier(mappers.MapperToCarrierModel(reqBody))
 		if err != nil {
-			switch {
-			case err.Error() == serviceErrors.ErrIdDuplicate().Error():
-				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
-					Code: http.StatusConflict,
-					Msg:  "id already exists",
-					Data: nil,
-				})
-				return
-			case err.Error() == serviceErrors.ErrCarrierCidDuplicate().Error():
-				response.JSON(w, http.StatusConflict, dto.ResponseDTO{
-					Code: http.StatusConflict,
-					Msg:  "carrier cid already exists",
-					Data: nil,
-				})
-				return
-			case err.Error() == serviceErrors.ErrEntityId().Error():
-				response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
-					Code: http.StatusBadRequest,
-					Msg:  "entity id faild",
-					Data: nil,
-				})
-				return
-			default:
-				response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
-					Code: http.StatusInternalServerError,
-					Msg:  "internal server error",
-					Data: nil,
-				})
-				return
-			}
+			handler_err := handler_errors.HandleErrorWarehouse(err)
+			response.JSON(w, handler_err.Code, dto.ResponseDTO{
+				Code: handler_err.Code,
+				Msg:  handler_err.Message,
+				Data: nil,
+			})
+			return
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{

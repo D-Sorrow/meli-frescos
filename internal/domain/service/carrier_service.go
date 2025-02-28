@@ -1,12 +1,9 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	serviceErrors "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
-	repoErros "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type CarrierService struct {
@@ -20,7 +17,7 @@ func NewCarryService(repository repository.CarrierRepositoryInterface) *CarrierS
 func (cs *CarrierService) GetAllCarriers() ([]models.Carrier, error) {
 	carriers, err := cs.repository.GetAllCarriers()
 	if err != nil {
-		return nil, serviceErrors.InternalServerErr()
+		return nil, serviceErrors.HandleErrorCarrierService(err)
 	}
 
 	return carriers, nil
@@ -29,20 +26,7 @@ func (cs *CarrierService) GetAllCarriers() ([]models.Carrier, error) {
 func (cs *CarrierService) CreateCarrier(carrier models.Carrier) (models.Carrier, error) {
 	newCarrier, err := cs.repository.CreateCarrier(carrier)
 	if err != nil {
-		switch {
-		case errors.Is(err, repoErros.ErrIdDuplicate):
-			err = serviceErrors.ErrIdDuplicate()
-			return models.Carrier{}, err
-		case errors.Is(err, repoErros.ErrCarrierCidDuplicate):
-			err = serviceErrors.ErrCarrierCidDuplicate()
-			return models.Carrier{}, err
-		case errors.Is(err, repoErros.ErrLocalityId):
-			err = serviceErrors.ErrEntityId()
-			return models.Carrier{}, err
-		default:
-			err = serviceErrors.InternalServerErr()
-			return models.Carrier{}, err
-		}
+		return models.Carrier{}, serviceErrors.HandleErrorCarrierService(err)
 	}
 	return newCarrier, nil
 }
