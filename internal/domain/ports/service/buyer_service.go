@@ -16,9 +16,10 @@ type BuyerService interface {
 }
 
 var (
-	NoRegisteredBuyersYet       = errors.New("No registered buyers yet")
-	BuyerDoesNotExist           = errors.New("The requested buyer does not exist in the database for the ID: %d")
-	BuyerAlreadyExists          = errors.New("A buyer already exists in the database with the card number ID: %s")
-	CannotDeleteBuyerWithOrders = errors.New("We cannot delete the requested buyer because it has orders")
-	BuyerHasNoOrders            = errors.New("The requested buyer has no orders yet")
+	ErrBuyerNoRegisteredBuyersYet       = errors.New("ERR_SRV_BY_NO_REG_BYS_YET")
+	ErrBuyerAlreadyExists               = errors.New("ERR_SRV_BY_ALREADY_EXISTS")
+	ErrBuyerDoesNotExist                = errors.New("ERR_SRV_BY_DOES_NOT_EXIST")
+	ErrBuyerCannotDeleteBuyerWithOrders = errors.New("ERR_SRV_BY_CANNOT_DEL_BY_WITH_ORDERS")
+	ErrBuyerHasNoOrders                 = errors.New("ERR_SRV_BY_HAS_NO_ORDERS")
+	ErrBuyerUnexpectedError             = errors.New("ERR_SRV_BY_UNEXPECTED_ERROR")
 )
