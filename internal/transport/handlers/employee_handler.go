@@ -120,7 +120,8 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 			return
 		}
 
-		respondWithJSON(w, http.StatusOK, "Success", employeeUpdated)
+		employeeDto := mappers.EmployeeModelToDTO(employeeUpdated)
+		respondWithJSON(w, http.StatusOK, "Success", employeeDto)
 	}
 }
 
