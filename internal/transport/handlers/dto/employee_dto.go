@@ -30,3 +30,9 @@ type EmployeeReportInboundOrdersDTO struct {
 	WarehouseId        int    `json:"warehouse_id"`
 	InboundOrdersCount int    `json:"inbound_orders_count"`
 }
+
+type EmployeeResponseDto[T any] struct {
+	Code int    `json:"code"`
+	Msg  string `json:"message"`
+	Data T      `json:"data"`
+}
