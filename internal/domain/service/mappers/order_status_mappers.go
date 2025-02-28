@@ -5,7 +5,9 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
 )
 
-func OrderStatusAttributesToOrderStatusEntity(v *models.OrderStatusAttributes) *entities.OrderStatusEntity {
+func OrderStatusAttributesToOrderStatusEntity(
+	v *models.OrderStatusAttributes,
+) *entities.OrderStatusEntity {
 	return &entities.OrderStatusEntity{
 		Description: v.Description,
 	}
