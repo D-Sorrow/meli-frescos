@@ -9,6 +9,7 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	serviceErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	handlerErr "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
+	fakeModels "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
 	"github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/mock"
@@ -18,16 +19,7 @@ import (
 func TestGetWarehouses(t *testing.T) {
 	t.Run("find all warehouses", func(t *testing.T) {
 		serviceMock := service.NewWarehouseServiceMock()
-		warehousesFake := map[int]models.Warehouse{}
-		warehousesFake[1] = models.Warehouse{
-			Id:                 1,
-			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-			Address:            "Apt 1639",
-			Telephone:          "(639) 5350508",
-			MinimunCapacity:    99,
-			MinimunTemperature: -14,
-			LocalityId:         1,
-		}
+		warehousesFake := fakeModels.WarehousesFake
 		serviceMock.On("GetWarehouses").Return(warehousesFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -51,6 +43,15 @@ func TestGetWarehouses(t *testing.T) {
 									"minimum_capacity": 99,
 									"minimum_temperature": -14,
 									"locality_id": 1
+								},
+								{
+									"id": 2,
+									"warehouse_code": "b6b225e6-c83f-46a4-ac63-b6df8794ba59",
+									"address": "Room 192",
+									"telephone": "(917) 6928569",
+									"minimum_capacity": 15,
+									"minimum_temperature": 0,
+									"locality_id": 2
 								}
 							]
 						}`
@@ -89,15 +90,7 @@ func TestGetWarehouses(t *testing.T) {
 func TestGetWarehouseById(t *testing.T) {
 	t.Run("find warehouse by id", func(t *testing.T) {
 		serviceMock := service.NewWarehouseServiceMock()
-		warehouseFake := models.Warehouse{
-			Id:                 1,
-			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-			Address:            "Apt 1639",
-			Telephone:          "(639) 5350508",
-			MinimunCapacity:    99,
-			MinimunTemperature: -14,
-			LocalityId:         1,
-		}
+		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("GetWarehouseById", mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -180,15 +173,7 @@ func TestGetWarehouseById(t *testing.T) {
 func TestCreateWarehouse(t *testing.T) {
 	t.Run("create warehouse ok", func(t *testing.T) {
 		serviceMock := service.NewWarehouseServiceMock()
-		warehouseFake := models.Warehouse{
-			Id:                 1,
-			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-			Address:            "Apt 1639",
-			Telephone:          "(639) 5350508",
-			MinimunCapacity:    99,
-			MinimunTemperature: -14,
-			LocalityId:         1,
-		}
+		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
@@ -329,15 +314,7 @@ func TestCreateWarehouse(t *testing.T) {
 func TestPatchWarehouse(t *testing.T) {
 	t.Run("update warehouse ok", func(t *testing.T) {
 		serviceMock := service.NewWarehouseServiceMock()
-		warehouseFake := models.Warehouse{
-			Id:                 1,
-			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-			Address:            "Apt 1639",
-			Telephone:          "(639) 5350508",
-			MinimunCapacity:    99,
-			MinimunTemperature: -14,
-			LocalityId:         1,
-		}
+		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()

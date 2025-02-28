@@ -6,6 +6,7 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	repositoryErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	serviceErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	fakeModels "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
 	"github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -14,31 +15,12 @@ import (
 func TestGetWarehouses(t *testing.T) {
 	t.Run("find all warehouses", func(t *testing.T) {
 		mockRepository := repository.NewWarehouseRepositoryMock()
-		warehousesFake := map[int]models.Warehouse{}
-		warehousesFake[1] = models.Warehouse{
-			Id:                 1,
-			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-			Address:            "Apt 1639",
-			Telephone:          "(639) 5350508",
-			MinimunCapacity:    99,
-			MinimunTemperature: -14,
-			LocalityId:         1,
-		}
-		warehousesFake[2] = models.Warehouse{
-			Id:                 2,
-			WarehouseCode:      "b6b225e6-c83f-46a4-ac63-b6df8794ba59",
-			Address:            "Room 192",
-			Telephone:          "(917) 6928569",
-			MinimunCapacity:    15,
-			MinimunTemperature: 0,
-			LocalityId:         2,
-		}
-		mockRepository.On("GetWarehouses").Return(warehousesFake, error(nil))
+		mockRepository.On("GetWarehouses").Return(fakeModels.WarehousesFake, error(nil))
 		serviceImp := NewWarehouseService(mockRepository)
 
 		response, err := serviceImp.GetWarehouses()
 
-		require.Equal(t, warehousesFake, response)
+		require.Equal(t, fakeModels.WarehousesFake, response)
 		require.Equal(t, 2, len(response))
 		require.NoError(t, err)
 		mockRepository.AssertCalled(t, "GetWarehouses")
@@ -59,15 +41,7 @@ func TestGetWarehouses(t *testing.T) {
 func TestGetWarehouseById(t *testing.T) {
 	t.Run("find warehouse successfull", func(t *testing.T) {
 		mockRepository := repository.NewWarehouseRepositoryMock()
-		warehouseFake := models.Warehouse{
-			Id:                 1,
-			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-			Address:            "Apt 1639",
-			Telephone:          "(639) 5350508",
-			MinimunCapacity:    99,
-			MinimunTemperature: -14,
-			LocalityId:         1,
-		}
+		warehouseFake := fakeModels.WarehousesFake[1]
 		mockRepository.On("GetWarehouseById", 1).Return(warehouseFake, error(nil))
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -95,15 +69,7 @@ func TestGetWarehouseById(t *testing.T) {
 func TestCreateWarehouse(t *testing.T) {
 	t.Run("create warehouse ok", func(t *testing.T) {
 		mockRepository := repository.NewWarehouseRepositoryMock()
-		warehouseFake := models.Warehouse{
-			Id:                 1,
-			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-			Address:            "Apt 1639",
-			Telephone:          "(639) 5350508",
-			MinimunCapacity:    99,
-			MinimunTemperature: -14,
-			LocalityId:         1,
-		}
+		warehouseFake := fakeModels.WarehousesFake[1]
 		mockRepository.On("CreateWarehouse", warehouseFake).Return(warehouseFake, error(nil))
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -131,24 +97,8 @@ func TestCreateWarehouse(t *testing.T) {
 func TestPatchWarehouse(t *testing.T) {
 	t.Run("update warehouse successful", func(t *testing.T) {
 		mockRepository := repository.NewWarehouseRepositoryMock()
-		warehouseFakeMap := map[string]interface{}{
-			"Id":                 1,
-			"WarehouseCode":      "96b5c517-cce3-4ed3-a06b-24234ee8d009",
-			"Address":            "PO Box 16130",
-			"Telephone":          "(617) 4591159",
-			"MinimunCapacity":    92,
-			"MinimunTemperature": 10,
-			"LocalityId":         1,
-		}
-		warehouseFake := models.Warehouse{
-			Id:                 1,
-			WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-			Address:            "Apt 1639",
-			Telephone:          "(639) 5350508",
-			MinimunCapacity:    99,
-			MinimunTemperature: -14,
-			LocalityId:         1,
-		}
+		warehouseFakeMap := fakeModels.WarehouseFakeMap
+		warehouseFake := fakeModels.WarehousesFake[1]
 		mockRepository.On("PatchWarehouse", 1, mock.Anything).Return(warehouseFake, error(nil))
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -161,15 +111,7 @@ func TestPatchWarehouse(t *testing.T) {
 
 	t.Run("update warehouse not found", func(t *testing.T) {
 		mockRepository := repository.NewWarehouseRepositoryMock()
-		warehouseFakeMap := map[string]interface{}{
-			"Id":                 1,
-			"WarehouseCode":      "96b5c517-cce3-4ed3-a06b-24234ee8d009",
-			"Address":            "PO Box 16130",
-			"Telephone":          "(617) 4591159",
-			"MinimunCapacity":    92,
-			"MinimunTemperature": 10,
-			"LocalityId":         1,
-		}
+		warehouseFakeMap := fakeModels.WarehouseFakeMap
 		mockRepository.On("PatchWarehouse", 1, mock.Anything).Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
 		serviceImp := NewWarehouseService(mockRepository)
 
@@ -182,15 +124,7 @@ func TestPatchWarehouse(t *testing.T) {
 
 	t.Run("update warehouse conflict", func(t *testing.T) {
 		mockRepository := repository.NewWarehouseRepositoryMock()
-		warehouseFakeMap := map[string]interface{}{
-			"Id":                 1,
-			"WarehouseCode":      "96b5c517-cce3-4ed3-a06b-24234ee8d009",
-			"Address":            "PO Box 16130",
-			"Telephone":          "(617) 4591159",
-			"MinimunCapacity":    92,
-			"MinimunTemperature": 10,
-			"LocalityId":         1,
-		}
+		warehouseFakeMap := fakeModels.WarehouseFakeMap
 		mockRepository.On("PatchWarehouse", 1, mock.Anything).Return(models.Warehouse{}, repositoryErr.ErrWarehouseCodeDuplicate)
 		serviceImp := NewWarehouseService(mockRepository)
 
