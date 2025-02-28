@@ -18,7 +18,9 @@ func PurchaseOrderToPurchaseOrderEntity(v *models.PurchaseOrder) *entities.Purch
 	}
 }
 
-func PurchaseOrderAttributesFKsToPurchaseOrderEntity(v *models.PurchaseOrderAttributesFKs) *entities.PurchaseOrderEntity {
+func PurchaseOrderAttributesFKsToPurchaseOrderEntity(
+	v *models.PurchaseOrderAttributesFKs,
+) *entities.PurchaseOrderEntity {
 	return &entities.PurchaseOrderEntity{
 		OrderNumber:   v.OrderNumber,
 		OrderDate:     v.OrderDate,
@@ -47,7 +49,9 @@ func PurchaseOrderEntityToPurchaseOrder(v *entities.PurchaseOrderEntity) *models
 	}
 }
 
-func ReportPurchaseOrdersEntityToReportPurchaseOrders(v *entities.ReportPurchaseOrdersEntity) *models.ReportPurchaseOrders {
+func ReportPurchaseOrdersEntityToReportPurchaseOrders(
+	v *entities.ReportPurchaseOrdersEntity,
+) *models.ReportPurchaseOrders {
 	return &models.ReportPurchaseOrders{
 		ID:                  v.ID,
 		CardNumberID:        v.CardNumberID,
