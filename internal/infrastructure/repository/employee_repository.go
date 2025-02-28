@@ -81,13 +81,22 @@ func (_repository *EmployeeRepository) UpdateEmployee(employee *models.Employee)
 }
 
 func (_repository *EmployeeRepository) DeleteEmployee(employeeId int) error {
-	_, err := _repository.db.Exec(
+	result, err := _repository.db.Exec(
 		"DELETE FROM employees WHERE id=?",
 		employeeId,
 	)
 	if err != nil {
 		return error_management.HandleRepositoryError(repository.ErrEmployeeInternalServerError, err)
 	}
+
+	rowsAffected, err := result.RowsAffected()
+	if rowsAffected == 0 {
+		return error_management.HandleRepositoryError(repository.ErrEmployeeNotFound, errors.New("no affected rows"))
+	}
+	if err != nil {
+		return error_management.HandleRepositoryError(repository.ErrEmployeeInternalServerError, err)
+	}
+
 	return nil
 }
 
