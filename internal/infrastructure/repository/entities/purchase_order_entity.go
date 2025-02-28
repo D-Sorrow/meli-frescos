@@ -38,7 +38,15 @@ func (p *PurchaseOrderEntity) GetCreateQuery() (query string, args []interface{}
 		order_status_id,
 		wareHouse_id
 	) VALUES (?,?,?,?,?,?,?);`
-	args = []interface{}{p.OrderNumber, p.OrderDate, p.TrackingCode, p.BuyerID, p.CarrierID, p.OrderStatusID, p.WarehouseID}
+	args = []interface{}{
+		p.OrderNumber,
+		p.OrderDate,
+		p.TrackingCode,
+		p.BuyerID,
+		p.CarrierID,
+		p.OrderStatusID,
+		p.WarehouseID,
+	}
 
 	return
 }

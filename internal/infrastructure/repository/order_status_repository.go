@@ -5,6 +5,7 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
+	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 )
 
 type OrderStatusRepository struct {
@@ -22,6 +23,7 @@ func (b *OrderStatusRepository) GetAll() (buyers []entities.OrderStatusEntity, e
 
 	rows, err := b.db.Query(query, args...)
 	if err != nil {
+		err = error_management.HandleRepositoryError(repository.ErrOrderStatusUnexpectedError, err)
 		return
 	}
 	defer rows.Close()
@@ -33,6 +35,10 @@ func (b *OrderStatusRepository) GetAll() (buyers []entities.OrderStatusEntity, e
 		)
 
 		if err != nil {
+			err = error_management.HandleRepositoryError(
+				repository.ErrOrderStatusUnexpectedError,
+				err,
+			)
 			return
 		}
 
@@ -40,7 +46,7 @@ func (b *OrderStatusRepository) GetAll() (buyers []entities.OrderStatusEntity, e
 	}
 
 	if len(buyers) == 0 {
-		err = repository.ErrNoRegisteredOrderStatusesYet
+		err = repository.ErrOrderStatusNoRegisteredOrderStatusesYet
 		return
 	}
 

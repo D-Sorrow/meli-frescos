@@ -5,7 +5,9 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 )
 
-func PurchaseOrderCreateDTOToPurchaseOrderAttributesFKs(p *dto.PurchaseOrderCreateDTO) *models.PurchaseOrderAttributesFKs {
+func PurchaseOrderCreateDTOToPurchaseOrderAttributesFKs(
+	p *dto.PurchaseOrderCreateDTO,
+) *models.PurchaseOrderAttributesFKs {
 	return &models.PurchaseOrderAttributesFKs{
 		PurchaseOrderFKs: models.PurchaseOrderFKs{
 			BuyerID:       p.BuyerID,

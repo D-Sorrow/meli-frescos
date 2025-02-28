@@ -5,7 +5,7 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service/mappers"
 )
 
@@ -22,10 +22,10 @@ func (b *BuyerService) GetAll() (buyers []models.Buyer, err error) {
 
 	buyerEntities, err := b.repo.GetAll()
 	if err != nil {
-		if errors.Is(err, repository.ErrNoRegisteredBuyersYet) {
-			err = service.NoRegisteredBuyersYet
-		}
-
+		err = error_management.HandleServiceError(
+			error_management.HandleBuyerServiceError(err),
+			err,
+		)
 		return
 	}
 
@@ -39,10 +39,10 @@ func (b *BuyerService) GetAll() (buyers []models.Buyer, err error) {
 func (b *BuyerService) GetById(id int) (buyer models.Buyer, err error) {
 	buyerEntity, err := b.repo.GetById(id)
 	if err != nil {
-		if errors.Is(err, repository.ErrBuyerNotFoundWithID) {
-			err = service.BuyerDoesNotExist
-		}
-
+		err = error_management.HandleServiceError(
+			error_management.HandleBuyerServiceError(err),
+			err,
+		)
 		return
 	}
 
@@ -56,10 +56,10 @@ func (b *BuyerService) Create(buyer models.BuyerAttributes) (newBuyer models.Buy
 
 	newBuyerEntity, err := b.repo.Create(*buyerEntity)
 	if err != nil {
-		if errors.Is(err, repository.ErrDuplicateCardNumberID) {
-			err = service.BuyerAlreadyExists
-		}
-
+		err = error_management.HandleServiceError(
+			error_management.HandleBuyerServiceError(err),
+			err,
+		)
 		return
 	}
 
@@ -68,17 +68,18 @@ func (b *BuyerService) Create(buyer models.BuyerAttributes) (newBuyer models.Buy
 	return
 }
 
-func (b *BuyerService) Patch(id int, buyer models.BuyerAttributes) (updatedBuyer models.Buyer, err error) {
+func (b *BuyerService) Patch(
+	id int,
+	buyer models.BuyerAttributes,
+) (updatedBuyer models.Buyer, err error) {
 	buyerEntity := mappers.BuyerAttributesToBuyerEntity(&buyer)
 
 	updatedBuyerEntity, err := b.repo.Patch(id, *buyerEntity)
 	if err != nil {
-		if errors.Is(err, repository.ErrDuplicateCardNumberID) {
-			err = service.BuyerAlreadyExists
-		} else if errors.Is(err, repository.ErrBuyerNotFoundWithID) {
-			err = service.BuyerDoesNotExist
-		}
-
+		err = error_management.HandleServiceError(
+			error_management.HandleBuyerServiceError(err),
+			err,
+		)
 		return
 	}
 
@@ -90,38 +91,39 @@ func (b *BuyerService) Patch(id int, buyer models.BuyerAttributes) (updatedBuyer
 func (b *BuyerService) Delete(id int) (err error) {
 	err = b.repo.Delete(id)
 	if err != nil {
-		if errors.Is(err, repository.ErrBuyerNotFoundWithID) {
-			err = service.BuyerDoesNotExist
-		} else if errors.Is(err, repository.ErrCannotDeleteBuyerWithOrders) {
-			err = service.CannotDeleteBuyerWithOrders
-		}
-
+		err = error_management.HandleServiceError(
+			error_management.HandleBuyerServiceError(err),
+			err,
+		)
 		return
 	}
 
 	return
 }
 
-func (b *BuyerService) GetReportPurchaseOrders(buyerID *int) (report []models.ReportPurchaseOrders, err error) {
+func (b *BuyerService) GetReportPurchaseOrders(
+	buyerID *int,
+) (report []models.ReportPurchaseOrders, err error) {
 	report = make([]models.ReportPurchaseOrders, 0)
 
 	reportEntities, err := b.repo.GetReportPurchaseOrders(buyerID)
 	if err != nil {
-		if errors.Is(err, repository.ErrBuyerNotFoundOrBuyerHasNoOrders) {
-			if buyerID == nil {
-				err = service.BuyerHasNoOrders
-				return
-			} else {
-				err = service.BuyerDoesNotExist
-				return
-			}
+		if errors.Is(err, repository.ErrBuyerHasNoOrders) {
+			err = error_management.HandleServiceError(
+				error_management.HandleBuyerServiceError(err),
+				err,
+			)
+			return
 		}
 
 		return
 	}
 
 	for _, reportEntity := range reportEntities {
-		report = append(report, *mappers.ReportPurchaseOrdersEntityToReportPurchaseOrders(&reportEntity))
+		report = append(
+			report,
+			*mappers.ReportPurchaseOrdersEntityToReportPurchaseOrders(&reportEntity),
+		)
 	}
 
 	return

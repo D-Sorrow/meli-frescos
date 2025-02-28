@@ -1,11 +1,9 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service/mappers"
 )
 
@@ -22,10 +20,10 @@ func (b *OrderStatusService) GetAll() (buyers []models.OrderStatus, err error) {
 
 	buyerEntities, err := b.repo.GetAll()
 	if err != nil {
-		if errors.Is(err, repository.ErrNoRegisteredOrderStatusesYet) {
-			err = service.NoRegisteredOrderStatusesYet
-		}
-
+		err = error_management.HandleServiceError(
+			error_management.HandleOrderStatusServiceError(err),
+			err,
+		)
 		return
 	}
 
