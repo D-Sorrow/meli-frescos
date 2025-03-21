@@ -65,7 +65,7 @@ func (ch *CarryHandler) CreateCarrier() http.HandlerFunc {
 
 		newCarrier, err := ch.service.CreateCarrier(mappers.MapperToCarrierModel(reqBody))
 		if err != nil {
-			handler_err := handler_errors.HandleErrorWarehouse(err)
+			handler_err := handler_errors.HandleErrorCarrier(err)
 			response.JSON(w, handler_err.Code, dto.ResponseDTO{
 				Code: handler_err.Code,
 				Msg:  handler_err.Message,
@@ -77,7 +77,7 @@ func (ch *CarryHandler) CreateCarrier() http.HandlerFunc {
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
 			Code: http.StatusCreated,
 			Msg:  "carrier created successsfully",
-			Data: newCarrier,
+			Data: mappers.MapperToCarrierDto(newCarrier),
 		})
 	}
 }
