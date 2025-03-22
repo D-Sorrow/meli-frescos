@@ -71,7 +71,7 @@ func (h *ProductBatchesHandler) GetById() http.HandlerFunc {
 
 		productBatch, getByIdErr := h.s.GetById(idInt)
 		if getByIdErr != nil {
-			if errors.Is(getByIdErr, service.ProductBatchOrderDoesNotExist) {
+			if errors.Is(getByIdErr, service.ErrProductBatchOrderDoesNotExist) {
 				getByIdErr = herr.HandlerError{
 					Code: http.StatusNotFound,
 					Msg:  fmt.Sprintf(getByIdErr.Error(), idInt),
@@ -105,7 +105,7 @@ func (h *ProductBatchesHandler) Create() http.HandlerFunc {
 
 		ProductBatches, createErr := h.s.Create(*mappers.ProductBatchesCreateDTOToPProductBatchesFKs(&ProductBatchesDto))
 		if createErr != nil {
-			if errors.Is(createErr, service.ForeignKeysNotValidProductBatches) {
+			if errors.Is(createErr, service.ErrForeignKeysNotValidProductBatches) {
 				createErr = herr.HandlerError{
 					Code: http.StatusConflict,
 					Msg:  createErr.Error(),

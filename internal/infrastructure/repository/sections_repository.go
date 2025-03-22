@@ -84,7 +84,7 @@ func (s *SectionsRepository) UpdateSections(id int, sections models.SectionsPatc
 	value, err := s.GetSectionsById(id)
 
 	if err != nil {
-		return models.Sections{}, er.CodeSectionsIsExistErr
+		return models.Sections{}, er.ErrCodeSectionsIsExistErr
 	}
 
 	if sections.Warehouse_id != nil {
@@ -117,9 +117,9 @@ func (s *SectionsRepository) UpdateSections(id int, sections models.SectionsPatc
 	if err != nil {
 		log.Print(err)
 		if mysqlError, ok := err.(*mysql.MySQLError); ok && mysqlError.Number == 1062 {
-			return models.Sections{}, er.CodeSectionsIsExistErr
+			return models.Sections{}, er.ErrCodeSectionsIsExistErr
 		}
-		return models.Sections{}, er.CodeSectionsNotUpdate
+		return models.Sections{}, er.ErrCodeSectionsNotUpdate
 	}
 
 	return value, nil

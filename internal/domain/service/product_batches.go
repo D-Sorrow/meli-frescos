@@ -33,7 +33,7 @@ func (p *productBatchesService) GetById(id int) (productBatches models.ProductBa
 	productBatchesEntity, err := p.repo.GetById(id)
 	if err != nil {
 		if errors.Is(err, repository.ErrProductBatchNotFoundWithID) {
-			err = service.ProductBatchOrderDoesNotExist
+			err = service.ErrProductBatchOrderDoesNotExist
 		}
 
 		return
@@ -54,7 +54,7 @@ func (p *productBatchesService) Create(product models.ProductBatches2AttributesF
 	newProductBatchEntity, err := p.repo.Create(*purchaseOrderEntity)
 	if err != nil {
 		if errors.Is(err, repository.ErrForeignKeysNotValidProductBatches) {
-			err = service.ForeignKeysNotValidProductBatches
+			err = service.ErrForeignKeysNotValidProductBatches
 		}
 		return
 	}
