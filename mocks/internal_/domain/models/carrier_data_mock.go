@@ -24,7 +24,7 @@ var Carriers = []carrierModels.Carrier{
 	},
 }
 
-var ResponseDto = []dto.CarrierDto{
+var ResponseCarrierDto = []dto.CarrierDto{
 	{
 		Id:          1,
 		Cid:         "#086",
@@ -42,19 +42,3 @@ var ResponseDto = []dto.CarrierDto{
 		LocalityId:  2,
 	},
 }
-
-// [{
-// 	"id": 1,
-// 	"cid": "#086",
-// 	"company_name": "Livetube",
-// 	"address": "Room 192",
-// 	"telephone": "374-776-3015",
-// 	"locality_id": 1
-//   }, {
-// 	"id": 2,
-// 	"cid": "#11e",
-// 	"company_name": "Feedbug",
-// 	"address": "Apt 308",
-// 	"telephone": "495-573-9329",
-// 	"locality_id": 2
-//   }]

@@ -33,7 +33,7 @@ func TestGetAllCarriers(t *testing.T) {
 		expectedBody := map[string]any{
 			"code":    200,
 			"message": "Carriers got successfully",
-			"data":    fakeModels.ResponseDto,
+			"data":    fakeModels.ResponseCarrierDto,
 		}
 		expectedStringBody, _ := json.Marshal(expectedBody)
 		require.Equal(t, expectedCode, res.Code)
@@ -93,7 +93,7 @@ func TestCreateCarrier(t *testing.T) {
 		expectedBody := map[string]any{
 			"code":    http.StatusCreated,
 			"message": "carrier created successsfully",
-			"data":    fakeModels.ResponseDto[0],
+			"data":    fakeModels.ResponseCarrierDto[0],
 		}
 		expectedStringBody, _ := json.Marshal(expectedBody)
 		require.Equal(t, expectedCode, res.Code)

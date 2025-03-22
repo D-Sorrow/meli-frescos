@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,7 +11,7 @@ import (
 	serviceErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	handlerErr "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	fakeModels "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	"github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
+	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -31,33 +32,15 @@ func TestGetWarehouses(t *testing.T) {
 
 		expectedStatusCode := http.StatusOK
 		expectedHeader := http.Header{"Content-Type": []string{"application/json"}}
-		expectedBody := `{
-							"code": 200,
-							"message": "Warehouses got successfully",
-							"data": [
-								{
-									"id": 1,
-									"warehouse_code": "6e9168d9-ae9f-46be-a541-959f0cc2a650",
-									"address": "Apt 1639",
-									"telephone": "(639) 5350508",
-									"minimum_capacity": 99,
-									"minimum_temperature": -14,
-									"locality_id": 1
-								},
-								{
-									"id": 2,
-									"warehouse_code": "b6b225e6-c83f-46a4-ac63-b6df8794ba59",
-									"address": "Room 192",
-									"telephone": "(917) 6928569",
-									"minimum_capacity": 15,
-									"minimum_temperature": 0,
-									"locality_id": 2
-								}
-							]
-						}`
+		expectedBody := map[string]any{
+			"code":    200,
+			"message": "Warehouses got successfully",
+			"data":    fakeModels.ResponseWarehouseDto,
+		}
+		expectedStringBody, _ := json.Marshal(expectedBody)
 		require.Equal(t, expectedStatusCode, res.Code)
 		require.Equal(t, expectedHeader, res.Header())
-		require.JSONEq(t, expectedBody, res.Body.String())
+		require.JSONEq(t, string(expectedStringBody), res.Body.String())
 		serviceMock.AssertExpectations(t)
 	})
 
