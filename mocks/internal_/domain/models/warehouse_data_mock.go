@@ -1,6 +1,9 @@
 package models
 
-import warehouseModel "github.com/D-Sorrow/meli-frescos/internal/domain/models"
+import (
+	warehouseModel "github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+)
 
 var WarehousesFake = map[int]warehouseModel.Warehouse{
 	1: {
@@ -31,4 +34,25 @@ var WarehouseFakeMap = map[string]interface{}{
 	"MinimunCapacity":    92,
 	"MinimunTemperature": 10,
 	"LocalityId":         1,
+}
+
+var ResponseWarehouseDto = []dto.WarehouseDto{
+	{
+		Id:                 1,
+		WarehouseCode:      "6e9168d9-ae9f-46be-a541-959f0cc2a650",
+		Address:            "Apt 1639",
+		Telephone:          "(639) 5350508",
+		MinimumCapacity:    99,
+		MinimumTemperature: -14,
+		LocalityId:         1,
+	},
+	{
+		Id:                 2,
+		WarehouseCode:      "b6b225e6-c83f-46a4-ac63-b6df8794ba59",
+		Address:            "Room 192",
+		Telephone:          "(917) 6928569",
+		MinimumCapacity:    15,
+		MinimumTemperature: 0,
+		LocalityId:         2,
+	},
 }
