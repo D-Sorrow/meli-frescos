@@ -45,10 +45,10 @@ func MapperToLocalitySellersDTO(localitySellers models.LocalitySellers) dto.Loca
 
 func MapperToLocalityCarrierDTO(localityCarriers models.LocalityCarriers) dto.LocalityCarriersDto {
 	return dto.LocalityCarriersDto{
-		LocalityId:    *localityCarriers.LocalityId,
-		ZipCode:       *localityCarriers.ZipCode,
-		Name:          *localityCarriers.Name,
-		CarriersCount: *localityCarriers.CarriersCount,
+		LocalityId:    localityCarriers.LocalityId,
+		ZipCode:       localityCarriers.ZipCode,
+		Name:          localityCarriers.Name,
+		CarriersCount: localityCarriers.CarriersCount,
 	}
 }
 
