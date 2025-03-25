@@ -14,11 +14,13 @@ func NewLocalityRepositoryMock() *LocalityRepositoryMock {
 }
 
 func (_r *LocalityRepositoryMock) CreateLocality(locality models.Locality) (l models.Locality, err error) {
-	return
+	args := _r.Called(locality)
+	return args.Get(0).(models.Locality), args.Error(1)
 }
 
 func (_r *LocalityRepositoryMock) GetSellersByLocality(localityId int) (ls models.LocalitySellers, err error) {
-	return
+	args := _r.Called(localityId)
+	return args.Get(0).(models.LocalitySellers), args.Error(1)
 }
 
 func (_r *LocalityRepositoryMock) GetCarriersByAllLocalities() ([]models.LocalityCarriers, error) {
