@@ -14,11 +14,13 @@ func NewLocalityServiceMock() *LocalityServiceMock {
 }
 
 func (_l *LocalityServiceMock) CreateLocality(locality models.Locality) (l models.Locality, err error) {
-	return
+	args := _l.Called(locality)
+	return args.Get(0).(models.Locality), args.Error(1)
 }
 
 func (_l *LocalityServiceMock) GetSellersByLocality(localityId int) (ls models.LocalitySellers, err error) {
-	return
+	args := _l.Called(localityId)
+	return args.Get(0).(models.LocalitySellers), args.Error(1)
 }
 
 func (_l *LocalityServiceMock) GetCarriersByAllLocalities() ([]models.LocalityCarriers, error) {

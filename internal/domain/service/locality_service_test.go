@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	LocalityModels "github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	models_app "github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
@@ -11,6 +12,80 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCreateLocality(t *testing.T) {
+	t.Run("create a new locality", func(t *testing.T) {
+		repositoryMock := repository_mock.NewLocalityRepositoryMock()
+		repositoryMock.On("CreateLocality", models.LocalityRequest).Return(models.LocalityRequest, error(nil))
+		serviceImp := NewLocalityService(repositoryMock)
+
+		res, err := serviceImp.CreateLocality(models.LocalityRequest)
+
+		require.NoError(t, err)
+		require.Equal(t, models.LocalityRequest, res)
+		repositoryMock.AssertCalled(t, "CreateLocality", models.LocalityRequest)
+		repositoryMock.AssertNumberOfCalls(t, "CreateLocality", 1)
+
+	})
+
+	t.Run("create a new locality fail - locality already exist", func(t *testing.T) {
+		repositoryMock := repository_mock.NewLocalityRepositoryMock()
+		repositoryMock.On("CreateLocality", models.LocalityRequest).Return(models_app.Locality{}, repository.ErrLocalityAlreadyExists)
+		serviceImp := NewLocalityService(repositoryMock)
+
+		res, err := serviceImp.CreateLocality(models.LocalityRequest)
+
+		require.Equal(t, res, models_app.Locality{})
+		require.ErrorIs(t, err, service.ErrLocalityAlreadyExists)
+		repositoryMock.AssertCalled(t, "CreateLocality", models.LocalityRequest)
+		repositoryMock.AssertNumberOfCalls(t, "CreateLocality", 1)
+
+	})
+
+	t.Run("create a new locality fail - province not found ", func(t *testing.T) {
+		repositoryMock := repository_mock.NewLocalityRepositoryMock()
+		repositoryMock.On("CreateLocality", models.LocalityRequest).Return(models_app.Locality{}, repository.ErrProvinceNotFound)
+		serviceImp := NewLocalityService(repositoryMock)
+
+		res, err := serviceImp.CreateLocality(models.LocalityRequest)
+
+		require.Equal(t, res, models_app.Locality{})
+		require.ErrorIs(t, err, service.ErrProvinceNotFound)
+		repositoryMock.AssertCalled(t, "CreateLocality", models.LocalityRequest)
+		repositoryMock.AssertNumberOfCalls(t, "CreateLocality", 1)
+
+	})
+}
+
+func TestGetSellersByLocality(t *testing.T) {
+	t.Run("get all carriers by localities", func(t *testing.T) {
+		repositoryMock := repository_mock.NewLocalityRepositoryMock()
+		repositoryMock.On("GetSellersByLocality", 1).Return(models.LocalitySellersResponse, error(nil))
+		serviceImp := NewLocalityService(repositoryMock)
+
+		res, err := serviceImp.GetSellersByLocality(1)
+
+		require.NoError(t, err)
+		require.Equal(t, models.LocalitySellersResponse, res)
+		repositoryMock.AssertCalled(t, "GetSellersByLocality", 1)
+		repositoryMock.AssertNumberOfCalls(t, "GetSellersByLocality", 1)
+
+	})
+
+	t.Run("get all carriers by localities fail - locality not found", func(t *testing.T) {
+		repositoryMock := repository_mock.NewLocalityRepositoryMock()
+		repositoryMock.On("GetSellersByLocality", 1).Return(models_app.LocalitySellers{}, repository.ErrLocalityNotFound)
+		serviceImp := NewLocalityService(repositoryMock)
+
+		res, err := serviceImp.GetSellersByLocality(1)
+
+		require.Equal(t, res, models_app.LocalitySellers{})
+		require.ErrorIs(t, err, service.ErrLocalityNotFound)
+		repositoryMock.AssertCalled(t, "GetSellersByLocality", 1)
+		repositoryMock.AssertNumberOfCalls(t, "GetSellersByLocality", 1)
+
+	})
+}
 
 func TestGetCarriersByAllLocalities(t *testing.T) {
 	t.Run("get all carriers by localities", func(t *testing.T) {

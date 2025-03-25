@@ -1,10 +1,60 @@
 package models
 
 import (
+	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	localityModels "github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	//"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 )
+
+var LocalityRequest = models.Locality{
+	Id:           1,
+	ZipCode:      "10702-013",
+	Name:         "Litvínovice",
+	ProvinceName: "Boyaca",
+	CountryName:  "Tunja",
+}
+
+var LocalityBadRequest = models.Locality{
+	Id:          1,
+	ZipCode:     "10702-013",
+	CountryName: "Tunja",
+}
+
+var JsonLocalityCreatedDto = dto.LocalityDto{
+	Id:           1,
+	ZipCode:      "10702-013",
+	LocalityName: "Litvínovice",
+	ProvinceName: "Boyaca",
+	CountryName:  "Tunja",
+}
+
+var JsonBadLocalityCreatedDto = dto.LocalityDto{
+	Id:          1,
+	ZipCode:     "10702-013",
+	CountryName: "Tunja",
+}
+
+var localityID = 1
+var zipCode = "10702-013"
+var name = "Litvínovice"
+var sellersCount = 5
+
+var LocalitySellersResponse = models.LocalitySellers{
+
+	LocalityId:   &localityID,
+	ZipCode:      &zipCode,
+	Name:         &name,
+	SellersCount: &sellersCount,
+}
+
+var JsonLocalitySellersResponse = dto.LocalitySellersDto{
+
+	LocalityId:   localityID,
+	ZipCode:      zipCode,
+	Name:         name,
+	SellersCount: sellersCount,
+}
 
 var LocalityCarriers = []localityModels.LocalityCarriers{
 	{
