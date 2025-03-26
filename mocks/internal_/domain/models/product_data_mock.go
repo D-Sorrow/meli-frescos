@@ -58,7 +58,7 @@ func ReturnMockProductModel() models.Product {
 
 func ReturnProductModelMap() map[int]models.Product {
 	return map[int]models.Product{
-		1: models.Product{
+		1: {
 			SellerId: sellerId,
 			Attributes: models.ProductAttribute{
 				Description:         description,
@@ -75,7 +75,7 @@ func ReturnProductModelMap() map[int]models.Product {
 				},
 			},
 		},
-		2: models.Product{
+		2: {
 			SellerId: sellerId,
 			Attributes: models.ProductAttribute{
 				Description:         description,

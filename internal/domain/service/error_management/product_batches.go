@@ -1,13 +1,11 @@
 package error_management
 
-import "fmt"
-
 type ProductBatchesError struct {
 	Msg string
 }
 
 func (send *ProductBatchesError) Error() string {
-	return fmt.Sprintf("%s", send.Msg)
+	return send.Msg
 }
 
 var ErrProductBatchesNotFound *ProductBatchesError = &ProductBatchesError{

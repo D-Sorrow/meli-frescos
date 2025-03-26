@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 
 	er "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 )
@@ -23,7 +22,7 @@ func (s SectionsService) GetSections() map[int]models.Sections {
 func (s SectionsService) GetSectionsById(id int) (models.Sections, error) {
 	sections, errGet := s.repo.GetSectionsById(id)
 	if errGet != nil {
-		return models.Sections{}, error_management.ErrSectionsNotFound
+		return models.Sections{}, er.ErrSectionsNotFound
 	}
 	return sections, nil
 }

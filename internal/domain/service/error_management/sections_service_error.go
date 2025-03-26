@@ -1,7 +1,5 @@
 package error_management
 
-import "fmt"
-
 const SectionsNotFound = "sections not found "
 const SectionsIsAlreadyExist = "sections is already exist ASDASFSAF"
 const CodeNotFound = 404
@@ -16,7 +14,7 @@ type ErrorSections struct {
 }
 
 func (sec *ErrorSections) Error() string {
-	return fmt.Sprintf("%s", sec.Msg)
+	return sec.Msg
 }
 
 func (e Error) Error() string {

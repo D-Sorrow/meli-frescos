@@ -4,8 +4,8 @@ import (
 	"errors"
 )
 
-const codeSectionsIsExist = "Code Product Is Exist"
+const codeSectionsIsExist = "code Product Is Exist"
 
-var CodeSectionsNotUpdate = errors.New("sections not update")
+var ErrCodeSectionsNotUpdate = errors.New("sections not update")
 
-var CodeSectionsIsExistErr error = errors.New(codeSectionsIsExist)
+var ErrCodeSectionsIsExistErr error = errors.New(codeSectionsIsExist)

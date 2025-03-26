@@ -113,6 +113,7 @@ func (hand LocalityHandler) GetCarriersByLocality() http.HandlerFunc {
 			carriersByLocalitiesDto := mappers.MapperToLocalitiesCarriersDTO(carriersByLocalities)
 			response.JSON(w, http.StatusOK, dto.ResponseDTO{
 				Code: http.StatusOK,
+				Msg:  "success",
 				Data: carriersByLocalitiesDto,
 			})
 			return

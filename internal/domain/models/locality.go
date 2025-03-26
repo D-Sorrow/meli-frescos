@@ -22,8 +22,8 @@ type LocalitySellers struct {
 }
 
 type LocalityCarriers struct {
-	LocalityId    *int
-	ZipCode       *string
-	Name          *string
-	CarriersCount *int
+	LocalityId    int
+	ZipCode       string
+	Name          string
+	CarriersCount int
 }

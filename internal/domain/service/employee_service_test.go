@@ -405,3 +405,99 @@ func TestDeleteEmployee(t *testing.T) {
 		require.ErrorIs(t, err, service.ErrEmployeeNotFound)
 	})
 }
+
+func TestGetReportInboundOrdersByEmployee(t *testing.T) {
+	t.Run("GetReportInboundOrdersByEmployee success with valid employeeId", func(t *testing.T) {
+		mockRepo := new(mockRepo.MockEmployeeRepository)
+
+		employeeReport := models.EmployeeReportInboundOrders{
+			Id:                1,
+			CardNumberId:      "abcd1",
+			FirstName:         "Alejo",
+			LastName:          "salazar",
+			WarehouseId:       1,
+			InboundOrderCount: 1,
+		}
+
+		mockRepo.On("GetInboundOrdersCountByEmployeeId", 1).Return(employeeReport, nil)
+
+		serv := NewEmployeeService(mockRepo)
+
+		employeesActual, err := serv.GetReportInboundOrdersByEmployee("1")
+
+		require.NoError(t, err)
+		require.Equal(t, []models.EmployeeReportInboundOrders{employeeReport}, employeesActual)
+	})
+
+	t.Run("GetReportInboundOrdersByEmployee success with empty employeeId", func(t *testing.T) {
+		mockRepo := new(mockRepo.MockEmployeeRepository)
+
+		allEmployeesReport := []models.EmployeeReportInboundOrders{
+			{
+				Id:                1,
+				CardNumberId:      "abcd1",
+				FirstName:         "Alejo",
+				LastName:          "salazar",
+				WarehouseId:       1,
+				InboundOrderCount: 1,
+			},
+			{
+				Id:                2,
+				CardNumberId:      "abcd2",
+				FirstName:         "Aleja",
+				LastName:          "garcia",
+				WarehouseId:       2,
+				InboundOrderCount: 2,
+			},
+		}
+
+		mockRepo.On("GetInboundOrdersCountAllEmployees").Return(allEmployeesReport, nil)
+
+		serv := NewEmployeeService(mockRepo)
+
+		employeesActual, err := serv.GetReportInboundOrdersByEmployee("")
+
+		require.NoError(t, err)
+		require.Equal(t, allEmployeesReport, employeesActual)
+	})
+
+	t.Run("GetReportInboundOrdersByEmployee fails with invalid employeeId", func(t *testing.T) {
+		mockRepo := new(mockRepo.MockEmployeeRepository)
+
+		serv := NewEmployeeService(mockRepo)
+
+		employeesActual, err := serv.GetReportInboundOrdersByEmployee("invalid")
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, service.ErrEmployeeDecodingError)
+		require.Nil(t, employeesActual)
+	})
+
+	t.Run("GetReportInboundOrdersByEmployee fails when repository returns an error for specific employee", func(t *testing.T) {
+		mockRepo := new(mockRepo.MockEmployeeRepository)
+
+		mockRepo.On("GetInboundOrdersCountByEmployeeId", 1).Return(models.EmployeeReportInboundOrders{}, repository.ErrEmployeeInternalServerError)
+
+		serv := NewEmployeeService(mockRepo)
+
+		employeesActual, err := serv.GetReportInboundOrdersByEmployee("1")
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, service.ErrEmployeeServiceDefault)
+		require.Nil(t, employeesActual)
+	})
+
+	t.Run("GetReportInboundOrdersByEmployee fails when repository returns an error for all employees", func(t *testing.T) {
+		mockRepo := new(mockRepo.MockEmployeeRepository)
+
+		mockRepo.On("GetInboundOrdersCountAllEmployees").Return([]models.EmployeeReportInboundOrders{}, repository.ErrEmployeeInternalServerError)
+
+		serv := NewEmployeeService(mockRepo)
+
+		employeesActual, err := serv.GetReportInboundOrdersByEmployee("")
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, service.ErrEmployeeServiceDefault)
+		require.Nil(t, employeesActual)
+	})
+}
