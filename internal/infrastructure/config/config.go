@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	_ "github.com/joho/godotenv"
@@ -16,6 +17,7 @@ type Config struct {
 	Addr   string
 	Port   int
 	DBName string
+	TLS    bool
 }
 
 var (
@@ -23,15 +25,29 @@ var (
 	once   sync.Once
 )
 
+func stringToBool(s string) bool {
+	s = strings.ToLower(s)
+
+	switch s {
+	case "1", "on", "true", "t", "yes", "y":
+		return true
+	case "0", "off", "false", "f", "no", "n":
+		return false
+	default:
+		return true
+	}
+}
+
 func NewConfig() (*Config, error) {
 	var err error
 	once.Do(func() {
 		var (
-			host    = os.Getenv("DB_HOST")
-			port    = os.Getenv("DB_PORT")
-			user    = os.Getenv("DB_USER")
-			pwd     = os.Getenv("DB_PASSWORD")
-			db_name = os.Getenv("DB_NAME")
+			host   = os.Getenv("DB_HOST")
+			port   = os.Getenv("DB_PORT")
+			user   = os.Getenv("DB_USER")
+			pwd    = os.Getenv("DB_PASSWORD")
+			dbName = os.Getenv("DB_NAME")
+			tlsStr = os.Getenv("DB_TLS")
 		)
 
 		portInt, err := strconv.Atoi(port)
@@ -47,7 +63,8 @@ func NewConfig() (*Config, error) {
 			Net:    "tcp",
 			Addr:   host,
 			Port:   portInt,
-			DBName: db_name,
+			DBName: dbName,
+			TLS:    stringToBool(tlsStr),
 		}
 
 	})
