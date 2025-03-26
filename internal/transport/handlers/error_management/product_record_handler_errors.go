@@ -32,6 +32,12 @@ func getErrorProductRecord(err error) ErrHandlerProductRecord {
 	if e, exists := productRecordHandlerErrors[err]; exists {
 		return e
 	}
+	if err.Error() == "EOF" {
+		return ErrHandlerProductRecord{
+			Message: "Error, data invalid",
+			Code:    500,
+		}
+	}
 	return productRecordHandlerErrors[service.ErrServiceProductRecordUnknown]
 }
 func HandlerErrProductRecord(err error) ErrHandlerProductRecord {
