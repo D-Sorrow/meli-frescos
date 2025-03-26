@@ -38,7 +38,7 @@ func (m *MockEmployeeRepository) DeleteEmployee(employeeId int) error {
 }
 
 func (m *MockEmployeeRepository) GetInboundOrdersCountByEmployeeId(employeeId int) (models.EmployeeReportInboundOrders, error) {
-	args := m.Called()
+	args := m.Called(employeeId)
 	return args.Get(0).(models.EmployeeReportInboundOrders), args.Error(1)
 }
 
