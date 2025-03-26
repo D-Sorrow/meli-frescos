@@ -75,6 +75,7 @@ func (b *PurchaseOrderRepository) Create(
 		return
 	}
 
-	newPurchaseOrder, err = b.GetById(int(lastId))
+	purchaseOrder.ID = lastId
+	newPurchaseOrder = purchaseOrder
 	return
 }
