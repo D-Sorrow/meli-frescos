@@ -1,14 +1,14 @@
 package entities
 
 type BuyerEntity struct {
-	ID           int
+	ID           int64
 	CardNumberID *string
 	FirstName    *string
 	LastName     *string
 }
 
 type ReportPurchaseOrdersEntity struct {
-	ID                  int
+	ID                  int64
 	CardNumberID        string
 	FirstName           string
 	LastName            string
