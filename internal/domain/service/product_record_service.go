@@ -28,5 +28,9 @@ func (service *ProductRecordService) SaveProductRecord(productRecord models.Prod
 	return productRecordResponse, nil
 }
 func (service *ProductRecordService) GetProductRecord(productId int) (map[int]models.ProductRecordResponse, error) {
-	return service.repository.GetProductRecord(productId)
+	mapProductRecord, errSer := service.repository.GetProductRecord(productId)
+	if errSer != nil {
+		return map[int]models.ProductRecordResponse{}, error_management.HandlerErrServiceProductRecord(errSer)
+	}
+	return mapProductRecord, nil
 }

@@ -27,9 +27,10 @@ func (hand *ProductRecordHandler) SaveProductRecord() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
+			errSpe := error_management.HandlerErrProductRecord(err)
 			response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
 				Code: http.StatusInternalServerError,
-				Msg:  err.Error(),
+				Msg:  errSpe.Error(),
 				Data: nil,
 			})
 			return
