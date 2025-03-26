@@ -1,47 +1,54 @@
 package service_test
 
 import (
-	"errors"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	serviceImpl "github.com/D-Sorrow/meli-frescos/internal/domain/service"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
+	"github.com/D-Sorrow/meli-frescos/mocks/helpers"
 	repository_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
 )
 
-func assertOrderStatusResponse(
+func switchOrderStatusTest(
 	t *testing.T,
-	responseErr error,
-	expectedErr error,
-	responseOutput interface{},
-	expectedOutput interface{},
+	test helpers.ServiceTestStruct,
+	orderStatusService *serviceImpl.OrderStatusService,
 ) {
 	t.Helper()
 
-	assert.True(t, errors.Is(responseErr, expectedErr), "Error mismatch")
-	assert.Equal(t, responseOutput, expectedOutput, "Output mismatch")
+	switch test.RepositoryMethod {
+	case "GetAll":
+		result, err := orderStatusService.GetAll()
+		helpers.CheckServiceResponse(
+			t,
+			err,
+			test.ExpectedErr,
+			result,
+			test.ExpectedOutput,
+		)
+	}
 }
 
-func TestOrderStatusService(t *testing.T) {
-	tests := []struct {
-		name             string
-		repositoryMethod string
-		serviceParams    []interface{}
-		mockParams       []interface{}
-		mockResponse     interface{}
-		mockError        error
-		expectedOutput   interface{}
-		expectedErr      error
-	}{
+func assertOrderStatusService(
+	t *testing.T,
+	test helpers.ServiceTestStruct,
+	mockRepository *repository_mock.MockOrderStatusRepository,
+) {
+	t.Helper()
+
+	orderStatusService := serviceImpl.NewOrderStatusService(mockRepository)
+	switchOrderStatusTest(t, test, orderStatusService)
+}
+
+func TestOrderStatusGetAllService(t *testing.T) {
+	tests := []helpers.ServiceTestStruct{
 		{
-			name:             "[GetAll] OK Get all order statuses",
-			repositoryMethod: "GetAll",
-			mockResponse: []entities.OrderStatusEntity{
+			Name:             "[GetAll] OK Get all order statuses",
+			RepositoryMethod: "GetAll",
+			MockResponse: []entities.OrderStatusEntity{
 				{
 					ID:          1,
 					Description: "Pendiente por pago",
@@ -51,7 +58,7 @@ func TestOrderStatusService(t *testing.T) {
 					Description: "Pagado",
 				},
 			},
-			expectedOutput: []models.OrderStatus{
+			ExpectedOutput: []models.OrderStatus{
 				{
 					ID: 1,
 					OrderStatusAttributes: models.OrderStatusAttributes{
@@ -67,47 +74,28 @@ func TestOrderStatusService(t *testing.T) {
 			},
 		},
 		{
-			name:             "[GetAll] Error No order statuses registered yet",
-			repositoryMethod: "GetAll",
-			mockResponse:     make([]entities.OrderStatusEntity, 0),
-			mockError:        repository.ErrOrderStatusNoRegisteredOrderStatusesYet,
-			expectedOutput:   make([]models.OrderStatus, 0),
-			expectedErr:      service.ErrOrderStatusNoRegisteredOrderStatusesYet,
+			Name:             "[GetAll] Error No order statuses registered yet",
+			RepositoryMethod: "GetAll",
+			MockResponse:     make([]entities.OrderStatusEntity, 0),
+			MockError:        repository.ErrOrderStatusNoRegisteredOrderStatusesYet,
+			ExpectedOutput:   make([]models.OrderStatus, 0),
+			ExpectedErr:      service.ErrOrderStatusNoRegisteredOrderStatusesYet,
 		},
 		{
-			name:             "[GetAll] Error Unexpected error",
-			repositoryMethod: "GetAll",
-			mockResponse:     make([]entities.OrderStatusEntity, 0),
-			mockError:        repository.ErrOrderStatusUnexpectedError,
-			expectedOutput:   make([]models.OrderStatus, 0),
-			expectedErr:      service.ErrOrderStatusUnexpectedError,
+			Name:             "[GetAll] Error Unexpected error",
+			RepositoryMethod: "GetAll",
+			MockResponse:     make([]entities.OrderStatusEntity, 0),
+			MockError:        repository.ErrOrderStatusUnexpectedError,
+			ExpectedOutput:   make([]models.OrderStatus, 0),
+			ExpectedErr:      service.ErrOrderStatusUnexpectedError,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
 			mockRepository := new(repository_mock.MockOrderStatusRepository)
-
-			if tt.mockResponse != nil {
-				mockRepository.On(tt.repositoryMethod, tt.mockParams...).
-					Return(tt.mockResponse, tt.mockError)
-			} else {
-				mockRepository.On(tt.repositoryMethod, tt.mockParams...).Return(tt.mockError)
-			}
-
-			orderStatusService := serviceImpl.NewOrderStatusService(mockRepository)
-
-			switch tt.repositoryMethod {
-			case "GetAll":
-				result, err := orderStatusService.GetAll()
-				assertOrderStatusResponse(
-					t,
-					err,
-					tt.expectedErr,
-					result,
-					tt.expectedOutput,
-				)
-			}
+			helpers.InitRepositoryMock(t, test, &mockRepository)
+			assertOrderStatusService(t, test, mockRepository)
 
 			mockRepository.AssertExpectations(t)
 		})
