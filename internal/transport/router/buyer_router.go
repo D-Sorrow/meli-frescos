@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func NewBuyerRouter(rt *chi.Mux, db *sql.DB) {
+func NewBuyerRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 	buyerRepo := repository.NewBuyerRepository(db)
 
 	buyerService := service.NewBuyerService(buyerRepo)
@@ -17,11 +18,11 @@ func NewBuyerRouter(rt *chi.Mux, db *sql.DB) {
 	buyerHandler := handler.NewBuyerHandler(buyerService)
 
 	rt.Route("/api/v1/buyers", func(rt chi.Router) {
-		rt.Get("/", buyerHandler.GetAll())
-		rt.Get("/{id}", buyerHandler.GetById())
-		rt.Post("/", buyerHandler.Create())
-		rt.Patch("/{id}", buyerHandler.Patch())
-		rt.Delete("/{id}", buyerHandler.Delete())
-		rt.Get("/reportPurchaseOrders", buyerHandler.GetReportPurchaseOrders())
+		rt.Get("/", buyerHandler.GetAll(ctx))
+		rt.Get("/{id}", buyerHandler.GetById(ctx))
+		rt.Post("/", buyerHandler.Create(ctx))
+		rt.Patch("/{id}", buyerHandler.Patch(ctx))
+		rt.Delete("/{id}", buyerHandler.Delete(ctx))
+		rt.Get("/reportPurchaseOrders", buyerHandler.GetReportPurchaseOrders(ctx))
 	})
 }
