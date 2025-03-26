@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -10,6 +12,7 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 )
@@ -22,12 +25,12 @@ func NewBuyerHandler(service service.BuyerService) *BuyerHandler {
 	return &BuyerHandler{service: service}
 }
 
-func (b *BuyerHandler) GetAll() http.HandlerFunc {
+func (b *BuyerHandler) GetAll(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		buyers, getAllErr := b.service.GetAll()
 		if getAllErr != nil {
 			getAllErr = handler_errors.HandleHandlerError(getAllErr)
-			handlerErr := handler_errors.HandleBuyerHandlerError(getAllErr, nil, nil)
+			handlerErr := handler_errors.HandleBuyerHandlerError(getAllErr, nil, nil, ctx)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
 				Msg:  handlerErr.Msg,
@@ -49,7 +52,7 @@ func (b *BuyerHandler) GetAll() http.HandlerFunc {
 	}
 }
 
-func (b *BuyerHandler) GetById() http.HandlerFunc {
+func (b *BuyerHandler) GetById(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
@@ -59,7 +62,10 @@ func (b *BuyerHandler) GetById() http.HandlerFunc {
 				handler_errors.ErrBuyerInvalidID,
 				nil,
 				nil,
+				ctx,
 			)
+			errs := r.Context().Value(middlewares.AppErrorKey)
+			fmt.Println(errs)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
 				Msg:  handlerErr.Msg,
@@ -77,6 +83,7 @@ func (b *BuyerHandler) GetById() http.HandlerFunc {
 				map[string]interface{}{
 					"ID": idInt,
 				},
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -94,7 +101,7 @@ func (b *BuyerHandler) GetById() http.HandlerFunc {
 	}
 }
 
-func (b *BuyerHandler) Create() http.HandlerFunc {
+func (b *BuyerHandler) Create(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var buyerCreateDTO dto.BuyerCreateDTO
 
@@ -104,6 +111,7 @@ func (b *BuyerHandler) Create() http.HandlerFunc {
 				handler_errors.ErrBuyerInvalidJSON,
 				nil,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -122,6 +130,7 @@ func (b *BuyerHandler) Create() http.HandlerFunc {
 				handler_errors.ErrBuyerInvalidCreateDTO,
 				errs,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -142,6 +151,7 @@ func (b *BuyerHandler) Create() http.HandlerFunc {
 				map[string]interface{}{
 					"CardNumberID": *buyerCreateDTO.CardNumberID,
 				},
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -159,7 +169,7 @@ func (b *BuyerHandler) Create() http.HandlerFunc {
 	}
 }
 
-func (b *BuyerHandler) Patch() http.HandlerFunc {
+func (b *BuyerHandler) Patch(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
@@ -169,6 +179,7 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 				handler_errors.ErrBuyerInvalidID,
 				nil,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -186,6 +197,7 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 				handler_errors.ErrBuyerInvalidJSON,
 				nil,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -204,6 +216,7 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 				handler_errors.ErrBuyerInvalidPatchDTO,
 				errs,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -226,6 +239,7 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 					"ID":           idInt,
 					"CardNumberID": *buyerPatchDTO.CardNumberID,
 				},
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -243,7 +257,7 @@ func (b *BuyerHandler) Patch() http.HandlerFunc {
 	}
 }
 
-func (b *BuyerHandler) Delete() http.HandlerFunc {
+func (b *BuyerHandler) Delete(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
@@ -253,6 +267,7 @@ func (b *BuyerHandler) Delete() http.HandlerFunc {
 				handler_errors.ErrBuyerInvalidID,
 				nil,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -271,6 +286,7 @@ func (b *BuyerHandler) Delete() http.HandlerFunc {
 				map[string]interface{}{
 					"ID": idInt,
 				},
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -287,7 +303,7 @@ func (b *BuyerHandler) Delete() http.HandlerFunc {
 	}
 }
 
-func (b *BuyerHandler) GetReportPurchaseOrders() http.HandlerFunc {
+func (b *BuyerHandler) GetReportPurchaseOrders(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var idP *int = nil
 		id := r.URL.Query().Get("id")
@@ -300,6 +316,7 @@ func (b *BuyerHandler) GetReportPurchaseOrders() http.HandlerFunc {
 					handler_errors.ErrBuyerInvalidID,
 					nil,
 					nil,
+					ctx,
 				)
 				response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 					Code: handlerErr.Code,
@@ -321,6 +338,7 @@ func (b *BuyerHandler) GetReportPurchaseOrders() http.HandlerFunc {
 				map[string]interface{}{
 					"ID": *idP,
 				},
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
