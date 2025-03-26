@@ -1,7 +1,7 @@
 package models
 
 type ReportPurchaseOrders struct {
-	ID                  int
+	ID                  int64
 	CardNumberID        string
 	FirstName           string
 	LastName            string
@@ -15,6 +15,6 @@ type BuyerAttributes struct {
 }
 
 type Buyer struct {
-	ID int
+	ID int64
 	BuyerAttributes
 }
