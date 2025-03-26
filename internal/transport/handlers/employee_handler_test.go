@@ -597,3 +597,199 @@ func TestDeleteEmployee(t *testing.T) {
 		mockService.AssertExpectations(t)
 	})
 }
+
+func TestGetReportInboundOrdersByEmployee(t *testing.T) {
+	t.Run("GetReportInboundOrdersByEmployee success with valid employeeId", func(t *testing.T) {
+		mockService := new(serviceMock.MockEmployeeService)
+		handler := NewEmployeeHandler(mockService)
+
+		employeeReport := []models.EmployeeReportInboundOrders{
+			{
+				Id:                1,
+				CardNumberId:      "abcd1",
+				FirstName:         "Alejo",
+				LastName:          "salazar",
+				WarehouseId:       1,
+				InboundOrderCount: 1,
+			},
+		}
+
+		employeesResponseDto := []dto.EmployeeReportInboundOrdersDTO{
+			{
+				Id:                 1,
+				CardNumberId:       "abcd1",
+				FirstName:          "Alejo",
+				LastName:           "salazar",
+				WarehouseId:        1,
+				InboundOrdersCount: 1,
+			},
+		}
+
+		expectedResponse := dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: employeesResponseDto,
+		}
+
+		mockService.On("GetReportInboundOrdersByEmployee", "1").Return(employeeReport, nil)
+
+		req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders?id=1", nil)
+		rr := httptest.NewRecorder()
+		router := chi.NewRouter()
+		router.Handle("/api/v1/employees/reportInboundOrders", handler.GetReportInboundOrdersByEmployee())
+		router.ServeHTTP(rr, req)
+
+		require.Equal(t, expectedResponse.Code, rr.Code)
+		var response dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]
+		json.NewDecoder(rr.Body).Decode(&response)
+
+		require.Equal(t, expectedResponse.Msg, response.Msg)
+		require.Equal(t, expectedResponse, response)
+		mockService.AssertExpectations(t)
+	})
+
+	t.Run("GetReportInboundOrdersByEmployee success with empty employeeId", func(t *testing.T) {
+		mockService := new(serviceMock.MockEmployeeService)
+		handler := NewEmployeeHandler(mockService)
+
+		allEmployeesReport := []models.EmployeeReportInboundOrders{
+			{
+				Id:                1,
+				CardNumberId:      "abcd1",
+				FirstName:         "Alejo",
+				LastName:          "salazar",
+				WarehouseId:       1,
+				InboundOrderCount: 1,
+			},
+			{
+				Id:                2,
+				CardNumberId:      "abcd2",
+				FirstName:         "Aleja",
+				LastName:          "garcia",
+				WarehouseId:       2,
+				InboundOrderCount: 5,
+			},
+		}
+
+		employeesResponseDto := []dto.EmployeeReportInboundOrdersDTO{
+			{
+				Id:                 1,
+				CardNumberId:       "abcd1",
+				FirstName:          "Alejo",
+				LastName:           "salazar",
+				WarehouseId:        1,
+				InboundOrdersCount: 1,
+			},
+			{
+				Id:                 2,
+				CardNumberId:       "abcd2",
+				FirstName:          "Aleja",
+				LastName:           "garcia",
+				WarehouseId:        2,
+				InboundOrdersCount: 5,
+			},
+		}
+
+		expectedResponse := dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]{
+			Code: http.StatusOK,
+			Msg:  "Success",
+			Data: employeesResponseDto,
+		}
+
+		mockService.On("GetReportInboundOrdersByEmployee", "").Return(allEmployeesReport, nil)
+
+		req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders", nil)
+		rr := httptest.NewRecorder()
+		router := chi.NewRouter()
+		router.Handle("/api/v1/employees/reportInboundOrders", handler.GetReportInboundOrdersByEmployee())
+		router.ServeHTTP(rr, req)
+
+		require.Equal(t, expectedResponse.Code, rr.Code)
+		var response dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]
+		json.NewDecoder(rr.Body).Decode(&response)
+
+		require.Equal(t, expectedResponse.Msg, response.Msg)
+		require.Equal(t, expectedResponse, response)
+		mockService.AssertExpectations(t)
+	})
+
+	t.Run("GetReportInboundOrdersByEmployee fails with invalid employeeId", func(t *testing.T) {
+		mockService := new(serviceMock.MockEmployeeService)
+		handler := NewEmployeeHandler(mockService)
+
+		expectedResponse := dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]{
+			Code: http.StatusBadRequest,
+			Msg:  "El formato del ID no es válido",
+			Data: nil,
+		}
+
+		mockService.On("GetReportInboundOrdersByEmployee", "invalid").Return([]models.EmployeeReportInboundOrders{}, service.ErrEmployeeDecodingError)
+		req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders?id=invalid", nil)
+		rr := httptest.NewRecorder()
+		router := chi.NewRouter()
+		router.Handle("/api/v1/employees/reportInboundOrders", handler.GetReportInboundOrdersByEmployee())
+		router.ServeHTTP(rr, req)
+
+		require.Equal(t, expectedResponse.Code, rr.Code)
+		var response dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]
+		json.NewDecoder(rr.Body).Decode(&response)
+
+		require.Equal(t, expectedResponse.Msg, response.Msg)
+		require.Equal(t, expectedResponse, response)
+		mockService.AssertExpectations(t)
+	})
+
+	t.Run("GetReportInboundOrdersByEmployee fails when service returns an error for specific employee", func(t *testing.T) {
+		mockService := new(serviceMock.MockEmployeeService)
+		handler := NewEmployeeHandler(mockService)
+
+		expectedResponse := dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]{
+			Code: http.StatusInternalServerError,
+			Msg:  "Internal server error",
+			Data: nil,
+		}
+
+		mockService.On("GetReportInboundOrdersByEmployee", "1").Return([]models.EmployeeReportInboundOrders{}, service.ErrEmployeeServiceDefault)
+
+		req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders?id=1", nil)
+		rr := httptest.NewRecorder()
+		router := chi.NewRouter()
+		router.Handle("/api/v1/employees/reportInboundOrders", handler.GetReportInboundOrdersByEmployee())
+		router.ServeHTTP(rr, req)
+
+		require.Equal(t, expectedResponse.Code, rr.Code)
+		var response dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]
+		json.NewDecoder(rr.Body).Decode(&response)
+
+		require.Equal(t, expectedResponse.Msg, response.Msg)
+		require.Equal(t, expectedResponse, response)
+		mockService.AssertExpectations(t)
+	})
+
+	t.Run("GetReportInboundOrdersByEmployee fails when service returns an error for all employees", func(t *testing.T) {
+		mockService := new(serviceMock.MockEmployeeService)
+		handler := NewEmployeeHandler(mockService)
+
+		expectedResponse := dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]{
+			Code: http.StatusInternalServerError,
+			Msg:  "Internal server error",
+			Data: nil,
+		}
+
+		mockService.On("GetReportInboundOrdersByEmployee", "").Return([]models.EmployeeReportInboundOrders{}, service.ErrEmployeeServiceDefault)
+
+		req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders", nil)
+		rr := httptest.NewRecorder()
+		router := chi.NewRouter()
+		router.Handle("/api/v1/employees/reportInboundOrders", handler.GetReportInboundOrdersByEmployee())
+		router.ServeHTTP(rr, req)
+
+		require.Equal(t, expectedResponse.Code, rr.Code)
+		var response dto.EmployeeResponseDto[[]dto.EmployeeReportInboundOrdersDTO]
+		json.NewDecoder(rr.Body).Decode(&response)
+
+		require.Equal(t, expectedResponse.Msg, response.Msg)
+		require.Equal(t, expectedResponse, response)
+		mockService.AssertExpectations(t)
+	})
+}
