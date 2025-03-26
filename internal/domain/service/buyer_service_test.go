@@ -1,501 +1,562 @@
 package service_test
 
 import (
-	"errors"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	serviceImpl "github.com/D-Sorrow/meli-frescos/internal/domain/service"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
+	"github.com/D-Sorrow/meli-frescos/mocks/helpers"
 	repository_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
 )
 
-func ptrStr(s string) *string {
-	return &s
-}
-
-func ptrInt(i int) *int {
-	return &i
-}
-
-func ptrIntNil() *int {
-	return nil
-}
-
-func assertBuyerResponse(
+func switchBuyerTest(
 	t *testing.T,
-	responseErr error,
-	expectedErr error,
-	responseOutput interface{},
-	expectedOutput interface{},
+	test helpers.ServiceTestStruct,
+	buyerService *serviceImpl.BuyerService,
 ) {
 	t.Helper()
 
-	assert.True(t, errors.Is(responseErr, expectedErr), "Error mismatch")
-	assert.Equal(t, responseOutput, expectedOutput, "Output mismatch")
+	switch test.RepositoryMethod {
+	case "GetAll":
+		result, err := buyerService.GetAll()
+		helpers.CheckServiceResponse(
+			t,
+			err,
+			test.ExpectedErr,
+			result,
+			test.ExpectedOutput,
+		)
+	case "GetById":
+		result, err := buyerService.GetById(test.MockParams[0].(int))
+		helpers.CheckServiceResponse(
+			t,
+			err,
+			test.ExpectedErr,
+			result,
+			test.ExpectedOutput,
+		)
+	case "Create":
+		param, ok := test.ServiceParams[0].(models.BuyerAttributes)
+		if !ok {
+			t.Fatalf(
+				"Invalid parameter type for Create method. Expected models.BuyerAttributes, got %T",
+				test.ServiceParams[0],
+			)
+		}
+
+		result, err := buyerService.Create(param)
+		helpers.CheckServiceResponse(
+			t,
+			err,
+			test.ExpectedErr,
+			result,
+			test.ExpectedOutput,
+		)
+	case "Patch":
+		param, ok := test.ServiceParams[1].(models.BuyerAttributes)
+		if !ok {
+			t.Fatalf(
+				"Invalid parameter type for Patch method. Expected models.BuyerAttributes, got %T",
+				test.ServiceParams[0],
+			)
+		}
+
+		result, err := buyerService.Patch(test.MockParams[0].(int), param)
+		helpers.CheckServiceResponse(
+			t,
+			err,
+			test.ExpectedErr,
+			result,
+			test.ExpectedOutput,
+		)
+	case "Delete":
+		err := buyerService.Delete(test.MockParams[0].(int))
+		helpers.CheckServiceResponse(
+			t,
+			err,
+			test.ExpectedErr,
+			nil,
+			test.ExpectedOutput,
+		)
+	case "GetReportPurchaseOrders":
+		result, err := buyerService.GetReportPurchaseOrders(test.MockParams[0].(*int))
+		helpers.CheckServiceResponse(
+			t,
+			err,
+			test.ExpectedErr,
+			result,
+			test.ExpectedOutput,
+		)
+	}
 }
 
-func TestBuyerService(t *testing.T) {
-	tests := []struct {
-		name             string
-		repositoryMethod string
-		serviceParams    []interface{}
-		mockParams       []interface{}
-		mockResponse     interface{}
-		mockError        error
-		expectedOutput   interface{}
-		expectedErr      error
-	}{
+func assertBuyerService(
+	t *testing.T,
+	test helpers.ServiceTestStruct,
+	mockRepository *repository_mock.MockBuyerRepository,
+) {
+	t.Helper()
+
+	buyerService := serviceImpl.NewBuyerService(mockRepository)
+	switchBuyerTest(t, test, buyerService)
+}
+
+func TestBuyerGetAllService(t *testing.T) {
+	tests := []helpers.ServiceTestStruct{
 		{
-			name:             "[GetAll] OK Get all buyers",
-			repositoryMethod: "GetAll",
-			mockResponse: []entities.BuyerEntity{
+			Name:             "[GetAll] OK Get all buyers",
+			RepositoryMethod: "GetAll",
+			MockResponse: []entities.BuyerEntity{
 				{
 					ID:           1,
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
 				},
 				{
 					ID:           2,
-					CardNumberID: ptrStr("F1098765432"),
-					FirstName:    ptrStr("Jane"),
-					LastName:     ptrStr("Doe"),
+					CardNumberID: helpers.PtrStr("F1098765432"),
+					FirstName:    helpers.PtrStr("Jane"),
+					LastName:     helpers.PtrStr("Doe"),
 				},
 			},
-			expectedOutput: []models.Buyer{
+			ExpectedOutput: []models.Buyer{
 				{
 					ID: 1,
 					BuyerAttributes: models.BuyerAttributes{
-						CardNumberID: ptrStr("M1234567890"),
-						FirstName:    ptrStr("John"),
-						LastName:     ptrStr("Doe"),
+						CardNumberID: helpers.PtrStr("M1234567890"),
+						FirstName:    helpers.PtrStr("John"),
+						LastName:     helpers.PtrStr("Doe"),
 					},
 				},
 				{
 					ID: 2,
 					BuyerAttributes: models.BuyerAttributes{
-						CardNumberID: ptrStr("F1098765432"),
-						FirstName:    ptrStr("Jane"),
-						LastName:     ptrStr("Doe"),
+						CardNumberID: helpers.PtrStr("F1098765432"),
+						FirstName:    helpers.PtrStr("Jane"),
+						LastName:     helpers.PtrStr("Doe"),
 					},
 				},
 			},
 		},
 		{
-			name:             "[GetAll] Error No buyers registered yet",
-			repositoryMethod: "GetAll",
-			mockResponse:     make([]entities.BuyerEntity, 0),
-			mockError:        repository.ErrBuyerNoRegisteredBuyersYet,
-			expectedOutput:   make([]models.Buyer, 0),
-			expectedErr:      service.ErrBuyerNoRegisteredBuyersYet,
+			Name:             "[GetAll] Error No buyers registered yet",
+			RepositoryMethod: "GetAll",
+			MockResponse:     make([]entities.BuyerEntity, 0),
+			MockError:        repository.ErrBuyerNoRegisteredBuyersYet,
+			ExpectedOutput:   make([]models.Buyer, 0),
+			ExpectedErr:      service.ErrBuyerNoRegisteredBuyersYet,
 		},
 		{
-			name:             "[GetAll] Error Unexpected error",
-			repositoryMethod: "GetAll",
-			mockResponse:     make([]entities.BuyerEntity, 0),
-			mockError:        repository.ErrBuyerUnexpectedError,
-			expectedOutput:   make([]models.Buyer, 0),
-			expectedErr:      service.ErrBuyerUnexpectedError,
-		},
-		{
-			name:             "[GetById] OK Get buyer by ID",
-			repositoryMethod: "GetById",
-			serviceParams:    []interface{}{1},
-			mockParams:       []interface{}{1},
-			mockResponse: entities.BuyerEntity{
-				ID:           1,
-				CardNumberID: ptrStr("M1234567890"),
-				FirstName:    ptrStr("John"),
-				LastName:     ptrStr("Doe"),
-			},
-			expectedOutput: models.Buyer{
-				ID: 1,
-				BuyerAttributes: models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-		},
-		{
-			name:             "[GetById] Error Buyer not found",
-			repositoryMethod: "GetById",
-			serviceParams:    []interface{}{99},
-			mockParams:       []interface{}{99},
-			mockResponse:     entities.BuyerEntity{},
-			mockError:        repository.ErrBuyerNotFoundWithID,
-			expectedOutput:   models.Buyer{},
-			expectedErr:      service.ErrBuyerDoesNotExist,
-		},
-		{
-			name:             "[GetById] Error Unexpected error",
-			repositoryMethod: "GetById",
-			serviceParams:    []interface{}{1},
-			mockParams:       []interface{}{1},
-			mockResponse:     entities.BuyerEntity{},
-			mockError:        repository.ErrBuyerUnexpectedError,
-			expectedOutput:   models.Buyer{},
-			expectedErr:      service.ErrBuyerUnexpectedError,
-		},
-		{
-			name:             "[Create] OK Create new buyer",
-			repositoryMethod: "Create",
-			serviceParams: []interface{}{
-				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234543210"),
-					FirstName:    ptrStr("Baby"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-			mockParams: []interface{}{
-				entities.BuyerEntity{
-					CardNumberID: ptrStr("M1234543210"),
-					FirstName:    ptrStr("Baby"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-			mockResponse: entities.BuyerEntity{
-				ID:           3,
-				CardNumberID: ptrStr("M1234543210"),
-				FirstName:    ptrStr("Baby"),
-				LastName:     ptrStr("Doe"),
-			},
-			expectedOutput: models.Buyer{
-				ID: 3,
-				BuyerAttributes: models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234543210"),
-					FirstName:    ptrStr("Baby"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-		},
-		{
-			name:             "[Create] Error Buyer already exists",
-			repositoryMethod: "Create",
-			serviceParams: []interface{}{
-				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-			mockParams: []interface{}{
-				entities.BuyerEntity{
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-			mockResponse:   entities.BuyerEntity{},
-			mockError:      repository.ErrBuyerDuplicateCardNumberID,
-			expectedOutput: models.Buyer{},
-			expectedErr:    service.ErrBuyerAlreadyExists,
-		},
-		{
-			name:             "[Create] Error Unexpected error",
-			repositoryMethod: "Create",
-			serviceParams: []interface{}{
-				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-			mockParams: []interface{}{
-				entities.BuyerEntity{
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-			mockResponse:   entities.BuyerEntity{},
-			mockError:      service.ErrBuyerUnexpectedError,
-			expectedOutput: models.Buyer{},
-			expectedErr:    service.ErrBuyerUnexpectedError,
-		},
-		{
-			name:             "[Patch] OK Update buyer",
-			repositoryMethod: "Patch",
-			serviceParams: []interface{}{
-				1,
-				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567876"),
-				},
-			},
-			mockParams: []interface{}{
-				1,
-				entities.BuyerEntity{
-					CardNumberID: ptrStr("M1234567876"),
-				},
-			},
-			mockResponse: entities.BuyerEntity{
-				ID:           1,
-				CardNumberID: ptrStr("M1234567876"),
-				FirstName:    ptrStr("John"),
-				LastName:     ptrStr("Doe"),
-			},
-			expectedOutput: models.Buyer{
-				ID: 1,
-				BuyerAttributes: models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567876"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
-				},
-			},
-		},
-		{
-			name:             "[Patch] Error Buyer not found",
-			repositoryMethod: "Patch",
-			serviceParams: []interface{}{
-				99,
-				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567876"),
-				},
-			},
-			mockParams: []interface{}{
-				99,
-				entities.BuyerEntity{
-					CardNumberID: ptrStr("M1234567876"),
-				},
-			},
-			mockResponse:   entities.BuyerEntity{},
-			mockError:      repository.ErrBuyerNotFoundWithID,
-			expectedOutput: models.Buyer{},
-			expectedErr:    service.ErrBuyerDoesNotExist,
-		},
-		{
-			name:             "[Patch] Error Buyer already exists",
-			repositoryMethod: "Patch",
-			serviceParams: []interface{}{
-				1,
-				models.BuyerAttributes{
-					CardNumberID: ptrStr("F1098765432"),
-				},
-			},
-			mockParams: []interface{}{
-				1,
-				entities.BuyerEntity{
-					CardNumberID: ptrStr("F1098765432"),
-				},
-			},
-			mockResponse:   entities.BuyerEntity{},
-			mockError:      repository.ErrBuyerDuplicateCardNumberID,
-			expectedOutput: models.Buyer{},
-			expectedErr:    service.ErrBuyerAlreadyExists,
-		},
-		{
-			name:             "[Patch] Error Unexpected error",
-			repositoryMethod: "Patch",
-			serviceParams: []interface{}{
-				1,
-				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567876"),
-				},
-			},
-			mockParams: []interface{}{
-				1,
-				entities.BuyerEntity{
-					CardNumberID: ptrStr("M1234567876"),
-				},
-			},
-			mockResponse:   entities.BuyerEntity{},
-			mockError:      repository.ErrBuyerUnexpectedError,
-			expectedOutput: models.Buyer{},
-			expectedErr:    service.ErrBuyerUnexpectedError,
-		},
-		{
-			name:             "[Delete] OK Delete buyer",
-			repositoryMethod: "Delete",
-			serviceParams:    []interface{}{1},
-			mockParams:       []interface{}{1},
-			mockResponse:     nil,
-			mockError:        nil,
-			expectedOutput:   nil,
-		},
-		{
-			name:             "[Delete] Error Buyer not found",
-			repositoryMethod: "Delete",
-			serviceParams:    []interface{}{99},
-			mockParams:       []interface{}{99},
-			mockResponse:     nil,
-			mockError:        repository.ErrBuyerNotFoundWithID,
-			expectedOutput:   nil,
-			expectedErr:      service.ErrBuyerDoesNotExist,
-		},
-		{
-			name:             "[Delete] Error Cannot delete buyer with orders",
-			repositoryMethod: "Delete",
-			serviceParams:    []interface{}{1},
-			mockParams:       []interface{}{1},
-			mockResponse:     nil,
-			mockError:        repository.ErrBuyerCannotDeleteBuyerWithOrders,
-			expectedOutput:   nil,
-			expectedErr:      service.ErrBuyerCannotDeleteBuyerWithOrders,
-		},
-		{
-			name:             "[Delete] Error Unexpected error",
-			repositoryMethod: "Delete",
-			serviceParams:    []interface{}{1},
-			mockParams:       []interface{}{1},
-			mockResponse:     nil,
-			mockError:        repository.ErrBuyerUnexpectedError,
-			expectedOutput:   nil,
-			expectedErr:      service.ErrBuyerUnexpectedError,
-		},
-		{
-			name:             "[GetReportPurchaseOrders] Ok Get purchase order report",
-			repositoryMethod: "GetReportPurchaseOrders",
-			serviceParams:    []interface{}{ptrIntNil()},
-			mockParams:       []interface{}{ptrIntNil()},
-			mockResponse: []entities.ReportPurchaseOrdersEntity{
-				{
-					ID:                  1,
-					CardNumberID:        "M1234567890",
-					FirstName:           "John",
-					LastName:            "Doe",
-					PurchaseOrdersCount: 4,
-				},
-				{
-					ID:                  2,
-					CardNumberID:        "F1098765432",
-					FirstName:           "Jane",
-					LastName:            "Doe",
-					PurchaseOrdersCount: 27,
-				},
-			},
-			expectedOutput: []models.ReportPurchaseOrders{
-				{
-					ID:                  1,
-					CardNumberID:        "M1234567890",
-					FirstName:           "John",
-					LastName:            "Doe",
-					PurchaseOrdersCount: 4,
-				},
-				{
-					ID:                  2,
-					CardNumberID:        "F1098765432",
-					FirstName:           "Jane",
-					LastName:            "Doe",
-					PurchaseOrdersCount: 27,
-				},
-			},
-		},
-		{
-			name:             "[GetReportPurchaseOrders] Ok Get purchase order report by ID",
-			repositoryMethod: "GetReportPurchaseOrders",
-			serviceParams:    []interface{}{ptrInt(1)},
-			mockParams:       []interface{}{ptrInt(1)},
-			mockResponse: []entities.ReportPurchaseOrdersEntity{
-				{
-					ID:                  1,
-					CardNumberID:        "M1234567890",
-					FirstName:           "John",
-					LastName:            "Doe",
-					PurchaseOrdersCount: 4,
-				},
-			},
-			expectedOutput: []models.ReportPurchaseOrders{
-				{
-					ID:                  1,
-					CardNumberID:        "M1234567890",
-					FirstName:           "John",
-					LastName:            "Doe",
-					PurchaseOrdersCount: 4,
-				},
-			},
+			Name:             "[GetAll] Error Unexpected error",
+			RepositoryMethod: "GetAll",
+			MockResponse:     make([]entities.BuyerEntity, 0),
+			MockError:        repository.ErrBuyerUnexpectedError,
+			ExpectedOutput:   make([]models.Buyer, 0),
+			ExpectedErr:      service.ErrBuyerUnexpectedError,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
 			mockRepository := new(repository_mock.MockBuyerRepository)
+			helpers.InitRepositoryMock(t, test, &mockRepository)
+			assertBuyerService(t, test, mockRepository)
 
-			if tt.mockResponse != nil {
-				mockRepository.On(tt.repositoryMethod, tt.mockParams...).
-					Return(tt.mockResponse, tt.mockError)
-			} else {
-				mockRepository.On(tt.repositoryMethod, tt.mockParams...).Return(tt.mockError)
-			}
+			mockRepository.AssertExpectations(t)
+		})
+	}
+}
 
-			buyerService := serviceImpl.NewBuyerService(mockRepository)
+func TestBuyerGetByIdService(t *testing.T) {
+	tests := []helpers.ServiceTestStruct{
+		{
+			Name:             "[GetById] OK Get buyer by ID",
+			RepositoryMethod: "GetById",
+			ServiceParams:    []interface{}{1},
+			MockParams:       []interface{}{1},
+			MockResponse: entities.BuyerEntity{
+				ID:           1,
+				CardNumberID: helpers.PtrStr("M1234567890"),
+				FirstName:    helpers.PtrStr("John"),
+				LastName:     helpers.PtrStr("Doe"),
+			},
+			ExpectedOutput: models.Buyer{
+				ID: 1,
+				BuyerAttributes: models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+		},
+		{
+			Name:             "[GetById] Error Buyer not found",
+			RepositoryMethod: "GetById",
+			ServiceParams:    []interface{}{99},
+			MockParams:       []interface{}{99},
+			MockResponse:     entities.BuyerEntity{},
+			MockError:        repository.ErrBuyerNotFoundWithID,
+			ExpectedOutput:   models.Buyer{},
+			ExpectedErr:      service.ErrBuyerDoesNotExist,
+		},
+		{
+			Name:             "[GetById] Error Unexpected error",
+			RepositoryMethod: "GetById",
+			ServiceParams:    []interface{}{1},
+			MockParams:       []interface{}{1},
+			MockResponse:     entities.BuyerEntity{},
+			MockError:        repository.ErrBuyerUnexpectedError,
+			ExpectedOutput:   models.Buyer{},
+			ExpectedErr:      service.ErrBuyerUnexpectedError,
+		},
+	}
 
-			switch tt.repositoryMethod {
-			case "GetAll":
-				result, err := buyerService.GetAll()
-				assertBuyerResponse(
-					t,
-					err,
-					tt.expectedErr,
-					result,
-					tt.expectedOutput,
-				)
-			case "GetById":
-				result, err := buyerService.GetById(tt.mockParams[0].(int))
-				assertBuyerResponse(
-					t,
-					err,
-					tt.expectedErr,
-					result,
-					tt.expectedOutput,
-				)
-			case "Create":
-				param, ok := tt.serviceParams[0].(models.BuyerAttributes)
-				if !ok {
-					t.Fatalf(
-						"Invalid parameter type for Create method. Expected models.BuyerAttributes, got %T",
-						tt.serviceParams[0],
-					)
-				}
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockRepository := new(repository_mock.MockBuyerRepository)
+			helpers.InitRepositoryMock(t, test, &mockRepository)
+			assertBuyerService(t, test, mockRepository)
 
-				result, err := buyerService.Create(param)
-				assertBuyerResponse(
-					t,
-					err,
-					tt.expectedErr,
-					result,
-					tt.expectedOutput,
-				)
-			case "Patch":
-				param, ok := tt.serviceParams[1].(models.BuyerAttributes)
-				if !ok {
-					t.Fatalf(
-						"Invalid parameter type for Create method. Expected models.BuyerAttributes, got %T",
-						tt.serviceParams[0],
-					)
-				}
+			mockRepository.AssertExpectations(t)
+		})
+	}
+}
 
-				result, err := buyerService.Patch(tt.mockParams[0].(int), param)
-				assertBuyerResponse(
-					t,
-					err,
-					tt.expectedErr,
-					result,
-					tt.expectedOutput,
-				)
-			case "Delete":
-				err := buyerService.Delete(tt.mockParams[0].(int))
-				assertBuyerResponse(
-					t,
-					err,
-					tt.expectedErr,
-					nil,
-					tt.expectedOutput,
-				)
-			case "GetReportPurchaseOrders":
-				result, err := buyerService.GetReportPurchaseOrders(tt.mockParams[0].(*int))
-				assertBuyerResponse(
-					t,
-					err,
-					tt.expectedErr,
-					result,
-					tt.expectedOutput,
-				)
-			}
+func TestBuyerCreateService(t *testing.T) {
+	tests := []helpers.ServiceTestStruct{
+		{
+			Name:             "[Create] OK Create new buyer",
+			RepositoryMethod: "Create",
+			ServiceParams: []interface{}{
+				models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234543210"),
+					FirstName:    helpers.PtrStr("Baby"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+			MockParams: []interface{}{
+				entities.BuyerEntity{
+					CardNumberID: helpers.PtrStr("M1234543210"),
+					FirstName:    helpers.PtrStr("Baby"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+			MockResponse: entities.BuyerEntity{
+				ID:           3,
+				CardNumberID: helpers.PtrStr("M1234543210"),
+				FirstName:    helpers.PtrStr("Baby"),
+				LastName:     helpers.PtrStr("Doe"),
+			},
+			ExpectedOutput: models.Buyer{
+				ID: 3,
+				BuyerAttributes: models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234543210"),
+					FirstName:    helpers.PtrStr("Baby"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+		},
+		{
+			Name:             "[Create] Error Buyer already exists",
+			RepositoryMethod: "Create",
+			ServiceParams: []interface{}{
+				models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+			MockParams: []interface{}{
+				entities.BuyerEntity{
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+			MockResponse:   entities.BuyerEntity{},
+			MockError:      repository.ErrBuyerDuplicateCardNumberID,
+			ExpectedOutput: models.Buyer{},
+			ExpectedErr:    service.ErrBuyerAlreadyExists,
+		},
+		{
+			Name:             "[Create] Error Unexpected error",
+			RepositoryMethod: "Create",
+			ServiceParams: []interface{}{
+				models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+			MockParams: []interface{}{
+				entities.BuyerEntity{
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+			MockResponse:   entities.BuyerEntity{},
+			MockError:      service.ErrBuyerUnexpectedError,
+			ExpectedOutput: models.Buyer{},
+			ExpectedErr:    service.ErrBuyerUnexpectedError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockRepository := new(repository_mock.MockBuyerRepository)
+			helpers.InitRepositoryMock(t, test, &mockRepository)
+			assertBuyerService(t, test, mockRepository)
+
+			mockRepository.AssertExpectations(t)
+		})
+	}
+}
+
+func TestBuyerPatchService(t *testing.T) {
+	tests := []helpers.ServiceTestStruct{
+		{
+			Name:             "[Patch] OK Update buyer",
+			RepositoryMethod: "Patch",
+			ServiceParams: []interface{}{
+				1,
+				models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234567876"),
+				},
+			},
+			MockParams: []interface{}{
+				1,
+				entities.BuyerEntity{
+					CardNumberID: helpers.PtrStr("M1234567876"),
+				},
+			},
+			MockResponse: entities.BuyerEntity{
+				ID:           1,
+				CardNumberID: helpers.PtrStr("M1234567876"),
+				FirstName:    helpers.PtrStr("John"),
+				LastName:     helpers.PtrStr("Doe"),
+			},
+			ExpectedOutput: models.Buyer{
+				ID: 1,
+				BuyerAttributes: models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234567876"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
+				},
+			},
+		},
+		{
+			Name:             "[Patch] Error Buyer not found",
+			RepositoryMethod: "Patch",
+			ServiceParams: []interface{}{
+				99,
+				models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234567876"),
+				},
+			},
+			MockParams: []interface{}{
+				99,
+				entities.BuyerEntity{
+					CardNumberID: helpers.PtrStr("M1234567876"),
+				},
+			},
+			MockResponse:   entities.BuyerEntity{},
+			MockError:      repository.ErrBuyerNotFoundWithID,
+			ExpectedOutput: models.Buyer{},
+			ExpectedErr:    service.ErrBuyerDoesNotExist,
+		},
+		{
+			Name:             "[Patch] Error Buyer already exists",
+			RepositoryMethod: "Patch",
+			ServiceParams: []interface{}{
+				1,
+				models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("F1098765432"),
+				},
+			},
+			MockParams: []interface{}{
+				1,
+				entities.BuyerEntity{
+					CardNumberID: helpers.PtrStr("F1098765432"),
+				},
+			},
+			MockResponse:   entities.BuyerEntity{},
+			MockError:      repository.ErrBuyerDuplicateCardNumberID,
+			ExpectedOutput: models.Buyer{},
+			ExpectedErr:    service.ErrBuyerAlreadyExists,
+		},
+		{
+			Name:             "[Patch] Error Unexpected error",
+			RepositoryMethod: "Patch",
+			ServiceParams: []interface{}{
+				1,
+				models.BuyerAttributes{
+					CardNumberID: helpers.PtrStr("M1234567876"),
+				},
+			},
+			MockParams: []interface{}{
+				1,
+				entities.BuyerEntity{
+					CardNumberID: helpers.PtrStr("M1234567876"),
+				},
+			},
+			MockResponse:   entities.BuyerEntity{},
+			MockError:      repository.ErrBuyerUnexpectedError,
+			ExpectedOutput: models.Buyer{},
+			ExpectedErr:    service.ErrBuyerUnexpectedError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockRepository := new(repository_mock.MockBuyerRepository)
+			helpers.InitRepositoryMock(t, test, &mockRepository)
+			assertBuyerService(t, test, mockRepository)
+
+			mockRepository.AssertExpectations(t)
+		})
+	}
+}
+
+func TestBuyerDeleteService(t *testing.T) {
+	tests := []helpers.ServiceTestStruct{
+		{
+			Name:             "[Delete] OK Delete buyer",
+			RepositoryMethod: "Delete",
+			ServiceParams:    []interface{}{1},
+			MockParams:       []interface{}{1},
+			MockResponse:     nil,
+			MockError:        nil,
+			ExpectedOutput:   nil,
+		},
+		{
+			Name:             "[Delete] Error Buyer not found",
+			RepositoryMethod: "Delete",
+			ServiceParams:    []interface{}{99},
+			MockParams:       []interface{}{99},
+			MockResponse:     nil,
+			MockError:        repository.ErrBuyerNotFoundWithID,
+			ExpectedOutput:   nil,
+			ExpectedErr:      service.ErrBuyerDoesNotExist,
+		},
+		{
+			Name:             "[Delete] Error Cannot delete buyer with orders",
+			RepositoryMethod: "Delete",
+			ServiceParams:    []interface{}{1},
+			MockParams:       []interface{}{1},
+			MockResponse:     nil,
+			MockError:        repository.ErrBuyerCannotDeleteBuyerWithOrders,
+			ExpectedOutput:   nil,
+			ExpectedErr:      service.ErrBuyerCannotDeleteBuyerWithOrders,
+		},
+		{
+			Name:             "[Delete] Error Unexpected error",
+			RepositoryMethod: "Delete",
+			ServiceParams:    []interface{}{1},
+			MockParams:       []interface{}{1},
+			MockResponse:     nil,
+			MockError:        repository.ErrBuyerUnexpectedError,
+			ExpectedOutput:   nil,
+			ExpectedErr:      service.ErrBuyerUnexpectedError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockRepository := new(repository_mock.MockBuyerRepository)
+			helpers.InitRepositoryMock(t, test, &mockRepository)
+			assertBuyerService(t, test, mockRepository)
+
+			mockRepository.AssertExpectations(t)
+		})
+	}
+}
+
+func TestBuyerGetReportPurchaseOrdersService(t *testing.T) {
+	tests := []helpers.ServiceTestStruct{
+		{
+			Name:             "[GetReportPurchaseOrders] Ok Get purchase order report",
+			RepositoryMethod: "GetReportPurchaseOrders",
+			ServiceParams:    []interface{}{helpers.PtrIntNil()},
+			MockParams:       []interface{}{helpers.PtrIntNil()},
+			MockResponse: []entities.ReportPurchaseOrdersEntity{
+				{
+					ID:                  1,
+					CardNumberID:        "M1234567890",
+					FirstName:           "John",
+					LastName:            "Doe",
+					PurchaseOrdersCount: 4,
+				},
+				{
+					ID:                  2,
+					CardNumberID:        "F1098765432",
+					FirstName:           "Jane",
+					LastName:            "Doe",
+					PurchaseOrdersCount: 27,
+				},
+			},
+			ExpectedOutput: []models.ReportPurchaseOrders{
+				{
+					ID:                  1,
+					CardNumberID:        "M1234567890",
+					FirstName:           "John",
+					LastName:            "Doe",
+					PurchaseOrdersCount: 4,
+				},
+				{
+					ID:                  2,
+					CardNumberID:        "F1098765432",
+					FirstName:           "Jane",
+					LastName:            "Doe",
+					PurchaseOrdersCount: 27,
+				},
+			},
+		},
+		{
+			Name:             "[GetReportPurchaseOrders] Ok Get purchase order report by ID",
+			RepositoryMethod: "GetReportPurchaseOrders",
+			ServiceParams:    []interface{}{helpers.PtrInt(1)},
+			MockParams:       []interface{}{helpers.PtrInt(1)},
+			MockResponse: []entities.ReportPurchaseOrdersEntity{
+				{
+					ID:                  1,
+					CardNumberID:        "M1234567890",
+					FirstName:           "John",
+					LastName:            "Doe",
+					PurchaseOrdersCount: 4,
+				},
+			},
+			ExpectedOutput: []models.ReportPurchaseOrders{
+				{
+					ID:                  1,
+					CardNumberID:        "M1234567890",
+					FirstName:           "John",
+					LastName:            "Doe",
+					PurchaseOrdersCount: 4,
+				},
+			},
+		},
+		{
+			Name:             "[GetReportPurchaseOrders] Error Unexpected error",
+			RepositoryMethod: "GetReportPurchaseOrders",
+			ServiceParams:    []interface{}{helpers.PtrInt(1)},
+			MockParams:       []interface{}{helpers.PtrInt(1)},
+			MockResponse:     make([]entities.ReportPurchaseOrdersEntity, 0),
+			MockError:        repository.ErrBuyerUnexpectedError,
+			ExpectedOutput:   make([]models.ReportPurchaseOrders, 0),
+			ExpectedErr:      service.ErrBuyerUnexpectedError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockRepository := new(repository_mock.MockBuyerRepository)
+			helpers.InitRepositoryMock(t, test, &mockRepository)
+			assertBuyerService(t, test, mockRepository)
 
 			mockRepository.AssertExpectations(t)
 		})
