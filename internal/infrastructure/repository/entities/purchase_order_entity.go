@@ -1,14 +1,14 @@
 package entities
 
 type PurchaseOrderEntity struct {
-	ID            int
+	ID            int64
 	OrderNumber   string
 	OrderDate     string
 	TrackingCode  string
-	BuyerID       int
-	CarrierID     int
-	OrderStatusID int
-	WarehouseID   int
+	BuyerID       int64
+	CarrierID     int64
+	OrderStatusID int64
+	WarehouseID   int64
 }
 
 func (p *PurchaseOrderEntity) GetByIdQuery(id int) (query string, args []interface{}) {
