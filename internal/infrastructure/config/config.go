@@ -46,15 +46,16 @@ func NewConfig() (*mysql.Config, error) {
 		}
 
 		config = &mysql.Config{
-			User:         dbUser,
-			Passwd:       dbPassword,
-			Net:          "tcp",
-			Addr:         mysqlEndpoint,
-			DBName:       dbName,
-			Timeout:      100 * time.Millisecond,
-			ReadTimeout:  100 * time.Millisecond,
-			WriteTimeout: 100 * time.Millisecond,
-			ParseTime:    true,
+			User:                 dbUser,
+			Passwd:               dbPassword,
+			Net:                  "tcp",
+			Addr:                 mysqlEndpoint,
+			DBName:               dbName,
+			Timeout:              500 * time.Millisecond,
+			ReadTimeout:          500 * time.Millisecond,
+			WriteTimeout:         500 * time.Millisecond,
+			ParseTime:            true,
+			AllowNativePasswords: true,
 		}
 
 	})
