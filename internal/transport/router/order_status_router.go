@@ -7,17 +7,16 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
 	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
 	handler "github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
-func NewOrderStatusRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
+func NewOrderStatusRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 	orderStatusRepo := repository.NewOrderStatusRepository(db)
 
 	orderStatusService := service.NewOrderStatusService(orderStatusRepo)
 
 	orderStatusHandler := handler.NewOrderStatusHandler(orderStatusService)
 
-	rt.Route("/api/v1/orderStatus", func(rt chi.Router) {
-		rt.Get("/", orderStatusHandler.GetAll(ctx))
-	})
+	group := rt.Group("/api/v1/orderStatus")
+	group.Get("/", orderStatusHandler.GetAll(ctx))
 }

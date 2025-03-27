@@ -14,6 +14,7 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type PurchaseOrderHandler struct {
@@ -24,8 +25,8 @@ func NewPurchaseOrderHandler(service service.PurchaseOrderService) *PurchaseOrde
 	return &PurchaseOrderHandler{service: service}
 }
 
-func (b *PurchaseOrderHandler) GetById(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *PurchaseOrderHandler) GetById(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
@@ -41,7 +42,7 @@ func (b *PurchaseOrderHandler) GetById(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		purchaseOrder, getByIdErr := b.service.GetById(idInt)
@@ -60,7 +61,7 @@ func (b *PurchaseOrderHandler) GetById(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
@@ -68,11 +69,13 @@ func (b *PurchaseOrderHandler) GetById(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Get purchase order by ID successful",
 			Data: mappers.PurchaseOrderToPurchaseOrderDTO(&purchaseOrder),
 		})
+
+		return nil
 	}
 }
 
-func (b *PurchaseOrderHandler) Create(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *PurchaseOrderHandler) Create(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var purchaseOrderCreateDTO dto.PurchaseOrderCreateDTO
 
 		if jsonErr := json.NewDecoder(r.Body).Decode(&purchaseOrderCreateDTO); jsonErr != nil {
@@ -88,7 +91,7 @@ func (b *PurchaseOrderHandler) Create(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		newPurchaseOrder, createErr := b.service.Create(
@@ -109,7 +112,7 @@ func (b *PurchaseOrderHandler) Create(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
@@ -117,5 +120,7 @@ func (b *PurchaseOrderHandler) Create(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Create purchase order successful",
 			Data: mappers.PurchaseOrderToPurchaseOrderDTO(&newPurchaseOrder),
 		})
+
+		return nil
 	}
 }

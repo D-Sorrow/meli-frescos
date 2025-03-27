@@ -3,68 +3,58 @@ package config
 import (
 	"log"
 	"os"
-	"strconv"
-	"strings"
 	"sync"
+	"time"
 
+	"github.com/go-sql-driver/mysql"
 	_ "github.com/joho/godotenv"
+	"github.com/melisource/fury_go-toolkit-secrets/pkg/secrets"
 )
 
 type Config struct {
-	User   string
-	Passwd string
-	Net    string
-	Addr   string
-	Port   int
-	DBName string
-	TLS    bool
+	User          string
+	Passwd        string
+	MysqlEndpoint string
+	DBName        string
 }
 
 var (
-	config *Config
+	config *mysql.Config
 	once   sync.Once
 )
 
-func stringToBool(s string) bool {
-	s = strings.ToLower(s)
-
-	switch s {
-	case "1", "on", "true", "t", "yes", "y":
-		return true
-	case "0", "off", "false", "f", "no", "n":
-		return false
-	default:
-		return true
-	}
-}
-
-func NewConfig() (*Config, error) {
+func NewConfig() (*mysql.Config, error) {
 	var err error
 	once.Do(func() {
-		var (
-			host   = os.Getenv("DB_HOST")
-			port   = os.Getenv("DB_PORT")
-			user   = os.Getenv("DB_USER")
-			pwd    = os.Getenv("DB_PASSWORD")
-			dbName = os.Getenv("DB_NAME")
-			tlsStr = os.Getenv("DB_TLS")
-		)
-
-		portInt, err := strconv.Atoi(port)
-
+		client, err := secrets.NewClient()
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		config = &Config{
-			User:   user,
-			Passwd: pwd,
-			Net:    "tcp",
-			Addr:   host,
-			Port:   portInt,
-			DBName: dbName,
-			TLS:    stringToBool(tlsStr),
+		mysqlEndpoint := os.Getenv("DB_MYSQL_DESAENV10_BGOW15S436_BGOW15S436_ENDPOINT")
+		dbName := "bgow15s436"
+
+		dbUser, ok := client.GetSecret("DB_MYSQL_DESAENV10_BGOW15S436_BGOW15S436_WPROD_USER")
+		if !ok {
+			log.Fatal("[dbUser] Secret not found")
+		}
+
+		dbPassword, ok := client.GetSecret("DB_MYSQL_DESAENV10_BGOW15S436_BGOW15S436_WPROD")
+		if !ok {
+			log.Fatal("[dbPassword] Secret not found")
+		}
+
+		config = &mysql.Config{
+			User:         dbUser,
+			Passwd:       dbPassword,
+			Net:          "tcp",
+			Addr:         mysqlEndpoint,
+			DBName:       dbName,
+			Timeout:      100 * time.Millisecond,
+			ReadTimeout:  100 * time.Millisecond,
+			WriteTimeout: 100 * time.Millisecond,
+			ParseTime:    true,
 		}
 
 	})

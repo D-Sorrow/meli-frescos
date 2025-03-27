@@ -9,6 +9,7 @@ import (
 	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type OrderStatusHandler struct {
@@ -19,8 +20,8 @@ func NewOrderStatusHandler(service service.OrderStatusService) *OrderStatusHandl
 	return &OrderStatusHandler{service: service}
 }
 
-func (b *OrderStatusHandler) GetAll(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *OrderStatusHandler) GetAll(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		orderStatus, getAllErr := b.service.GetAll()
 		if getAllErr != nil {
 			getAllErr = handler_errors.HandleHandlerError(getAllErr)
@@ -30,7 +31,7 @@ func (b *OrderStatusHandler) GetAll(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		data := make([]dto.OrderStatusDTO, 0)
@@ -43,5 +44,7 @@ func (b *OrderStatusHandler) GetAll(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Get all order statuses successful",
 			Data: data,
 		})
+
+		return nil
 	}
 }

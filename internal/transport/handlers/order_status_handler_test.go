@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_go-core/pkg/web"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
@@ -18,7 +19,7 @@ import (
 func switchOrderStatusTest(
 	t *testing.T,
 	test helpers.HandlerTestStruct,
-	rt *chi.Mux,
+	rt *web.Router,
 	orderStatusHandler *handlers.OrderStatusHandler,
 ) {
 	t.Helper()
@@ -39,7 +40,12 @@ func assertOrderStatusHandler(
 ) {
 	t.Helper()
 
-	rt := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rt := app.Router
 	orderStatusHandler := handlers.NewOrderStatusHandler(mockService)
 	switchOrderStatusTest(t, test, rt, orderStatusHandler)
 }

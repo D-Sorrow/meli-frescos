@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,9 +11,9 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type BuyerHandler struct {
@@ -25,8 +24,8 @@ func NewBuyerHandler(service service.BuyerService) *BuyerHandler {
 	return &BuyerHandler{service: service}
 }
 
-func (b *BuyerHandler) GetAll(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *BuyerHandler) GetAll(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		buyers, getAllErr := b.service.GetAll()
 		if getAllErr != nil {
 			getAllErr = handler_errors.HandleHandlerError(getAllErr)
@@ -36,7 +35,7 @@ func (b *BuyerHandler) GetAll(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		data := make([]dto.BuyerDTO, 0)
@@ -49,11 +48,13 @@ func (b *BuyerHandler) GetAll(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Get all buyers successful",
 			Data: data,
 		})
+
+		return nil
 	}
 }
 
-func (b *BuyerHandler) GetById(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *BuyerHandler) GetById(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
@@ -64,14 +65,12 @@ func (b *BuyerHandler) GetById(ctx *context.Context) http.HandlerFunc {
 				nil,
 				ctx,
 			)
-			errs := r.Context().Value(middlewares.AppErrorKey)
-			fmt.Println(errs)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		buyer, getByIdErr := b.service.GetById(idInt)
@@ -90,7 +89,7 @@ func (b *BuyerHandler) GetById(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
@@ -98,11 +97,13 @@ func (b *BuyerHandler) GetById(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Get buyer by ID successful",
 			Data: mappers.BuyerToBuyerDTO(&buyer),
 		})
+
+		return nil
 	}
 }
 
-func (b *BuyerHandler) Create(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *BuyerHandler) Create(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var buyerCreateDTO dto.BuyerCreateDTO
 
 		if jsonErr := json.NewDecoder(r.Body).Decode(&buyerCreateDTO); jsonErr != nil {
@@ -118,7 +119,7 @@ func (b *BuyerHandler) Create(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		validator := validation.BuyerValidator()
@@ -137,7 +138,7 @@ func (b *BuyerHandler) Create(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		newBuyer, createErr := b.service.Create(
@@ -158,7 +159,7 @@ func (b *BuyerHandler) Create(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
@@ -166,11 +167,13 @@ func (b *BuyerHandler) Create(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Create buyer successful",
 			Data: mappers.BuyerToBuyerDTO(&newBuyer),
 		})
+
+		return nil
 	}
 }
 
-func (b *BuyerHandler) Patch(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *BuyerHandler) Patch(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
@@ -186,7 +189,7 @@ func (b *BuyerHandler) Patch(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		var buyerPatchDTO dto.BuyerPatchDTO
@@ -204,7 +207,7 @@ func (b *BuyerHandler) Patch(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		validator := validation.BuyerValidator()
@@ -223,7 +226,7 @@ func (b *BuyerHandler) Patch(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		updatedBuyer, updatedErr := b.service.Patch(
@@ -246,7 +249,7 @@ func (b *BuyerHandler) Patch(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
@@ -254,11 +257,13 @@ func (b *BuyerHandler) Patch(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Update buyer successful",
 			Data: mappers.BuyerToBuyerDTO(&updatedBuyer),
 		})
+
+		return nil
 	}
 }
 
-func (b *BuyerHandler) Delete(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *BuyerHandler) Delete(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
@@ -274,7 +279,7 @@ func (b *BuyerHandler) Delete(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		deleteErr := b.service.Delete(idInt)
@@ -293,18 +298,20 @@ func (b *BuyerHandler) Delete(ctx *context.Context) http.HandlerFunc {
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusNoContent, dto.ResponseDTO{
 			Code: http.StatusNoContent,
 			Msg:  "Delete buyer successful",
 		})
+
+		return nil
 	}
 }
 
-func (b *BuyerHandler) GetReportPurchaseOrders(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (b *BuyerHandler) GetReportPurchaseOrders(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var idP *int = nil
 		id := r.URL.Query().Get("id")
 
@@ -323,7 +330,7 @@ func (b *BuyerHandler) GetReportPurchaseOrders(ctx *context.Context) http.Handle
 					Msg:  handlerErr.Msg,
 					Data: handlerErr.Data,
 				})
-				return
+				return nil
 			}
 
 			idP = &idInt
@@ -345,7 +352,7 @@ func (b *BuyerHandler) GetReportPurchaseOrders(ctx *context.Context) http.Handle
 				Msg:  handlerErr.Msg,
 				Data: handlerErr.Data,
 			})
-			return
+			return nil
 		}
 
 		data := make([]dto.ReportPurchaseOrdersDTO, 0)
@@ -358,5 +365,7 @@ func (b *BuyerHandler) GetReportPurchaseOrders(ctx *context.Context) http.Handle
 			Msg:  "Get all orders",
 			Data: data,
 		})
+
+		return nil
 	}
 }
