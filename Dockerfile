@@ -1,0 +1,1 @@
+FROM hub.furycloud.io/mercadolibre/distroless-go-dev:1.23-mini
