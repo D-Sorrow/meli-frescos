@@ -18,7 +18,7 @@ func main() {
 	}
 	app := server.NewServerChi(cfg)
 	if err := app.Run(); err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		return
 	}
 }
