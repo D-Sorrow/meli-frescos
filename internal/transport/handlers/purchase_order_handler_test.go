@@ -1,119 +1,62 @@
 package handlers_test
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/mocks/helpers"
 	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
 )
 
-type PurchaseOrderGenericStruct[T interface{}] struct {
-	Code int    `json:"code"`
-	Msg  string `json:"message"`
-	Data T      `json:"data,omitempty"`
-}
-
-func getPurchaseOrderResult(
+func switchPurchaseOrderTest(
 	t *testing.T,
+	test helpers.HandlerTestStruct,
 	rt *chi.Mux,
-	path string,
-	httpMethod string,
-	httpBody map[string]interface{},
-) (result *http.Response) {
+	purchaseOrderHandler *handlers.PurchaseOrderHandler,
+) {
 	t.Helper()
+	ctx := context.Background()
 
-	var req *http.Request
-
-	if httpBody != nil {
-		jsonBody, err := json.Marshal(httpBody)
-		if err != nil {
-			t.Fatalf("JSON serialization error: %v", err)
-		}
-
-		req = httptest.NewRequest(httpMethod, path, bytes.NewBuffer(jsonBody))
-	} else {
-		req = httptest.NewRequest(httpMethod, path, nil)
+	switch test.ServiceMethod {
+	case "GetById":
+		rt.Get("/api/v1/purchaseOrders/{id}", purchaseOrderHandler.GetById(&ctx))
+		result := helpers.GetResult(t, rt, test.HttpPath, test.HttpMethod, nil)
+		helpers.CheckHandlerResponse[*dto.PurchaseOrderDTO](t, test, result)
+	case "Create":
+		rt.Post("/api/v1/purchaseOrders", purchaseOrderHandler.Create(&ctx))
+		result := helpers.GetResult(t, rt, test.HttpPath, test.HttpMethod, test.HttpBody)
+		helpers.CheckHandlerResponse[*dto.PurchaseOrderDTO](t, test, result)
 	}
-
-	rec := httptest.NewRecorder()
-	rt.ServeHTTP(rec, req)
-	result = rec.Result()
-	return
 }
 
-func getPurchaseOrderGenericStruct[T interface{}](
+func assertPurchaseOrderHandler(
 	t *testing.T,
-	body io.ReadCloser,
-) (responseDTOGenericStruct T) {
-	t.Helper()
-
-	bodyBytes, err := io.ReadAll(body)
-	if err != nil {
-		t.Fatal("Body reading error:", err)
-	}
-	defer body.Close()
-
-	if err := json.Unmarshal(bodyBytes, &responseDTOGenericStruct); err != nil {
-		t.Fatal("JSON parsing error:", err)
-	}
-
-	return
-}
-
-func assertPurchaseOrderResponse[T interface{}](
-	t *testing.T,
-	responseDTO PurchaseOrderGenericStruct[T],
-	responseStatusCode int,
-	expectedStatusCode int,
-	expectedOutput interface{},
+	test helpers.HandlerTestStruct,
+	mockService *service_mock.MockPurchaseOrderService,
 ) {
 	t.Helper()
 
-	assert.Equal(t, expectedStatusCode, responseStatusCode, "HTTP Status Code mismatch")
-
-	if expectedOutput != nil {
-		expectedDTO, ok := expectedOutput.(PurchaseOrderGenericStruct[T])
-		if !ok {
-			t.Fatal("Failed to convert expectedOutput to PurchaseOrderGenericStruct")
-		}
-
-		assert.Equal(t, expectedDTO.Code, responseDTO.Code, "ResponseDTO Code mismatch")
-		assert.Equal(t, expectedDTO.Msg, responseDTO.Msg, "ResponseDTO Message mismatch")
-		assert.Equal(t, expectedDTO.Data, responseDTO.Data, "ResponseDTO Data mismatch")
-	}
+	rt := chi.NewRouter()
+	purchaseOrderHandler := handlers.NewPurchaseOrderHandler(mockService)
+	switchPurchaseOrderTest(t, test, rt, purchaseOrderHandler)
 }
 
-func TestPurchaseOrderHandler(t *testing.T) {
-	tests := []struct {
-		name               string
-		serviceMethod      string
-		httpPath           string
-		httpMethod         string
-		httpBody           map[string]interface{}
-		mockParams         []interface{}
-		mockResponse       interface{}
-		mockError          error
-		expectedOutput     interface{}
-		expectedStatusCode int
-	}{
+func TestPurchaseOrderGetByIdHandler(t *testing.T) {
+	tests := []helpers.HandlerTestStruct{
 		{
-			name:          "[GetById] OK Get purchase order by ID",
-			serviceMethod: "GetById",
-			httpPath:      "/api/v1/purchaseOrders/1",
-			httpMethod:    "GET",
-			mockParams:    []interface{}{1},
-			mockResponse: models.PurchaseOrder{
+			Name:          "[GetById] OK Get purchase order by ID",
+			ServiceMethod: "GetById",
+			HttpPath:      "/api/v1/purchaseOrders/1",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{1},
+			MockResponse: models.PurchaseOrder{
 				ID: 1,
 				PurchaseOrderAttributes: models.PurchaseOrderAttributes{
 					OrderNumber:  "OR0001",
@@ -127,7 +70,7 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					WarehouseID:   1,
 				},
 			},
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusOK,
 				Msg:  "Get purchase order by ID successful",
 				Data: &dto.PurchaseOrderDTO{
@@ -141,50 +84,100 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					WarehouseID:   1,
 				},
 			},
-			expectedStatusCode: http.StatusOK,
+			ExpectedStatusCode: http.StatusOK,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[GetById] Error Purchase order not found",
-			serviceMethod: "GetById",
-			httpPath:      "/api/v1/purchaseOrders/99",
-			httpMethod:    "GET",
-			mockParams:    []interface{}{99},
-			mockResponse:  models.PurchaseOrder{},
-			mockError:     service.ErrPurchaseOrderDoesNotExist,
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			Name:          "[GetById] Error Purchase order not found",
+			ServiceMethod: "GetById",
+			HttpPath:      "/api/v1/purchaseOrders/99",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{99},
+			MockResponse:  models.PurchaseOrder{},
+			MockError:     service.ErrPurchaseOrderDoesNotExist,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusNotFound,
 				Msg:  "ERR: The requested purchase order does not exist in the database for the ID: 99",
 				Data: nil,
 			},
-			expectedStatusCode: http.StatusNotFound,
+			ExpectedStatusCode: http.StatusNotFound,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[GetById] Error Unexpected error",
-			serviceMethod: "GetById",
-			httpPath:      "/api/v1/purchaseOrders/1",
-			httpMethod:    "GET",
-			mockParams:    []interface{}{1},
-			mockResponse:  models.PurchaseOrder{},
-			mockError:     service.ErrPurchaseOrderUnexpectedError,
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			Name:          "[GetById] Error Unexpected error",
+			ServiceMethod: "GetById",
+			HttpPath:      "/api/v1/purchaseOrders/1",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{1},
+			MockResponse:  models.PurchaseOrder{},
+			MockError:     service.ErrPurchaseOrderUnexpectedError,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusInternalServerError,
 				Msg:  "ERR: An unexpected error occurred while processing the requested purchase order, please try again later",
 				Data: nil,
 			},
-			expectedStatusCode: http.StatusInternalServerError,
+			ExpectedStatusCode: http.StatusInternalServerError,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Create] OK Create new purchase order",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/purchaseOrders",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[GetById] Error Invalid ID",
+			ServiceMethod: "GetById",
+			HttpPath:      "/api/v1/purchaseOrders/InvalidID",
+			HttpMethod:    "GET",
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid purchase order ID format",
+				Data: nil,
+			},
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedCalls:      0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockService := new(service_mock.MockPurchaseOrderService)
+			helpers.InitServiceMock(t, test, &mockService)
+			assertPurchaseOrderHandler(t, test, mockService)
+
+			mockService.AssertExpectations(t)
+			mockService.AssertNumberOfCalls(
+				t,
+				test.ServiceMethod,
+				test.ExpectedCalls,
+			)
+		})
+	}
+}
+
+func TestPurchaseOrderCreateHandler(t *testing.T) {
+	tests := []helpers.HandlerTestStruct{
+		{
+			Name:          "[Create] Error Invalid JSON",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/purchaseOrders",
+			HttpMethod:    "POST",
+			HttpBody:      []byte("invalid_json"),
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid purchase order JSON format",
+				Data: nil,
+			},
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedCalls:      0,
+		},
+		{
+			Name:          "[Create] OK Create new purchase order",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/purchaseOrders",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"buyer_id":        1,
 				"carrier_id":      1,
 				"order_status_id": 1,
-				"warehouse_id":    1,
-			},
-			mockParams: []interface{}{
+				"warehouse_id":    1
+			}`),
+			MockParams: []interface{}{
 				models.PurchaseOrderAttributesFKs{
 					PurchaseOrderAttributes: models.PurchaseOrderAttributes{},
 					PurchaseOrderFKs: models.PurchaseOrderFKs{
@@ -195,7 +188,7 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					},
 				},
 			},
-			mockResponse: models.PurchaseOrder{
+			MockResponse: models.PurchaseOrder{
 				ID: 2,
 				PurchaseOrderAttributes: models.PurchaseOrderAttributes{
 					OrderNumber:  "OR0002",
@@ -209,7 +202,7 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					WarehouseID:   1,
 				},
 			},
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusCreated,
 				Msg:  "Create purchase order successful",
 				Data: &dto.PurchaseOrderDTO{
@@ -223,20 +216,21 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					WarehouseID:   1,
 				},
 			},
-			expectedStatusCode: http.StatusCreated,
+			ExpectedStatusCode: http.StatusCreated,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Create] Error FK ware house ID not valid",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/purchaseOrders",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[Create] Error FK ware house ID not valid",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/purchaseOrders",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"buyer_id":        1,
 				"carrier_id":      1,
 				"order_status_id": 1,
-				"warehouse_id":    0,
-			},
-			mockParams: []interface{}{
+				"warehouse_id":    0
+			}`),
+			MockParams: []interface{}{
 				models.PurchaseOrderAttributesFKs{
 					PurchaseOrderAttributes: models.PurchaseOrderAttributes{},
 					PurchaseOrderFKs: models.PurchaseOrderFKs{
@@ -247,27 +241,28 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					},
 				},
 			},
-			mockResponse: models.PurchaseOrder{},
-			mockError:    service.ErrPurchaseOrderFKWareHouseIdNotValid,
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			MockResponse: models.PurchaseOrder{},
+			MockError:    service.ErrPurchaseOrderFKWareHouseIdNotValid,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusConflict,
 				Msg:  "ERR: The foreign key for the warehouse ID of the requested purchase order is not valid",
 				Data: nil,
 			},
-			expectedStatusCode: http.StatusConflict,
+			ExpectedStatusCode: http.StatusConflict,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Create] Error FK buyer ID not valid",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/purchaseOrders",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[Create] Error FK buyer ID not valid",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/purchaseOrders",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"buyer_id":        0,
 				"carrier_id":      1,
 				"order_status_id": 1,
-				"warehouse_id":    1,
-			},
-			mockParams: []interface{}{
+				"warehouse_id":    1
+			}`),
+			MockParams: []interface{}{
 				models.PurchaseOrderAttributesFKs{
 					PurchaseOrderAttributes: models.PurchaseOrderAttributes{},
 					PurchaseOrderFKs: models.PurchaseOrderFKs{
@@ -278,27 +273,28 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					},
 				},
 			},
-			mockResponse: models.PurchaseOrder{},
-			mockError:    service.ErrPurchaseOrderFKBuyerIdNotValid,
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			MockResponse: models.PurchaseOrder{},
+			MockError:    service.ErrPurchaseOrderFKBuyerIdNotValid,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusConflict,
 				Msg:  "ERR: The foreign key for the buyer ID of the requested purchase order is not valid",
 				Data: nil,
 			},
-			expectedStatusCode: http.StatusConflict,
+			ExpectedStatusCode: http.StatusConflict,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Create] Error FK order status ID not valid",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/purchaseOrders",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[Create] Error FK order status ID not valid",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/purchaseOrders",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"buyer_id":        1,
 				"carrier_id":      1,
 				"order_status_id": 0,
-				"warehouse_id":    1,
-			},
-			mockParams: []interface{}{
+				"warehouse_id":    1
+			}`),
+			MockParams: []interface{}{
 				models.PurchaseOrderAttributesFKs{
 					PurchaseOrderAttributes: models.PurchaseOrderAttributes{},
 					PurchaseOrderFKs: models.PurchaseOrderFKs{
@@ -309,27 +305,28 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					},
 				},
 			},
-			mockResponse: models.PurchaseOrder{},
-			mockError:    service.ErrPurchaseOrderFKOrderStatusIdNotValid,
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			MockResponse: models.PurchaseOrder{},
+			MockError:    service.ErrPurchaseOrderFKOrderStatusIdNotValid,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusConflict,
 				Msg:  "ERR: The foreign key for the order status ID of the requested purchase order is not valid",
 				Data: nil,
 			},
-			expectedStatusCode: http.StatusConflict,
+			ExpectedStatusCode: http.StatusConflict,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Create] Error FK carrier ID not valid",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/purchaseOrders",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[Create] Error FK carrier ID not valid",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/purchaseOrders",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"buyer_id":        1,
 				"carrier_id":      0,
 				"order_status_id": 1,
-				"warehouse_id":    1,
-			},
-			mockParams: []interface{}{
+				"warehouse_id":    1
+			}`),
+			MockParams: []interface{}{
 				models.PurchaseOrderAttributesFKs{
 					PurchaseOrderAttributes: models.PurchaseOrderAttributes{},
 					PurchaseOrderFKs: models.PurchaseOrderFKs{
@@ -340,27 +337,28 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					},
 				},
 			},
-			mockResponse: models.PurchaseOrder{},
-			mockError:    service.ErrPurchaseOrderFKCarrierIdNotValid,
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			MockResponse: models.PurchaseOrder{},
+			MockError:    service.ErrPurchaseOrderFKCarrierIdNotValid,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusConflict,
 				Msg:  "ERR: The foreign key for the carrier ID of the requested purchase order is not valid",
 				Data: nil,
 			},
-			expectedStatusCode: http.StatusConflict,
+			ExpectedStatusCode: http.StatusConflict,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Create] Error Unexpected error",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/purchaseOrders",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[Create] Error Unexpected error",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/purchaseOrders",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"buyer_id":        1,
 				"carrier_id":      1,
 				"order_status_id": 1,
-				"warehouse_id":    1,
-			},
-			mockParams: []interface{}{
+				"warehouse_id":    1
+			}`),
+			MockParams: []interface{}{
 				models.PurchaseOrderAttributesFKs{
 					PurchaseOrderAttributes: models.PurchaseOrderAttributes{},
 					PurchaseOrderFKs: models.PurchaseOrderFKs{
@@ -371,65 +369,30 @@ func TestPurchaseOrderHandler(t *testing.T) {
 					},
 				},
 			},
-			mockResponse: models.PurchaseOrder{},
-			mockError:    service.ErrPurchaseOrderUnexpectedError,
-			expectedOutput: PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]{
+			MockResponse: models.PurchaseOrder{},
+			MockError:    service.ErrPurchaseOrderUnexpectedError,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.PurchaseOrderDTO]{
 				Code: http.StatusInternalServerError,
 				Msg:  "ERR: An unexpected error occurred while processing the requested purchase order, please try again later",
 				Data: nil,
 			},
-			expectedStatusCode: http.StatusInternalServerError,
+			ExpectedStatusCode: http.StatusInternalServerError,
+			ExpectedCalls:      1,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
 			mockService := new(service_mock.MockPurchaseOrderService)
-
-			if tt.mockResponse != nil {
-				mockService.On(tt.serviceMethod, tt.mockParams...).
-					Return(tt.mockResponse, tt.mockError)
-			} else {
-				mockService.On(tt.serviceMethod, tt.mockParams...).Return(tt.mockError)
-			}
-
-			rt := chi.NewRouter()
-			purchaseOrderHandler := handlers.NewPurchaseOrderHandler(mockService)
-
-			switch tt.serviceMethod {
-			case "GetById":
-				rt.Get("/api/v1/purchaseOrders/{id}", purchaseOrderHandler.GetById())
-
-				result := getPurchaseOrderResult(t, rt, tt.httpPath, tt.httpMethod, nil)
-				responseDTO := getPurchaseOrderGenericStruct[PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]](
-					t,
-					result.Body,
-				)
-				assertPurchaseOrderResponse(
-					t,
-					responseDTO,
-					result.StatusCode,
-					tt.expectedStatusCode,
-					tt.expectedOutput,
-				)
-			case "Create":
-				rt.Post("/api/v1/purchaseOrders", purchaseOrderHandler.Create())
-
-				result := getPurchaseOrderResult(t, rt, tt.httpPath, tt.httpMethod, tt.httpBody)
-				responseDTO := getPurchaseOrderGenericStruct[PurchaseOrderGenericStruct[*dto.PurchaseOrderDTO]](
-					t,
-					result.Body,
-				)
-				assertPurchaseOrderResponse(
-					t,
-					responseDTO,
-					result.StatusCode,
-					tt.expectedStatusCode,
-					tt.expectedOutput,
-				)
-			}
+			helpers.InitServiceMock(t, test, &mockService)
+			assertPurchaseOrderHandler(t, test, mockService)
 
 			mockService.AssertExpectations(t)
+			mockService.AssertNumberOfCalls(
+				t,
+				test.ServiceMethod,
+				test.ExpectedCalls,
+			)
 		})
 	}
 }

@@ -1,7 +1,7 @@
 package dto
 
 type ReportPurchaseOrdersDTO struct {
-	ID                  int    `json:"id"`
+	ID                  int64  `json:"id"`
 	CardNumberID        string `json:"card_number_id"`
 	FirstName           string `json:"first_name"`
 	LastName            string `json:"last_name"`
@@ -9,7 +9,7 @@ type ReportPurchaseOrdersDTO struct {
 }
 
 type BuyerDTO struct {
-	ID           int    `json:"id"`
+	ID           int64  `json:"id"`
 	CardNumberID string `json:"card_number_id"`
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`

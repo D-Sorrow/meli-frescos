@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -18,13 +19,16 @@ import (
 )
 
 func TestCreateLocality(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("create locality", func(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("CreateLocality", fakeModels.LocalityRequest).Return(fakeModels.LocalityRequest, error(nil))
+		serviceMock.On("CreateLocality", fakeModels.LocalityRequest).
+			Return(fakeModels.LocalityRequest, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
 		router := chi.NewRouter()
-		router.Post("/api/v1/localities/", handlerImp.CreateLocality())
+		router.Post("/api/v1/localities/", handlerImp.CreateLocality(&ctx))
 
 		localityJSON, errMarshal := json.Marshal(fakeModels.JsonLocalityCreatedDto)
 		if errMarshal != nil {
@@ -32,7 +36,11 @@ func TestCreateLocality(t *testing.T) {
 		}
 
 		res := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/localities/", bytes.NewBuffer(localityJSON))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/localities/",
+			bytes.NewBuffer(localityJSON),
+		)
 
 		router.ServeHTTP(res, req)
 		expectedCode := http.StatusCreated
@@ -51,11 +59,12 @@ func TestCreateLocality(t *testing.T) {
 
 	t.Run("create locality fail - Bad Request BODY incomplete", func(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("CreateLocality", fakeModels.LocalityRequest).Return(fakeModels.LocalityBadRequest, error(nil))
+		serviceMock.On("CreateLocality", fakeModels.LocalityRequest).
+			Return(fakeModels.LocalityBadRequest, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
 		router := chi.NewRouter()
-		router.Post("/api/v1/localities/", handlerImp.CreateLocality())
+		router.Post("/api/v1/localities/", handlerImp.CreateLocality(&ctx))
 
 		localityJSON, errMarshal := json.Marshal(fakeModels.JsonBadLocalityCreatedDto)
 		if errMarshal != nil {
@@ -63,7 +72,11 @@ func TestCreateLocality(t *testing.T) {
 		}
 
 		res := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/localities/", bytes.NewBuffer(localityJSON))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/localities/",
+			bytes.NewBuffer(localityJSON),
+		)
 
 		router.ServeHTTP(res, req)
 		expectedCode := http.StatusUnprocessableEntity
@@ -82,11 +95,12 @@ func TestCreateLocality(t *testing.T) {
 
 	t.Run("create locality fail - Bad Request BODY json bad structure", func(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("CreateLocality", fakeModels.LocalityBadRequest).Return(fakeModels.LocalityBadRequest, error(nil))
+		serviceMock.On("CreateLocality", fakeModels.LocalityBadRequest).
+			Return(fakeModels.LocalityBadRequest, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
 		router := chi.NewRouter()
-		router.Post("/api/v1/localities/", handlerImp.CreateLocality())
+		router.Post("/api/v1/localities/", handlerImp.CreateLocality(&ctx))
 
 		localityJSON, errMarshal := json.Marshal("{,make:'dsad',}")
 		//panic(bytes.NewBuffer(localityJSON))
@@ -95,7 +109,11 @@ func TestCreateLocality(t *testing.T) {
 		}
 
 		res := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/localities/", bytes.NewBuffer(localityJSON))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/localities/",
+			bytes.NewBuffer(localityJSON),
+		)
 
 		router.ServeHTTP(res, req)
 		expectedCode := http.StatusBadRequest
@@ -106,11 +124,12 @@ func TestCreateLocality(t *testing.T) {
 
 	t.Run("create locality fail - Locality already exist", func(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("CreateLocality", fakeModels.LocalityRequest).Return(models.Locality{}, service.ErrLocalityAlreadyExists)
+		serviceMock.On("CreateLocality", fakeModels.LocalityRequest).
+			Return(models.Locality{}, service.ErrLocalityAlreadyExists)
 		handlerImp := NewLocalityHandler(serviceMock)
 
 		router := chi.NewRouter()
-		router.Post("/api/v1/localities/", handlerImp.CreateLocality())
+		router.Post("/api/v1/localities/", handlerImp.CreateLocality(&ctx))
 
 		localityJSON, errMarshal := json.Marshal(fakeModels.JsonLocalityCreatedDto)
 		if errMarshal != nil {
@@ -118,7 +137,11 @@ func TestCreateLocality(t *testing.T) {
 		}
 
 		res := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/localities/", bytes.NewBuffer(localityJSON))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/localities/",
+			bytes.NewBuffer(localityJSON),
+		)
 
 		router.ServeHTTP(res, req)
 		expectedCode := http.StatusConflict
@@ -138,18 +161,25 @@ func TestCreateLocality(t *testing.T) {
 }
 
 func TestGetSellersByLocality(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("get sellers by locality", func(t *testing.T) {
 		localityId := 1
 
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("GetSellersByLocality", localityId).Return(fakeModels.LocalitySellersResponse, error(nil))
+		serviceMock.On("GetSellersByLocality", localityId).
+			Return(fakeModels.LocalitySellersResponse, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
 		router := chi.NewRouter()
-		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality())
+		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, fmt.Sprint("/api/v1/localities/reportSellers?id=", localityId), nil)
+		req := httptest.NewRequest(
+			http.MethodGet,
+			fmt.Sprint("/api/v1/localities/reportSellers?id=", localityId),
+			nil,
+		)
 
 		router.ServeHTTP(res, req)
 		expectedCode := http.StatusOK
@@ -170,14 +200,19 @@ func TestGetSellersByLocality(t *testing.T) {
 		localityId := "a"
 
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("GetSellersByLocality", localityId).Return(fakeModels.LocalitySellersResponse, error(nil))
+		serviceMock.On("GetSellersByLocality", localityId).
+			Return(fakeModels.LocalitySellersResponse, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
 		router := chi.NewRouter()
-		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality())
+		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, fmt.Sprint("/api/v1/localities/reportSellers?id=", localityId), nil)
+		req := httptest.NewRequest(
+			http.MethodGet,
+			fmt.Sprint("/api/v1/localities/reportSellers?id=", localityId),
+			nil,
+		)
 
 		router.ServeHTTP(res, req)
 		expectedCode := http.StatusBadRequest
@@ -198,14 +233,19 @@ func TestGetSellersByLocality(t *testing.T) {
 		localityId := 1
 
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("GetSellersByLocality", localityId).Return(models.LocalitySellers{}, service.ErrLocalityNotFound)
+		serviceMock.On("GetSellersByLocality", localityId).
+			Return(models.LocalitySellers{}, service.ErrLocalityNotFound)
 		handlerImp := NewLocalityHandler(serviceMock)
 
 		router := chi.NewRouter()
-		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality())
+		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, fmt.Sprint("/api/v1/localities/reportSellers?id=", localityId), nil)
+		req := httptest.NewRequest(
+			http.MethodGet,
+			fmt.Sprint("/api/v1/localities/reportSellers?id=", localityId),
+			nil,
+		)
 
 		router.ServeHTTP(res, req)
 		expectedCode := http.StatusNotFound
@@ -225,12 +265,14 @@ func TestGetSellersByLocality(t *testing.T) {
 }
 
 func TestGetCarriersByLocality(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run(" get carriers by all localities", func(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
 		serviceMock.On("GetCarriersByAllLocalities").Return(fakeModels.LocalityCarriers, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/reportCarries", handlerImp.GetCarriersByLocality())
+		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/reportCarries", nil)
@@ -254,7 +296,7 @@ func TestGetCarriersByLocality(t *testing.T) {
 		serviceMock.On("GetCarriersByAllLocalities").Return(nil, service.ErrGetAllLocalities)
 		handlerImp := NewLocalityHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/reportCarries", handlerImp.GetCarriersByLocality())
+		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/reportCarries", nil)
@@ -275,10 +317,11 @@ func TestGetCarriersByLocality(t *testing.T) {
 
 	t.Run(" get carriers by locality id", func(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("GetCarriersByLocality", mock.Anything).Return(fakeModels.LocalityCarriers[0], error(nil))
+		serviceMock.On("GetCarriersByLocality", mock.Anything).
+			Return(fakeModels.LocalityCarriers[0], error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/reportCarries", handlerImp.GetCarriersByLocality())
+		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/reportCarries?id=1", nil)
@@ -299,10 +342,11 @@ func TestGetCarriersByLocality(t *testing.T) {
 
 	t.Run(" get carriers by locality id fail - wrond id", func(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("GetCarriersByLocality", mock.Anything).Return(fakeModels.LocalityCarriers[0], error(nil))
+		serviceMock.On("GetCarriersByLocality", mock.Anything).
+			Return(fakeModels.LocalityCarriers[0], error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/reportCarries", handlerImp.GetCarriersByLocality())
+		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/reportCarries?id=m", nil)
@@ -322,10 +366,11 @@ func TestGetCarriersByLocality(t *testing.T) {
 	})
 	t.Run(" get carriers by locality id fail - id not found", func(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
-		serviceMock.On("GetCarriersByLocality", mock.Anything).Return(models.LocalityCarriers{}, service.ErrLocalityNotFound)
+		serviceMock.On("GetCarriersByLocality", mock.Anything).
+			Return(models.LocalityCarriers{}, service.ErrLocalityNotFound)
 		handlerImp := NewLocalityHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/reportCarries", handlerImp.GetCarriersByLocality())
+		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/reportCarries?id=1", nil)

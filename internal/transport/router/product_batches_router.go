@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitProductBatchesRouter(rt *chi.Mux, db *sql.DB) {
+func InitProductBatchesRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 
 	repositoryImp := repository.NewProductBatchesRepository(db)
 
@@ -18,9 +19,9 @@ func InitProductBatchesRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewProductBatches(serviceImp)
 
 	rt.Route("/api/v1/probatch", func(rt chi.Router) {
-		rt.Post("/", handler.AddProductBatches())
-		rt.Get("/{id}", handler.GetById())
-		rt.Post("/2", handler.Create())
+		rt.Post("/", handler.AddProductBatches(ctx))
+		rt.Get("/{id}", handler.GetById(ctx))
+		rt.Post("/2", handler.Create(ctx))
 
 	})
 }

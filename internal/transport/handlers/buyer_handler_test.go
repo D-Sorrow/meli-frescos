@@ -1,148 +1,107 @@
 package handlers_test
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
+	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/mocks/helpers"
 	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
 )
 
-type BuyerGenericStruct[T interface{}] struct {
-	Code int    `json:"code"`
-	Msg  string `json:"message"`
-	Data T      `json:"data,omitempty"`
-}
-
-func ptrStr(s string) *string {
-	return &s
-}
-
-func ptrInt(i int) *int {
-	return &i
-}
-
-func ptrIntNil() *int {
-	return nil
-}
-
-func getBuyerResult(
+func switchBuyerTest(
 	t *testing.T,
+	test helpers.HandlerTestStruct,
 	rt *chi.Mux,
-	path string,
-	httpMethod string,
-	httpBody map[string]interface{},
-) (result *http.Response) {
+	buyerHandler *handlers.BuyerHandler,
+) {
 	t.Helper()
+	ctx := context.Background()
 
-	var req *http.Request
-
-	if httpBody != nil {
-		jsonBody, err := json.Marshal(httpBody)
-		if err != nil {
-			t.Fatalf("JSON serialization error: %v", err)
-		}
-
-		req = httptest.NewRequest(httpMethod, path, bytes.NewBuffer(jsonBody))
-	} else {
-		req = httptest.NewRequest(httpMethod, path, nil)
+	switch test.ServiceMethod {
+	case "GetAll":
+		rt.Get("/api/v1/buyers", buyerHandler.GetAll(&ctx))
+		result := helpers.GetResult(t, rt, test.HttpPath, test.HttpMethod, nil)
+		helpers.CheckHandlerResponse[[]dto.BuyerDTO](t, test, result)
+	case "GetById":
+		rt.Get("/api/v1/buyers/{id}", buyerHandler.GetById(&ctx))
+		result := helpers.GetResult(t, rt, test.HttpPath, test.HttpMethod, nil)
+		helpers.CheckHandlerResponse[*dto.BuyerDTO](t, test, result)
+	case "Create":
+		rt.Post("/api/v1/buyers", buyerHandler.Create(&ctx))
+		result := helpers.GetResult(
+			t,
+			rt,
+			test.HttpPath,
+			test.HttpMethod,
+			test.HttpBody,
+		)
+		helpers.CheckHandlerResponse[*dto.BuyerDTO](t, test, result)
+	case "Patch":
+		rt.Patch("/api/v1/buyers/{id}", buyerHandler.Patch(&ctx))
+		result := helpers.GetResult(
+			t,
+			rt,
+			test.HttpPath,
+			test.HttpMethod,
+			test.HttpBody,
+		)
+		helpers.CheckHandlerResponse[*dto.BuyerDTO](t, test, result)
+	case "Delete":
+		rt.Delete("/api/v1/buyers/{id}", buyerHandler.Delete(&ctx))
+		result := helpers.GetResult(t, rt, test.HttpPath, test.HttpMethod, nil)
+		helpers.CheckHandlerResponse[*dto.BuyerDTO](t, test, result)
+	case "GetReportPurchaseOrders":
+		rt.Get("/api/v1/reportPurchaseOrders", buyerHandler.GetReportPurchaseOrders(&ctx))
+		result := helpers.GetResult(t, rt, test.HttpPath, test.HttpMethod, nil)
+		helpers.CheckHandlerResponse[[]dto.ReportPurchaseOrdersDTO](t, test, result)
 	}
-
-	rec := httptest.NewRecorder()
-	rt.ServeHTTP(rec, req)
-	result = rec.Result()
-	return
 }
 
-func getBuyerGenericStruct[T interface{}](
+func assertBuyerHandler(
 	t *testing.T,
-	body io.ReadCloser,
-) (responseDTOGenericStruct T) {
-	t.Helper()
-
-	bodyBytes, err := io.ReadAll(body)
-	if err != nil {
-		t.Fatal("Body reading error:", err)
-	}
-	defer body.Close()
-
-	if err := json.Unmarshal(bodyBytes, &responseDTOGenericStruct); err != nil {
-		t.Fatal("JSON parsing error:", err)
-	}
-
-	return
-}
-
-func assertBuyerResponse[T interface{}](
-	t *testing.T,
-	responseDTO BuyerGenericStruct[T],
-	responseStatusCode int,
-	expectedStatusCode int,
-	expectedOutput interface{},
+	test helpers.HandlerTestStruct,
+	mockService *service_mock.MockBuyerService,
 ) {
 	t.Helper()
 
-	assert.Equal(t, expectedStatusCode, responseStatusCode, "HTTP Status Code mismatch")
-
-	if expectedOutput != nil {
-		expectedDTO, ok := expectedOutput.(BuyerGenericStruct[T])
-		if !ok {
-			t.Fatal("Failed to convert expectedOutput to BuyerGenericStruct")
-		}
-
-		assert.Equal(t, expectedDTO.Code, responseDTO.Code, "ResponseDTO Code mismatch")
-		assert.Equal(t, expectedDTO.Msg, responseDTO.Msg, "ResponseDTO Message mismatch")
-		assert.Equal(t, expectedDTO.Data, responseDTO.Data, "ResponseDTO Data mismatch")
-	}
+	rt := chi.NewRouter()
+	buyerHandler := handlers.NewBuyerHandler(mockService)
+	switchBuyerTest(t, test, rt, buyerHandler)
 }
 
-func TestBuyerHandler(t *testing.T) {
-	tests := []struct {
-		name               string
-		serviceMethod      string
-		httpPath           string
-		httpMethod         string
-		httpBody           map[string]interface{}
-		mockParams         []interface{}
-		mockResponse       interface{}
-		mockError          error
-		expectedOutput     interface{}
-		expectedStatusCode int
-	}{
+func TestBuyerGetAllHandler(t *testing.T) {
+	tests := []helpers.HandlerTestStruct{
 		{
-			name:          "[GetAll] OK Get all buyers",
-			serviceMethod: "GetAll",
-			httpPath:      "/api/v1/buyers",
-			httpMethod:    "GET",
-			mockResponse: []models.Buyer{
+			Name:          "[GetAll] OK Get all buyers",
+			ServiceMethod: "GetAll",
+			HttpPath:      "/api/v1/buyers",
+			HttpMethod:    "GET",
+			MockResponse: []models.Buyer{
 				{
 					ID: 1,
 					BuyerAttributes: models.BuyerAttributes{
-						CardNumberID: ptrStr("M1234567890"),
-						FirstName:    ptrStr("John"),
-						LastName:     ptrStr("Doe"),
+						CardNumberID: helpers.PtrStr("M1234567890"),
+						FirstName:    helpers.PtrStr("John"),
+						LastName:     helpers.PtrStr("Doe"),
 					},
 				},
 				{
 					ID: 2,
 					BuyerAttributes: models.BuyerAttributes{
-						CardNumberID: ptrStr("F1098765432"),
-						FirstName:    ptrStr("Jane"),
-						LastName:     ptrStr("Doe"),
+						CardNumberID: helpers.PtrStr("F1098765432"),
+						FirstName:    helpers.PtrStr("Jane"),
+						LastName:     helpers.PtrStr("Doe"),
 					},
 				},
 			},
-			expectedOutput: BuyerGenericStruct[[]dto.BuyerDTO]{
+			ExpectedOutput: helpers.TestGenericStruct[[]dto.BuyerDTO]{
 				Code: http.StatusOK,
 				Msg:  "Get all buyers successful",
 				Data: []dto.BuyerDTO{
@@ -160,51 +119,72 @@ func TestBuyerHandler(t *testing.T) {
 					},
 				},
 			},
-			expectedStatusCode: http.StatusOK,
+			ExpectedStatusCode: http.StatusOK,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[GetAll] Error No buyers registered yet",
-			serviceMethod: "GetAll",
-			httpPath:      "/api/v1/buyers",
-			httpMethod:    "GET",
-			mockResponse:  make([]models.Buyer, 0),
-			mockError:     service.ErrBuyerNoRegisteredBuyersYet,
-			expectedOutput: BuyerGenericStruct[[]dto.BuyerDTO]{
+			Name:          "[GetAll] Error No buyers registered yet",
+			ServiceMethod: "GetAll",
+			HttpPath:      "/api/v1/buyers",
+			HttpMethod:    "GET",
+			MockResponse:  make([]models.Buyer, 0),
+			MockError:     service.ErrBuyerNoRegisteredBuyersYet,
+			ExpectedOutput: helpers.TestGenericStruct[[]dto.BuyerDTO]{
 				Code: http.StatusOK,
 				Msg:  "ERR: No registered buyers yet",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusOK,
+			ExpectedStatusCode: http.StatusOK,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[GetAll] Error Unexpected error",
-			serviceMethod: "GetAll",
-			httpPath:      "/api/v1/buyers",
-			httpMethod:    "GET",
-			mockResponse:  make([]models.Buyer, 0),
-			mockError:     service.ErrBuyerUnexpectedError,
-			expectedOutput: BuyerGenericStruct[[]dto.BuyerDTO]{
+			Name:          "[GetAll] Error Unexpected error",
+			ServiceMethod: "GetAll",
+			HttpPath:      "/api/v1/buyers",
+			HttpMethod:    "GET",
+			MockResponse:  make([]models.Buyer, 0),
+			MockError:     service.ErrBuyerUnexpectedError,
+			ExpectedOutput: helpers.TestGenericStruct[[]dto.BuyerDTO]{
 				Code: http.StatusInternalServerError,
 				Msg:  "ERR: An unexpected error occurred while processing the requested buyer, please try again later",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusInternalServerError,
+			ExpectedStatusCode: http.StatusInternalServerError,
+			ExpectedCalls:      1,
 		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockService := new(service_mock.MockBuyerService)
+			helpers.InitServiceMock(t, test, &mockService)
+			assertBuyerHandler(t, test, mockService)
+
+			mockService.AssertExpectations(t)
+			mockService.AssertNumberOfCalls(
+				t,
+				test.ServiceMethod,
+				test.ExpectedCalls,
+			)
+		})
+	}
+}
+
+func TestBuyerGetByIdHandler(t *testing.T) {
+	tests := []helpers.HandlerTestStruct{
 		{
-			name:          "[GetById] OK Get buyer by ID",
-			serviceMethod: "GetById",
-			httpPath:      "/api/v1/buyers/1",
-			httpMethod:    "GET",
-			mockParams:    []interface{}{1},
-			mockResponse: models.Buyer{
+			Name:          "[GetById] OK Get buyer by ID",
+			ServiceMethod: "GetById",
+			HttpPath:      "/api/v1/buyers/1",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{1},
+			MockResponse: models.Buyer{
 				ID: 1,
 				BuyerAttributes: models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
 				},
 			},
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusOK,
 				Msg:  "Get buyer by ID successful",
 				Data: &dto.BuyerDTO{
@@ -214,64 +194,97 @@ func TestBuyerHandler(t *testing.T) {
 					LastName:     "Doe",
 				},
 			},
-			expectedStatusCode: http.StatusOK,
+			ExpectedStatusCode: http.StatusOK,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[GetById] Error Buyer not found",
-			serviceMethod: "GetById",
-			httpPath:      "/api/v1/buyers/99",
-			httpMethod:    "GET",
-			mockParams:    []interface{}{99},
-			mockResponse:  models.Buyer{},
-			mockError:     service.ErrBuyerDoesNotExist,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			Name:          "[GetById] Error Invalid ID",
+			ServiceMethod: "GetById",
+			HttpPath:      "/api/v1/buyers/InvalidID",
+			HttpMethod:    "GET",
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid buyer ID format",
+			},
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedCalls:      0,
+		},
+		{
+			Name:          "[GetById] Error Buyer not found",
+			ServiceMethod: "GetById",
+			HttpPath:      "/api/v1/buyers/99",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{99},
+			MockResponse:  models.Buyer{},
+			MockError:     service.ErrBuyerDoesNotExist,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusNotFound,
 				Msg:  "ERR: The requested buyer does not exist in the database for the ID: 99",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusNotFound,
+			ExpectedStatusCode: http.StatusNotFound,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[GetById] Error Unexpected error",
-			serviceMethod: "GetById",
-			httpPath:      "/api/v1/buyers/1",
-			httpMethod:    "GET",
-			mockParams:    []interface{}{1},
-			mockResponse:  models.Buyer{},
-			mockError:     service.ErrBuyerUnexpectedError,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			Name:          "[GetById] Error Unexpected error",
+			ServiceMethod: "GetById",
+			HttpPath:      "/api/v1/buyers/1",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{1},
+			MockResponse:  models.Buyer{},
+			MockError:     service.ErrBuyerUnexpectedError,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusInternalServerError,
 				Msg:  "ERR: An unexpected error occurred while processing the requested buyer, please try again later",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusInternalServerError,
+			ExpectedStatusCode: http.StatusInternalServerError,
+			ExpectedCalls:      1,
 		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockService := new(service_mock.MockBuyerService)
+			helpers.InitServiceMock(t, test, &mockService)
+			assertBuyerHandler(t, test, mockService)
+
+			mockService.AssertExpectations(t)
+			mockService.AssertNumberOfCalls(
+				t,
+				test.ServiceMethod,
+				test.ExpectedCalls,
+			)
+		})
+	}
+}
+
+func TestBuyerCreateHandler(t *testing.T) {
+	tests := []helpers.HandlerTestStruct{
 		{
-			name:          "[Create] OK Create new buyer",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/buyers",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[Create] OK Create new buyer",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/buyers",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"card_number_id": "M1234543210",
 				"first_name":     "Baby",
-				"last_name":      "Doe",
-			},
-			mockParams: []interface{}{
+				"last_name":      "Doe"
+			}`),
+			MockParams: []interface{}{
 				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234543210"),
-					FirstName:    ptrStr("Baby"),
-					LastName:     ptrStr("Doe"),
+					CardNumberID: helpers.PtrStr("M1234543210"),
+					FirstName:    helpers.PtrStr("Baby"),
+					LastName:     helpers.PtrStr("Doe"),
 				},
 			},
-			mockResponse: models.Buyer{
+			MockResponse: models.Buyer{
 				ID: 3,
 				BuyerAttributes: models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234543210"),
-					FirstName:    ptrStr("Baby"),
-					LastName:     ptrStr("Doe"),
+					CardNumberID: helpers.PtrStr("M1234543210"),
+					FirstName:    helpers.PtrStr("Baby"),
+					LastName:     helpers.PtrStr("Doe"),
 				},
 			},
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusCreated,
 				Msg:  "Create buyer successful",
 				Data: &dto.BuyerDTO{
@@ -281,83 +294,138 @@ func TestBuyerHandler(t *testing.T) {
 					LastName:     "Doe",
 				},
 			},
-			expectedStatusCode: http.StatusCreated,
+			ExpectedStatusCode: http.StatusCreated,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Create] Error Buyer already exists",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/buyers",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[Create] Error Buyer already exists",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/buyers",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"card_number_id": "M1234567890",
 				"first_name":     "John",
-				"last_name":      "Doe",
-			},
-			mockParams: []interface{}{
+				"last_name":      "Doe"
+			}`),
+			MockParams: []interface{}{
 				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
 				},
 			},
-			mockResponse: models.Buyer{},
-			mockError:    service.ErrBuyerAlreadyExists,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			MockResponse: models.Buyer{},
+			MockError:    service.ErrBuyerAlreadyExists,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusConflict,
 				Msg:  "ERR: A buyer already exists in the database with the card number ID: M1234567890",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusConflict,
+			ExpectedStatusCode: http.StatusConflict,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Create] Error Unexpected error",
-			serviceMethod: "Create",
-			httpPath:      "/api/v1/buyers",
-			httpMethod:    "POST",
-			httpBody: map[string]interface{}{
+			Name:          "[Create] Error Invalid JSON",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/buyers",
+			HttpMethod:    "POST",
+			HttpBody:      []byte("invalid_json"),
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid buyer JSON format",
+			},
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedCalls:      0,
+		},
+		{
+			Name:          "[Create] Error Invalid buyer Create DTO",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/buyers",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
+				"card_number_id": "invalid_card_number"
+			}`),
+			ExpectedOutput: helpers.TestGenericStruct[map[string]interface{}]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid buyer Create DTO",
+				Data: map[string]interface{}{
+					"card_number_id": "Must start with a letter and be followed by 10 digits",
+					"first_name":     "Field is required",
+					"last_name":      "Field is required",
+				},
+			},
+			IsExpectedOutputMapType: true,
+			ExpectedStatusCode:      http.StatusBadRequest,
+			ExpectedCalls:           0,
+		},
+		{
+			Name:          "[Create] Error Unexpected error",
+			ServiceMethod: "Create",
+			HttpPath:      "/api/v1/buyers",
+			HttpMethod:    "POST",
+			HttpBody: []byte(`{
 				"card_number_id": "M1234567890",
 				"first_name":     "John",
-				"last_name":      "Doe",
-			},
-			mockParams: []interface{}{
+				"last_name":      "Doe"
+			}`),
+			MockParams: []interface{}{
 				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567890"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
+					CardNumberID: helpers.PtrStr("M1234567890"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
 				},
 			},
-			mockResponse: models.Buyer{},
-			mockError:    service.ErrBuyerUnexpectedError,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			MockResponse: models.Buyer{},
+			MockError:    service.ErrBuyerUnexpectedError,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusInternalServerError,
 				Msg:  "ERR: An unexpected error occurred while processing the requested buyer, please try again later",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusInternalServerError,
+			ExpectedStatusCode: http.StatusInternalServerError,
+			ExpectedCalls:      1,
 		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockService := new(service_mock.MockBuyerService)
+			helpers.InitServiceMock(t, test, &mockService)
+			assertBuyerHandler(t, test, mockService)
+
+			mockService.AssertExpectations(t)
+			mockService.AssertNumberOfCalls(
+				t,
+				test.ServiceMethod,
+				test.ExpectedCalls,
+			)
+		})
+	}
+}
+
+func TestBuyerPatchHandler(t *testing.T) {
+	tests := []helpers.HandlerTestStruct{
 		{
-			name:          "[Patch] OK Update buyer",
-			serviceMethod: "Patch",
-			httpPath:      "/api/v1/buyers/1",
-			httpMethod:    "PATCH",
-			httpBody: map[string]interface{}{
-				"card_number_id": "M1234567876",
-			},
-			mockParams: []interface{}{
+			Name:          "[Patch] OK Update buyer",
+			ServiceMethod: "Patch",
+			HttpPath:      "/api/v1/buyers/1",
+			HttpMethod:    "PATCH",
+			HttpBody: []byte(`{
+				"card_number_id": "M1234567876"
+			}`),
+			MockParams: []interface{}{
 				1,
 				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567876"),
+					CardNumberID: helpers.PtrStr("M1234567876"),
 				},
 			},
-			mockResponse: models.Buyer{
+			MockResponse: models.Buyer{
 				ID: 1,
 				BuyerAttributes: models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567876"),
-					FirstName:    ptrStr("John"),
-					LastName:     ptrStr("Doe"),
+					CardNumberID: helpers.PtrStr("M1234567876"),
+					FirstName:    helpers.PtrStr("John"),
+					LastName:     helpers.PtrStr("Doe"),
 				},
 			},
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusOK,
 				Msg:  "Update buyer successful",
 				Data: &dto.BuyerDTO{
@@ -367,140 +435,209 @@ func TestBuyerHandler(t *testing.T) {
 					LastName:     "Doe",
 				},
 			},
-			expectedStatusCode: http.StatusOK,
+			ExpectedStatusCode: http.StatusOK,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Patch] Error Buyer not found",
-			serviceMethod: "Patch",
-			httpPath:      "/api/v1/buyers/99",
-			httpMethod:    "PATCH",
-			httpBody: map[string]interface{}{
-				"card_number_id": "M1234567876",
+			Name:          "[Patch] Error Invalid ID",
+			ServiceMethod: "Patch",
+			HttpPath:      "/api/v1/buyers/InvalidID",
+			HttpMethod:    "PATCH",
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid buyer ID format",
 			},
-			mockParams: []interface{}{
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedCalls:      0,
+		},
+		{
+			Name:          "[Patch] Error Invalid JSON",
+			ServiceMethod: "Patch",
+			HttpPath:      "/api/v1/buyers/1",
+			HttpMethod:    "PATCH",
+			HttpBody:      []byte("invalid_json"),
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid buyer JSON format",
+			},
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedCalls:      0,
+		},
+		{
+			Name:          "[Patch] Error Invalid buyer Patch DTO",
+			ServiceMethod: "Patch",
+			HttpPath:      "/api/v1/buyers/1",
+			HttpMethod:    "PATCH",
+			HttpBody: []byte(`{
+				"card_number_id": "invalid_card_number"
+			}`),
+			ExpectedOutput: helpers.TestGenericStruct[map[string]interface{}]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid buyer Patch DTO",
+				Data: map[string]interface{}{
+					"card_number_id": "Must start with a letter and be followed by 10 digits",
+				},
+			},
+			IsExpectedOutputMapType: true,
+			ExpectedStatusCode:      http.StatusBadRequest,
+			ExpectedCalls:           0,
+		},
+		{
+			Name:          "[Patch] Error Buyer not found",
+			ServiceMethod: "Patch",
+			HttpPath:      "/api/v1/buyers/99",
+			HttpMethod:    "PATCH",
+			HttpBody: []byte(`{
+				"card_number_id": "M1234567876"
+			}`),
+			MockParams: []interface{}{
 				99,
 				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567876"),
+					CardNumberID: helpers.PtrStr("M1234567876"),
 				},
 			},
-			mockResponse: models.Buyer{},
-			mockError:    service.ErrBuyerDoesNotExist,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			MockResponse: models.Buyer{},
+			MockError:    service.ErrBuyerDoesNotExist,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusNotFound,
 				Msg:  "ERR: The requested buyer does not exist in the database for the ID: 99",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusNotFound,
+			ExpectedStatusCode: http.StatusNotFound,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Patch] Error Buyer already exists",
-			serviceMethod: "Patch",
-			httpPath:      "/api/v1/buyers/1",
-			httpMethod:    "PATCH",
-			httpBody: map[string]interface{}{
-				"card_number_id": "F1098765432",
-			},
-			mockParams: []interface{}{
+			Name:          "[Patch] Error Buyer already exists",
+			ServiceMethod: "Patch",
+			HttpPath:      "/api/v1/buyers/1",
+			HttpMethod:    "PATCH",
+			HttpBody: []byte(`{
+				"card_number_id": "F1098765432"
+			}`),
+			MockParams: []interface{}{
 				1,
 				models.BuyerAttributes{
-					CardNumberID: ptrStr("F1098765432"),
+					CardNumberID: helpers.PtrStr("F1098765432"),
 				},
 			},
-			mockResponse: models.Buyer{},
-			mockError:    service.ErrBuyerAlreadyExists,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			MockResponse: models.Buyer{},
+			MockError:    service.ErrBuyerAlreadyExists,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusConflict,
 				Msg:  "ERR: A buyer already exists in the database with the card number ID: F1098765432",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusConflict,
+			ExpectedStatusCode: http.StatusConflict,
+			ExpectedCalls:      1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockService := new(service_mock.MockBuyerService)
+			helpers.InitServiceMock(t, test, &mockService)
+			assertBuyerHandler(t, test, mockService)
+
+			mockService.AssertExpectations(t)
+			mockService.AssertNumberOfCalls(
+				t,
+				test.ServiceMethod,
+				test.ExpectedCalls,
+			)
+		})
+	}
+}
+
+func TestBuyerDeleteHandler(t *testing.T) {
+	tests := []helpers.HandlerTestStruct{
+		{
+			Name:               "[Delete] OK Delete buyer",
+			ServiceMethod:      "Delete",
+			HttpPath:           "/api/v1/buyers/1",
+			HttpMethod:         "DELETE",
+			MockParams:         []interface{}{1},
+			ExpectedStatusCode: http.StatusNoContent,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Patch] Error Unexpected error",
-			serviceMethod: "Patch",
-			httpPath:      "/api/v1/buyers/1",
-			httpMethod:    "PATCH",
-			httpBody: map[string]interface{}{
-				"card_number_id": "M1234567876",
-			},
-			mockParams: []interface{}{
-				1,
-				models.BuyerAttributes{
-					CardNumberID: ptrStr("M1234567876"),
-				},
-			},
-			mockResponse: models.Buyer{},
-			mockError:    service.ErrBuyerUnexpectedError,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
-				Code: http.StatusInternalServerError,
-				Msg:  "ERR: An unexpected error occurred while processing the requested buyer, please try again later",
-				Data: nil,
-			},
-			expectedStatusCode: http.StatusInternalServerError,
-		},
-		{
-			name:               "[Delete] OK Delete buyer",
-			serviceMethod:      "Delete",
-			httpPath:           "/api/v1/buyers/1",
-			httpMethod:         "DELETE",
-			mockParams:         []interface{}{1},
-			mockResponse:       nil,
-			mockError:          nil,
-			expectedOutput:     nil,
-			expectedStatusCode: http.StatusNoContent,
-		},
-		{
-			name:          "[Delete] Error Buyer not found",
-			serviceMethod: "Delete",
-			httpPath:      "/api/v1/buyers/99",
-			httpMethod:    "DELETE",
-			mockParams:    []interface{}{99},
-			mockResponse:  nil,
-			mockError:     service.ErrBuyerDoesNotExist,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			Name:          "[Delete] Error Buyer not found",
+			ServiceMethod: "Delete",
+			HttpPath:      "/api/v1/buyers/99",
+			HttpMethod:    "DELETE",
+			MockParams:    []interface{}{99},
+			MockError:     service.ErrBuyerDoesNotExist,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusNotFound,
 				Msg:  "ERR: The requested buyer does not exist in the database for the ID: 99",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusNotFound,
+			ExpectedStatusCode: http.StatusNotFound,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Delete] Error Cannot delete buyer with orders",
-			serviceMethod: "Delete",
-			httpPath:      "/api/v1/buyers/1",
-			httpMethod:    "DELETE",
-			mockParams:    []interface{}{1},
-			mockResponse:  nil,
-			mockError:     service.ErrBuyerCannotDeleteBuyerWithOrders,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			Name:          "[Delete] Error Invalid ID",
+			ServiceMethod: "Delete",
+			HttpPath:      "/api/v1/buyers/InvalidID",
+			HttpMethod:    "DELETE",
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid buyer ID format",
+			},
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedCalls:      0,
+		},
+		{
+			Name:          "[Delete] Error Cannot delete buyer with orders",
+			ServiceMethod: "Delete",
+			HttpPath:      "/api/v1/buyers/1",
+			HttpMethod:    "DELETE",
+			MockParams:    []interface{}{1},
+			MockError:     service.ErrBuyerCannotDeleteBuyerWithOrders,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusConflict,
 				Msg:  "ERR: Cannot delete buyer with orders. Please delete the related purchase orders first",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusConflict,
+			ExpectedStatusCode: http.StatusConflict,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[Delete] Error Unexpected error",
-			serviceMethod: "Delete",
-			httpPath:      "/api/v1/buyers/1",
-			httpMethod:    "DELETE",
-			mockParams:    []interface{}{1},
-			mockResponse:  nil,
-			mockError:     service.ErrBuyerUnexpectedError,
-			expectedOutput: BuyerGenericStruct[*dto.BuyerDTO]{
+			Name:          "[Delete] Error Unexpected error",
+			ServiceMethod: "Delete",
+			HttpPath:      "/api/v1/buyers/1",
+			HttpMethod:    "DELETE",
+			MockParams:    []interface{}{1},
+			MockError:     service.ErrBuyerUnexpectedError,
+			ExpectedOutput: helpers.TestGenericStruct[*dto.BuyerDTO]{
 				Code: http.StatusInternalServerError,
 				Msg:  "ERR: An unexpected error occurred while processing the requested buyer, please try again later",
-				Data: nil,
 			},
-			expectedStatusCode: http.StatusInternalServerError,
+			ExpectedStatusCode: http.StatusInternalServerError,
+			ExpectedCalls:      1,
 		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			mockService := new(service_mock.MockBuyerService)
+			helpers.InitServiceMock(t, test, &mockService)
+			assertBuyerHandler(t, test, mockService)
+
+			mockService.AssertExpectations(t)
+			mockService.AssertNumberOfCalls(
+				t,
+				test.ServiceMethod,
+				test.ExpectedCalls,
+			)
+		})
+	}
+}
+
+func TestBuyerGetReportPurchaseOrdersHandler(t *testing.T) {
+	tests := []helpers.HandlerTestStruct{
 		{
-			name:          "[GetReportPurchaseOrders] Ok Get purchase order report",
-			serviceMethod: "GetReportPurchaseOrders",
-			httpPath:      "/api/v1/reportPurchaseOrders",
-			httpMethod:    "GET",
-			mockParams:    []interface{}{ptrIntNil()},
-			mockResponse: []models.ReportPurchaseOrders{
+			Name:          "[GetReportPurchaseOrders] Ok Get purchase order report",
+			ServiceMethod: "GetReportPurchaseOrders",
+			HttpPath:      "/api/v1/reportPurchaseOrders",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{helpers.PtrIntNil()},
+			MockResponse: []models.ReportPurchaseOrders{
 				{
 					ID:                  1,
 					CardNumberID:        "M1234567890",
@@ -516,7 +653,7 @@ func TestBuyerHandler(t *testing.T) {
 					PurchaseOrdersCount: 27,
 				},
 			},
-			expectedOutput: BuyerGenericStruct[[]dto.ReportPurchaseOrdersDTO]{
+			ExpectedOutput: helpers.TestGenericStruct[[]dto.ReportPurchaseOrdersDTO]{
 				Code: http.StatusOK,
 				Msg:  "Get all orders",
 				Data: []dto.ReportPurchaseOrdersDTO{
@@ -536,15 +673,45 @@ func TestBuyerHandler(t *testing.T) {
 					},
 				},
 			},
-			expectedStatusCode: http.StatusOK,
+			ExpectedStatusCode: http.StatusOK,
+			ExpectedCalls:      1,
 		},
 		{
-			name:          "[GetReportPurchaseOrders] Ok Get purchase order report by ID",
-			serviceMethod: "GetReportPurchaseOrders",
-			httpPath:      "/api/v1/reportPurchaseOrders?id=1",
-			httpMethod:    "GET",
-			mockParams:    []interface{}{ptrInt(1)},
-			mockResponse: []models.ReportPurchaseOrders{
+			Name:          "[GetReportPurchaseOrders] Error Invalid ID",
+			ServiceMethod: "GetReportPurchaseOrders",
+			HttpPath:      "/api/v1/reportPurchaseOrders?id=InvalidID",
+			HttpMethod:    "GET",
+			ExpectedOutput: helpers.TestGenericStruct[[]dto.ReportPurchaseOrdersDTO]{
+				Code: http.StatusBadRequest,
+				Msg:  "ERR: Invalid buyer ID format",
+				Data: nil,
+			},
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedCalls:      0,
+		},
+		{
+			Name:          "[GetReportPurchaseOrders] Error Unexpected error",
+			ServiceMethod: "GetReportPurchaseOrders",
+			HttpPath:      "/api/v1/reportPurchaseOrders?id=1",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{helpers.PtrInt(1)},
+			MockResponse:  make([]models.ReportPurchaseOrders, 0),
+			MockError:     service.ErrBuyerUnexpectedError,
+			ExpectedOutput: helpers.TestGenericStruct[[]dto.ReportPurchaseOrdersDTO]{
+				Code: http.StatusInternalServerError,
+				Msg:  "ERR: An unexpected error occurred while processing the requested buyer, please try again later",
+				Data: nil,
+			},
+			ExpectedStatusCode: http.StatusInternalServerError,
+			ExpectedCalls:      1,
+		},
+		{
+			Name:          "[GetReportPurchaseOrders] Ok Get purchase order report by ID",
+			ServiceMethod: "GetReportPurchaseOrders",
+			HttpPath:      "/api/v1/reportPurchaseOrders?id=1",
+			HttpMethod:    "GET",
+			MockParams:    []interface{}{helpers.PtrInt(1)},
+			MockResponse: []models.ReportPurchaseOrders{
 				{
 					ID:                  1,
 					CardNumberID:        "M1234567890",
@@ -553,7 +720,7 @@ func TestBuyerHandler(t *testing.T) {
 					PurchaseOrdersCount: 4,
 				},
 			},
-			expectedOutput: BuyerGenericStruct[[]dto.ReportPurchaseOrdersDTO]{
+			ExpectedOutput: helpers.TestGenericStruct[[]dto.ReportPurchaseOrdersDTO]{
 				Code: http.StatusOK,
 				Msg:  "Get all orders",
 				Data: []dto.ReportPurchaseOrdersDTO{
@@ -566,119 +733,23 @@ func TestBuyerHandler(t *testing.T) {
 					},
 				},
 			},
-			expectedStatusCode: http.StatusOK,
+			ExpectedStatusCode: http.StatusOK,
+			ExpectedCalls:      1,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
 			mockService := new(service_mock.MockBuyerService)
-
-			if tt.mockResponse != nil {
-				mockService.On(tt.serviceMethod, tt.mockParams...).
-					Return(tt.mockResponse, tt.mockError)
-			} else {
-				mockService.On(tt.serviceMethod, tt.mockParams...).Return(tt.mockError)
-			}
-
-			rt := chi.NewRouter()
-			buyerHandler := handlers.NewBuyerHandler(mockService)
-
-			switch tt.serviceMethod {
-			case "GetAll":
-				rt.Get("/api/v1/buyers", buyerHandler.GetAll())
-
-				result := getBuyerResult(t, rt, tt.httpPath, tt.httpMethod, nil)
-				responseDTO := getBuyerGenericStruct[BuyerGenericStruct[[]dto.BuyerDTO]](
-					t,
-					result.Body,
-				)
-				assertBuyerResponse(
-					t,
-					responseDTO,
-					result.StatusCode,
-					tt.expectedStatusCode,
-					tt.expectedOutput,
-				)
-
-			case "GetById":
-				rt.Get("/api/v1/buyers/{id}", buyerHandler.GetById())
-
-				result := getBuyerResult(t, rt, tt.httpPath, tt.httpMethod, nil)
-				responseDTO := getBuyerGenericStruct[BuyerGenericStruct[*dto.BuyerDTO]](
-					t,
-					result.Body,
-				)
-				assertBuyerResponse(
-					t,
-					responseDTO,
-					result.StatusCode,
-					tt.expectedStatusCode,
-					tt.expectedOutput,
-				)
-			case "Create":
-				rt.Post("/api/v1/buyers", buyerHandler.Create())
-
-				result := getBuyerResult(t, rt, tt.httpPath, tt.httpMethod, tt.httpBody)
-				responseDTO := getBuyerGenericStruct[BuyerGenericStruct[*dto.BuyerDTO]](
-					t,
-					result.Body,
-				)
-				assertBuyerResponse(
-					t,
-					responseDTO,
-					result.StatusCode,
-					tt.expectedStatusCode,
-					tt.expectedOutput,
-				)
-			case "Patch":
-				rt.Patch("/api/v1/buyers/{id}", buyerHandler.Patch())
-
-				result := getBuyerResult(t, rt, tt.httpPath, tt.httpMethod, tt.httpBody)
-				responseDTO := getBuyerGenericStruct[BuyerGenericStruct[*dto.BuyerDTO]](
-					t,
-					result.Body,
-				)
-				assertBuyerResponse(
-					t,
-					responseDTO,
-					result.StatusCode,
-					tt.expectedStatusCode,
-					tt.expectedOutput,
-				)
-			case "Delete":
-				rt.Delete("/api/v1/buyers/{id}", buyerHandler.Delete())
-
-				result := getBuyerResult(t, rt, tt.httpPath, tt.httpMethod, nil)
-				responseDTO := getBuyerGenericStruct[BuyerGenericStruct[*dto.BuyerDTO]](
-					t,
-					result.Body,
-				)
-				assertBuyerResponse(
-					t,
-					responseDTO,
-					result.StatusCode,
-					tt.expectedStatusCode,
-					tt.expectedOutput,
-				)
-			case "GetReportPurchaseOrders":
-				rt.Get("/api/v1/reportPurchaseOrders", buyerHandler.GetReportPurchaseOrders())
-
-				result := getBuyerResult(t, rt, tt.httpPath, tt.httpMethod, nil)
-				responseDTO := getBuyerGenericStruct[BuyerGenericStruct[[]dto.ReportPurchaseOrdersDTO]](
-					t,
-					result.Body,
-				)
-				assertBuyerResponse(
-					t,
-					responseDTO,
-					result.StatusCode,
-					tt.expectedStatusCode,
-					tt.expectedOutput,
-				)
-			}
+			helpers.InitServiceMock(t, test, &mockService)
+			assertBuyerHandler(t, test, mockService)
 
 			mockService.AssertExpectations(t)
+			mockService.AssertNumberOfCalls(
+				t,
+				test.ServiceMethod,
+				test.ExpectedCalls,
+			)
 		})
 	}
 }

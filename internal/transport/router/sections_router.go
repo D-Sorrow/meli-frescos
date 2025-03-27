@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -10,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitSectionsRouter(rt *chi.Mux, db *sql.DB) {
+func InitSectionsRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 
 	repositoryImp := repository.NewSectionsRepository(db)
 	serviceImp := service.NewSectionsService(repositoryImp)
@@ -18,11 +19,11 @@ func InitSectionsRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewSectionsHandler(serviceImp)
 
 	rt.Route("/sections", func(rt chi.Router) {
-		rt.Get("/", handler.GetSections())
-		rt.Get("/{id}", handler.GetSectionsById())
-		rt.Post("/", handler.SaveSections())
-		rt.Delete("/{id}", handler.DeleteSections())
-		//rt.Patch("/id", handler.UpdateSections())
+		rt.Get("/", handler.GetSections(ctx))
+		rt.Get("/{id}", handler.GetSectionsById(ctx))
+		rt.Post("/", handler.SaveSections(ctx))
+		rt.Delete("/{id}", handler.DeleteSections(ctx))
+		//rt.Patch("/id", handler.UpdateSections(ctx))
 
 	})
 

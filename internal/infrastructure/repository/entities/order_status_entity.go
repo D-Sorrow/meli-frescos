@@ -1,7 +1,7 @@
 package entities
 
 type OrderStatusEntity struct {
-	ID          int
+	ID          int64
 	Description string
 }
 

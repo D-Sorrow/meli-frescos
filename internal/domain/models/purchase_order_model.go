@@ -1,10 +1,10 @@
 package models
 
 type PurchaseOrderFKs struct {
-	BuyerID       int
-	CarrierID     int
-	OrderStatusID int
-	WarehouseID   int
+	BuyerID       int64
+	CarrierID     int64
+	OrderStatusID int64
+	WarehouseID   int64
 }
 
 type PurchaseOrderAttributes struct {
@@ -19,7 +19,7 @@ type PurchaseOrderAttributesFKs struct {
 }
 
 type PurchaseOrder struct {
-	ID int
+	ID int64
 	PurchaseOrderAttributes
 	PurchaseOrderFKs
 }

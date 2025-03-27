@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func NewOrderStatusRouter(rt *chi.Mux, db *sql.DB) {
+func NewOrderStatusRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 	orderStatusRepo := repository.NewOrderStatusRepository(db)
 
 	orderStatusService := service.NewOrderStatusService(orderStatusRepo)
@@ -17,6 +18,6 @@ func NewOrderStatusRouter(rt *chi.Mux, db *sql.DB) {
 	orderStatusHandler := handler.NewOrderStatusHandler(orderStatusService)
 
 	rt.Route("/api/v1/orderStatus", func(rt chi.Router) {
-		rt.Get("/", orderStatusHandler.GetAll())
+		rt.Get("/", orderStatusHandler.GetAll(ctx))
 	})
 }

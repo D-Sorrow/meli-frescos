@@ -1,8 +1,11 @@
 package error_management
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"context"
 	"net/http"
+
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 )
 
 type ErrHandlerProduct struct {
@@ -17,9 +20,18 @@ const (
 )
 
 var productHandlerErrors = map[error]ErrHandlerProduct{
-	service.ErrServiceProductNotFound:      {Message: messageProductNotFound, Code: http.StatusNotFound},
-	service.ErrServiceProductUnknown:       {Message: messageProductUnknown, Code: http.StatusInternalServerError},
-	service.ErrServiceProductAlreadyExists: {Message: messageProductAlreadyExists, Code: http.StatusConflict},
+	service.ErrServiceProductNotFound: {
+		Message: messageProductNotFound,
+		Code:    http.StatusNotFound,
+	},
+	service.ErrServiceProductUnknown: {
+		Message: messageProductUnknown,
+		Code:    http.StatusInternalServerError,
+	},
+	service.ErrServiceProductAlreadyExists: {
+		Message: messageProductAlreadyExists,
+		Code:    http.StatusConflict,
+	},
 }
 
 func (e *ErrHandlerProduct) Error() string {
@@ -34,7 +46,9 @@ func getErrorProduct(err error) ErrHandlerProduct {
 	}
 	return productHandlerErrors[service.ErrServiceProductNotFound]
 }
-func HandlerErrorProduct(err error) ErrHandlerProduct {
+func HandlerErrorProduct(err error, ctx *context.Context) ErrHandlerProduct {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	switch err.(type) {
 	default:
 		return getErrorProduct(err)

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -10,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitWarehouseRouter(rt *chi.Mux, db *sql.DB) {
+func InitWarehouseRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 
 	// Load data from json file
 	// loader := loader.NewWarehouseJSONFile("docs/db/warehouse_data.json")
@@ -27,10 +28,10 @@ func InitWarehouseRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewWarehouseHandler(serviceImp)
 
 	rt.Route("/api/v1/warehouses", func(rt chi.Router) {
-		rt.Get("/", handler.GetWarehouses())
-		rt.Get("/{id}", handler.GetWarehouseById())
-		rt.Delete("/{id}", handler.DeleteWarehouse())
-		rt.Post("/", handler.CreateWarehouse())
-		rt.Patch("/{id}", handler.PatchWarehouse())
+		rt.Get("/", handler.GetWarehouses(ctx))
+		rt.Get("/{id}", handler.GetWarehouseById(ctx))
+		rt.Delete("/{id}", handler.DeleteWarehouse(ctx))
+		rt.Post("/", handler.CreateWarehouse(ctx))
+		rt.Patch("/{id}", handler.PatchWarehouse(ctx))
 	})
 }

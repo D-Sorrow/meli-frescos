@@ -98,7 +98,8 @@ func (b *BuyerRepository) Create(
 		return
 	}
 
-	newBuyer, err = b.GetById(int(lastId))
+	buyer.ID = lastId
+	newBuyer = buyer
 	return
 }
 

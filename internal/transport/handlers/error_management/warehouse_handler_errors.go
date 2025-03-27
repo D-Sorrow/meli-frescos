@@ -1,10 +1,12 @@
 package error_management
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 )
 
 const (
@@ -70,7 +72,9 @@ var warehouseHandlerErrors = map[error]HandlerErrorWarehouse{
 	},
 }
 
-func HandleErrorWarehouse(err error) HandlerErrorWarehouse {
+func HandleErrorWarehouse(err error, ctx *context.Context) HandlerErrorWarehouse {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	switch {
 	case errors.Is(err, service.ErrWarehouseNotFound):
 		return warehouseHandlerErrors[err]

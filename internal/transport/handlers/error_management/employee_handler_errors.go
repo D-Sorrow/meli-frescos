@@ -1,12 +1,14 @@
 package error_management
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -29,12 +31,30 @@ type HandlerErrorEmployee struct {
 }
 
 var employeeHandlerErrors = map[error]HandlerErrorEmployee{
-	service.ErrEmployeeNotFound:       {Code: http.StatusNotFound, Message: messageEmployeeNotFoundError},
-	service.ErrEmployeeAlreadyExists:  {Code: http.StatusConflict, Message: messageEmployeeAlreadyExistsError},
-	service.ErrEmployeeDecodingError:  {Code: http.StatusBadRequest, Message: messageEmployeeIdNotValidError},
-	service.ErrEmployeeServiceDefault: {Code: http.StatusInternalServerError, Message: messageEmployeeInternalError},
-	ErrEmployeeBodyDecoding:           {Code: http.StatusBadRequest, Message: messageEmployeeBodyMalformedError},
-	ErrEmployeeHandlerDefault:         {Code: http.StatusInternalServerError, Message: messageEmployeeInternalError},
+	service.ErrEmployeeNotFound: {
+		Code:    http.StatusNotFound,
+		Message: messageEmployeeNotFoundError,
+	},
+	service.ErrEmployeeAlreadyExists: {
+		Code:    http.StatusConflict,
+		Message: messageEmployeeAlreadyExistsError,
+	},
+	service.ErrEmployeeDecodingError: {
+		Code:    http.StatusBadRequest,
+		Message: messageEmployeeIdNotValidError,
+	},
+	service.ErrEmployeeServiceDefault: {
+		Code:    http.StatusInternalServerError,
+		Message: messageEmployeeInternalError,
+	},
+	ErrEmployeeBodyDecoding: {
+		Code:    http.StatusBadRequest,
+		Message: messageEmployeeBodyMalformedError,
+	},
+	ErrEmployeeHandlerDefault: {
+		Code:    http.StatusInternalServerError,
+		Message: messageEmployeeInternalError,
+	},
 }
 
 func getErrorEmployee(err error) HandlerErrorEmployee {
@@ -44,7 +64,9 @@ func getErrorEmployee(err error) HandlerErrorEmployee {
 	return employeeHandlerErrors[ErrEmployeeHandlerDefault]
 }
 
-func HandleErrorEmployee(err error) HandlerErrorEmployee {
+func HandleErrorEmployee(err error, ctx *context.Context) HandlerErrorEmployee {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	switch e := err.(type) {
 	case *strconv.NumError:
 		return HandlerErrorEmployee{

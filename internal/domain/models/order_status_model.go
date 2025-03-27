@@ -5,6 +5,6 @@ type OrderStatusAttributes struct {
 }
 
 type OrderStatus struct {
-	ID int
+	ID int64
 	OrderStatusAttributes
 }

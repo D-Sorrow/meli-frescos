@@ -1,11 +1,13 @@
 package error_management
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -31,14 +33,38 @@ type HandlerErrorInboundOrder struct {
 }
 
 var inboundOrderServiceErrors = map[error]HandlerErrorInboundOrder{
-	service.ErrInboundOrderNumberAlreadyExists:    {Code: http.StatusConflict, Message: messageInboundOrderNumberAlreadyExistsError},
-	service.ErrInboundOrderEmployeeIdNotFound:     {Code: http.StatusConflict, Message: messageInboundOrderEmployeeIdNotExistsError},
-	service.ErrInboundOrderProductBatchIdNotFound: {Code: http.StatusConflict, Message: messageInboundOrderProductBatchIdNotExistsError},
-	service.ErrInboundOrderWareHouseIdNotFound:    {Code: http.StatusConflict, Message: messageInboundOrderWareHouseIdNotExistsError},
-	service.ErrInboundOrderLastInsertId:           {Code: http.StatusInternalServerError, Message: messageInboundOrderLastInsertIdError},
-	service.ErrInboundOrderServiceGeneric:         {Code: http.StatusInternalServerError, Message: messageInboundOrderInternalServerError},
-	service.ErrInboundOrderDateInvalid:            {Code: http.StatusBadRequest, Message: messageInboundOrderDateFormatError},
-	ErrInboundOrderBodyDecoding:                   {Code: http.StatusBadRequest, Message: messageInboundOrderBodyMalformedError},
+	service.ErrInboundOrderNumberAlreadyExists: {
+		Code:    http.StatusConflict,
+		Message: messageInboundOrderNumberAlreadyExistsError,
+	},
+	service.ErrInboundOrderEmployeeIdNotFound: {
+		Code:    http.StatusConflict,
+		Message: messageInboundOrderEmployeeIdNotExistsError,
+	},
+	service.ErrInboundOrderProductBatchIdNotFound: {
+		Code:    http.StatusConflict,
+		Message: messageInboundOrderProductBatchIdNotExistsError,
+	},
+	service.ErrInboundOrderWareHouseIdNotFound: {
+		Code:    http.StatusConflict,
+		Message: messageInboundOrderWareHouseIdNotExistsError,
+	},
+	service.ErrInboundOrderLastInsertId: {
+		Code:    http.StatusInternalServerError,
+		Message: messageInboundOrderLastInsertIdError,
+	},
+	service.ErrInboundOrderServiceGeneric: {
+		Code:    http.StatusInternalServerError,
+		Message: messageInboundOrderInternalServerError,
+	},
+	service.ErrInboundOrderDateInvalid: {
+		Code:    http.StatusBadRequest,
+		Message: messageInboundOrderDateFormatError,
+	},
+	ErrInboundOrderBodyDecoding: {
+		Code:    http.StatusBadRequest,
+		Message: messageInboundOrderBodyMalformedError,
+	},
 }
 
 func getInboundOrderErrorMessage(err error) HandlerErrorInboundOrder {
@@ -48,7 +74,9 @@ func getInboundOrderErrorMessage(err error) HandlerErrorInboundOrder {
 	return inboundOrderServiceErrors[service.ErrInboundOrderServiceGeneric]
 }
 
-func HandleErrorInboundOrder(err error) HandlerErrorInboundOrder {
+func HandleErrorInboundOrder(err error, ctx *context.Context) HandlerErrorInboundOrder {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	switch e := err.(type) {
 	case validator.ValidationErrors:
 		errors := "Validación fallida: "

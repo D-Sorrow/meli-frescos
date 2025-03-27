@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -25,11 +26,11 @@ func NewHandlerService(service service.SellerService) *HandlerSeller {
 	return &HandlerSeller{service: service, validate: validator.New()}
 }
 
-func (hand *HandlerSeller) GetSellers() http.HandlerFunc {
+func (hand *HandlerSeller) GetSellers(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		mapSeller, err := hand.service.GetSellers()
 		if err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
+			sellerError := error_management.HandleErrorSeller(err, ctx)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,
 				Msg:  sellerError.Msg,
@@ -51,7 +52,7 @@ func (hand *HandlerSeller) GetSellers() http.HandlerFunc {
 	}
 }
 
-func (hand *HandlerSeller) GetSeller() http.HandlerFunc {
+func (hand *HandlerSeller) GetSeller(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -64,7 +65,7 @@ func (hand *HandlerSeller) GetSeller() http.HandlerFunc {
 		}
 		seller, err := hand.service.GetSellerById(id)
 		if err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
+			sellerError := error_management.HandleErrorSeller(err, ctx)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,
 				Msg:  sellerError.Msg,
@@ -81,7 +82,7 @@ func (hand *HandlerSeller) GetSeller() http.HandlerFunc {
 	}
 }
 
-func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
+func (hand *HandlerSeller) CreateSeller(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var sellerDto dto.SellerDto
 
@@ -93,7 +94,7 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 					Data: nil,
 				})
 			} else {
-				sellerError := error_management.HandleErrorSeller(err)
+				sellerError := error_management.HandleErrorSeller(err, ctx)
 				response.JSON(w, sellerError.Code, dto.ResponseDTO{
 					Code: sellerError.Code,
 					Msg:  sellerError.Msg,
@@ -104,7 +105,7 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 		}
 
 		if err := hand.validate.Struct(sellerDto); err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
+			sellerError := error_management.HandleErrorSeller(err, ctx)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,
 				Msg:  sellerError.Msg,
@@ -115,7 +116,7 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 
 		seller, err := hand.service.CreateSeller(mappers.MapperToSeller(sellerDto))
 		if err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
+			sellerError := error_management.HandleErrorSeller(err, ctx)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,
 				Msg:  sellerError.Msg,
@@ -133,7 +134,7 @@ func (hand *HandlerSeller) CreateSeller() http.HandlerFunc {
 	}
 }
 
-func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
+func (hand *HandlerSeller) UpdateSeller(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -148,7 +149,7 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 		var sellerDto dto.SellerUpdateDto
 
 		if err := json.NewDecoder(r.Body).Decode(&sellerDto); err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
+			sellerError := error_management.HandleErrorSeller(err, ctx)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,
 				Msg:  sellerError.Msg,
@@ -158,7 +159,7 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 		}
 
 		if err := hand.validate.Struct(sellerDto); err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
+			sellerError := error_management.HandleErrorSeller(err, ctx)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,
 				Msg:  sellerError.Msg,
@@ -169,7 +170,7 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 
 		seller, err := hand.service.UpdateSeller(id, mappers.MapperToSellerPatch(sellerDto))
 		if err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
+			sellerError := error_management.HandleErrorSeller(err, ctx)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,
 				Msg:  sellerError.Msg,
@@ -187,7 +188,7 @@ func (hand *HandlerSeller) UpdateSeller() http.HandlerFunc {
 	}
 }
 
-func (hand *HandlerSeller) DeleteSeller() http.HandlerFunc {
+func (hand *HandlerSeller) DeleteSeller(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -201,7 +202,7 @@ func (hand *HandlerSeller) DeleteSeller() http.HandlerFunc {
 
 		err = hand.service.DeleteSeller(id)
 		if err != nil {
-			sellerError := error_management.HandleErrorSeller(err)
+			sellerError := error_management.HandleErrorSeller(err, ctx)
 			response.JSON(w, sellerError.Code, dto.ResponseDTO{
 				Code: sellerError.Code,
 				Msg:  sellerError.Msg,

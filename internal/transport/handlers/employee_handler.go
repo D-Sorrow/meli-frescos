@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -27,12 +28,12 @@ func NewEmployeeHandler(service service.EmployeeService) *EmployeeHandler {
 	}
 }
 
-func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
+func (handler *EmployeeHandler) GetEmployees(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		employees, err := handler.service.GetEmployees()
 
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 		var employeesDto []dto.EmployeeDTO
@@ -45,12 +46,12 @@ func (handler *EmployeeHandler) GetEmployees() http.HandlerFunc {
 	}
 }
 
-func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
+func (handler *EmployeeHandler) GetEmployeeById(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -58,7 +59,7 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 		employeeDto := mappers.EmployeeModelToDTO(employee)
 
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -66,19 +67,19 @@ func (handler *EmployeeHandler) GetEmployeeById() http.HandlerFunc {
 	}
 }
 
-func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
+func (handler *EmployeeHandler) CreateEmployee(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var employeeToCreate dto.EmployeeRequestDTO
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&employeeToCreate); err != nil {
-			handler.handleError(w, error_management.ErrEmployeeBodyDecoding)
+			handler.handleError(w, error_management.ErrEmployeeBodyDecoding, ctx)
 			return
 		}
 
 		if err := handler.validator.Struct(employeeToCreate); err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -86,7 +87,7 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 		employeeCreated, err := handler.service.CreateEmployee(*employeeModel)
 
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -95,12 +96,12 @@ func (handler *EmployeeHandler) CreateEmployee() http.HandlerFunc {
 	}
 }
 
-func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
+func (handler *EmployeeHandler) UpdateEmployee(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -108,7 +109,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 		if err := decoder.Decode(&employeePatchRequestDTO); err != nil {
-			handler.handleError(w, error_management.ErrEmployeeBodyDecoding)
+			handler.handleError(w, error_management.ErrEmployeeBodyDecoding, ctx)
 			return
 		}
 
@@ -116,7 +117,7 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 		employeeUpdated, err := handler.service.UpdateEmployee(id, *employeePatchRequestModel)
 
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -125,18 +126,18 @@ func (handler *EmployeeHandler) UpdateEmployee() http.HandlerFunc {
 	}
 }
 
-func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
+func (handler *EmployeeHandler) DeleteEmployee(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		employeeIdString := chi.URLParam(r, "id")
 		employeeId, err := strconv.Atoi(employeeIdString)
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
 		errorService := handler.service.DeleteEmployee(employeeId)
 		if errorService != nil {
-			handler.handleError(w, errorService)
+			handler.handleError(w, errorService, ctx)
 			return
 		}
 
@@ -144,7 +145,9 @@ func (handler *EmployeeHandler) DeleteEmployee() http.HandlerFunc {
 	}
 }
 
-func (handler *EmployeeHandler) GetReportInboundOrdersByEmployee() http.HandlerFunc {
+func (handler *EmployeeHandler) GetReportInboundOrdersByEmployee(
+	ctx *context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idString := r.URL.Query().Get("id")
 		fmt.Printf("id: %s", idString)
@@ -157,7 +160,7 @@ func (handler *EmployeeHandler) GetReportInboundOrdersByEmployee() http.HandlerF
 		}
 
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -173,7 +176,11 @@ func respondWithJSON[T any](w http.ResponseWriter, code int, msg string, data T)
 	})
 }
 
-func (handler *EmployeeHandler) handleError(w http.ResponseWriter, err error) {
-	errorEmployee := error_management.HandleErrorEmployee(err)
+func (handler *EmployeeHandler) handleError(
+	w http.ResponseWriter,
+	err error,
+	ctx *context.Context,
+) {
+	errorEmployee := error_management.HandleErrorEmployee(err, ctx)
 	respondWithJSON(w, errorEmployee.Code, errorEmployee.Message, (*dto.EmployeeDTO)(nil))
 }

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitSellerRouter(rt *chi.Mux, db *sql.DB) {
+func InitSellerRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 
 	repositoryImp := repository.NewSellerRepository(db)
 
@@ -18,10 +19,10 @@ func InitSellerRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewHandlerService(serviceImp)
 
 	rt.Route("/api/v1/sellers", func(rt chi.Router) {
-		rt.Get("/", handler.GetSellers())
-		rt.Get("/{id}", handler.GetSeller())
-		rt.Post("/", handler.CreateSeller())
-		rt.Patch("/{id}", handler.UpdateSeller())
-		rt.Delete("/{id}", handler.DeleteSeller())
+		rt.Get("/", handler.GetSellers(ctx))
+		rt.Get("/{id}", handler.GetSeller(ctx))
+		rt.Post("/", handler.CreateSeller(ctx))
+		rt.Patch("/{id}", handler.UpdateSeller(ctx))
+		rt.Delete("/{id}", handler.DeleteSeller(ctx))
 	})
 }

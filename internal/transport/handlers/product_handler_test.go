@@ -2,19 +2,21 @@ package handlers_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	service2 "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
 	modelsMock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	"github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
+	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 type testCase struct {
@@ -26,6 +28,8 @@ type testCase struct {
 }
 
 func TestProductHandler_SaveProduct(t *testing.T) {
+	ctx := context.Background()
+
 	testCases := []testCase{
 		{
 			name:           "Success",
@@ -70,14 +74,15 @@ func TestProductHandler_SaveProduct(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockService := new(service_mock.ProductServiceMock)
 			if tc.mockServiceReturn == nil {
-				mockService.On("SaveProduct", modelsMock.ReturnMockProductModel()).Return(tc.mockServiceReturn[0])
+				mockService.On("SaveProduct", modelsMock.ReturnMockProductModel()).
+					Return(tc.mockServiceReturn[0])
 			} else {
 				mockService.On("SaveProduct", mock.Anything).Return(tc.mockServiceReturn[0])
 			}
 
 			handler := handlers.NewProductHandler(mockService)
 			router := chi.NewRouter()
-			router.Post("/api/v1/products", handler.SaveProduct())
+			router.Post("/api/v1/products", handler.SaveProduct(&ctx))
 
 			var productJSON []byte
 			if tc.requestPayload != nil {
@@ -98,6 +103,8 @@ func TestProductHandler_SaveProduct(t *testing.T) {
 	}
 }
 func TestProductHandler_GetProductByID(t *testing.T) {
+	ctx := context.Background()
+
 	testCases := []testCase{
 		{
 			name:           "GetProductsById_NonExistent",
@@ -131,15 +138,20 @@ func TestProductHandler_GetProductByID(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockService := new(service_mock.ProductServiceMock)
 			if tc.mockServiceReturn != nil {
-				mockService.On("GetProductByID", 1).Return(tc.mockServiceReturn[0], tc.mockServiceReturn[1])
+				mockService.On("GetProductByID", 1).
+					Return(tc.mockServiceReturn[0], tc.mockServiceReturn[1])
 			}
 
 			handler := handlers.NewProductHandler(mockService)
 
 			router := chi.NewRouter()
-			router.Get("/api/v1/products/{id}", handler.GetProductByID())
+			router.Get("/api/v1/products/{id}", handler.GetProductByID(&ctx))
 
-			req := httptest.NewRequest("GET", fmt.Sprint("/api/v1/products/", tc.requestPayload), nil)
+			req := httptest.NewRequest(
+				"GET",
+				fmt.Sprint("/api/v1/products/", tc.requestPayload),
+				nil,
+			)
 			rec := httptest.NewRecorder()
 			router.ServeHTTP(rec, req)
 
@@ -149,13 +161,15 @@ func TestProductHandler_GetProductByID(t *testing.T) {
 	}
 }
 func TestProductHandler_GetProducts(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("GetProducts").Return(modelsMock.ReturnProductModelMap(), nil)
 
 	handler := handlers.NewProductHandler(mockService)
 
 	router := chi.NewRouter()
-	router.Get("/api/v1/products", handler.GetProducts())
+	router.Get("/api/v1/products", handler.GetProducts(&ctx))
 
 	req := httptest.NewRequest("GET", "/api/v1/products", nil)
 	rec := httptest.NewRecorder()
@@ -165,13 +179,16 @@ func TestProductHandler_GetProducts(t *testing.T) {
 	mockService.AssertNumberOfCalls(t, "GetProducts", 1)
 }
 func TestProductHandler_GetProducts_Err(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
-	mockService.On("GetProducts").Return(modelsMock.ReturnProductModelMap(), service2.ErrServiceProductUnknown)
+	mockService.On("GetProducts").
+		Return(modelsMock.ReturnProductModelMap(), service2.ErrServiceProductUnknown)
 
 	handler := handlers.NewProductHandler(mockService)
 
 	router := chi.NewRouter()
-	router.Get("/api/v1/products", handler.GetProducts())
+	router.Get("/api/v1/products", handler.GetProducts(&ctx))
 
 	req := httptest.NewRequest("GET", "/api/v1/products", nil)
 	rec := httptest.NewRecorder()
@@ -182,14 +199,17 @@ func TestProductHandler_GetProducts_Err(t *testing.T) {
 }
 
 func TestProductHandler_UpdateProduct(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
-	mockService.On("UpdateProduct", mock.Anything, mock.Anything).Return(modelsMock.ReturnMockProductModel(), nil)
+	mockService.On("UpdateProduct", mock.Anything, mock.Anything).
+		Return(modelsMock.ReturnMockProductModel(), nil)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
 
 	attributeJSON, _ := json.Marshal(modelsMock.ReturnAttributesModel())
-	router.Patch("/api/v1/products/{id}", handler.UpdateProduct())
+	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
 	req := httptest.NewRequest("PATCH", "/api/v1/products/1", bytes.NewBuffer(attributeJSON))
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -199,14 +219,17 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 }
 
 func TestProductHandler_UpdateProduct_NonExistent(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
-	mockService.On("UpdateProduct", mock.Anything, mock.Anything).Return(modelsMock.ReturnMockProductModel(), service2.ErrServiceProductNotFound)
+	mockService.On("UpdateProduct", mock.Anything, mock.Anything).
+		Return(modelsMock.ReturnMockProductModel(), service2.ErrServiceProductNotFound)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
 
 	attributeJSON, _ := json.Marshal(modelsMock.ReturnAttributesModel())
-	router.Patch("/api/v1/products/{id}", handler.UpdateProduct())
+	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
 	req := httptest.NewRequest("PATCH", "/api/v1/products/1", bytes.NewBuffer(attributeJSON))
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -215,13 +238,15 @@ func TestProductHandler_UpdateProduct_NonExistent(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 func TestProductHandler_UpdateProduct_IdInvalid(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
 
 	attributeJSON, _ := json.Marshal(modelsMock.ReturnAttributesModel())
-	router.Patch("/api/v1/products/{id}", handler.UpdateProduct())
+	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
 	req := httptest.NewRequest("PATCH", "/api/v1/products/1A", bytes.NewBuffer(attributeJSON))
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -230,13 +255,19 @@ func TestProductHandler_UpdateProduct_IdInvalid(t *testing.T) {
 }
 
 func TestProductHandler_UpdateProduct_DecoderErr(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
 
-	router.Patch("/api/v1/products/{id}", handler.UpdateProduct())
-	req := httptest.NewRequest("PATCH", "/api/v1/products/1", bytes.NewBuffer([]byte("invalid_json")))
+	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
+	req := httptest.NewRequest(
+		"PATCH",
+		"/api/v1/products/1",
+		bytes.NewBuffer([]byte("invalid_json")),
+	)
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
@@ -245,6 +276,8 @@ func TestProductHandler_UpdateProduct_DecoderErr(t *testing.T) {
 }
 
 func TestProductHandler_UpdateProduct_ErrValidation(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
 	att := modelsMock.ReturnAttributesModel()
 	att.FreezingRate = 10
@@ -253,7 +286,7 @@ func TestProductHandler_UpdateProduct_ErrValidation(t *testing.T) {
 	router := chi.NewRouter()
 
 	attributeJSON, _ := json.Marshal(att)
-	router.Patch("/api/v1/products/{id}", handler.UpdateProduct())
+	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
 	req := httptest.NewRequest("PATCH", "/api/v1/products/1", bytes.NewBuffer(attributeJSON))
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -263,13 +296,15 @@ func TestProductHandler_UpdateProduct_ErrValidation(t *testing.T) {
 }
 
 func TestProductHandler_DeleteProduct_NonExistent(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("DeleteProduct", 1).Return(service2.ErrServiceProductNotFound)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
 
-	router.Delete("/api/v1/products/{id}", handler.DeleteProduct())
+	router.Delete("/api/v1/products/{id}", handler.DeleteProduct(&ctx))
 	req := httptest.NewRequest("DELETE", "/api/v1/products/1", nil)
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -278,13 +313,15 @@ func TestProductHandler_DeleteProduct_NonExistent(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 func TestProductHandler_DeleteProduct_Existent(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
 	mockService.On("DeleteProduct", 1).Return(nil)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
 
-	router.Delete("/api/v1/products/{id}", handler.DeleteProduct())
+	router.Delete("/api/v1/products/{id}", handler.DeleteProduct(&ctx))
 	req := httptest.NewRequest("DELETE", "/api/v1/products/1", nil)
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -294,12 +331,14 @@ func TestProductHandler_DeleteProduct_Existent(t *testing.T) {
 }
 
 func TestProductHandler_DeleteProduct_IdInvalid(t *testing.T) {
+	ctx := context.Background()
+
 	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
 	router := chi.NewRouter()
 
-	router.Delete("/api/v1/products/{id}", handler.DeleteProduct())
+	router.Delete("/api/v1/products/{id}", handler.DeleteProduct(&ctx))
 	req := httptest.NewRequest("DELETE", "/api/v1/products/1A", nil)
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)

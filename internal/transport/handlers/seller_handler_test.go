@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
+	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -68,6 +69,7 @@ type testCaseServiceMock struct {
 }
 
 func TestSellerHandlerCreate(t *testing.T) {
+	ctx := context.Background()
 
 	testCases := []testCaseSeller{
 		{name: "Create Seller - Successfully",
@@ -131,11 +133,12 @@ func TestSellerHandlerCreate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockService := new(service_mock.SellerServiceMock)
 
-			mockService.On("CreateSeller", tc.requestServiceMock).Return(tc.responseServiceMock, tc.errorServiceMock)
+			mockService.On("CreateSeller", tc.requestServiceMock).
+				Return(tc.responseServiceMock, tc.errorServiceMock)
 
 			handler := handlers.NewHandlerService(mockService)
 			router := chi.NewRouter()
-			router.Post("/api/v1/sellers", handler.CreateSeller())
+			router.Post("/api/v1/sellers", handler.CreateSeller(&ctx))
 
 			var sellerJSON []byte
 			if tc.requestPayloadBody != nil {
@@ -158,6 +161,7 @@ func TestSellerHandlerCreate(t *testing.T) {
 }
 
 func TestSellerHandlerReadAll(t *testing.T) {
+	ctx := context.Background()
 	sellersFakeMap := make(map[int]models.Seller)
 	sellersFakeMap[1] = SellerFake
 
@@ -194,7 +198,7 @@ func TestSellerHandlerReadAll(t *testing.T) {
 
 			handler := handlers.NewHandlerService(mockService)
 			router := chi.NewRouter()
-			router.Get("/api/v1/sellers", handler.GetSellers())
+			router.Get("/api/v1/sellers", handler.GetSellers(&ctx))
 
 			req := httptest.NewRequest("GET", "/api/v1/sellers", nil)
 			res := httptest.NewRecorder()
@@ -208,6 +212,8 @@ func TestSellerHandlerReadAll(t *testing.T) {
 }
 
 func TestSellerHandlerRead(t *testing.T) {
+	ctx := context.Background()
+
 	testCases := []testCaseSeller{
 		{name: "Find By ID - Seller No Exists",
 			testCaseServiceMock: testCaseServiceMock{
@@ -249,13 +255,18 @@ func TestSellerHandlerRead(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockService := new(service_mock.SellerServiceMock)
 
-			mockService.On("GetSellerById", tc.requestServiceMock).Return(tc.responseServiceMock, tc.errorServiceMock)
+			mockService.On("GetSellerById", tc.requestServiceMock).
+				Return(tc.responseServiceMock, tc.errorServiceMock)
 
 			handler := handlers.NewHandlerService(mockService)
 			router := chi.NewRouter()
-			router.Get("/api/v1/sellers/{id}", handler.GetSeller())
+			router.Get("/api/v1/sellers/{id}", handler.GetSeller(&ctx))
 
-			req := httptest.NewRequest("GET", fmt.Sprint("/api/v1/sellers/", tc.requestUrlParams), nil)
+			req := httptest.NewRequest(
+				"GET",
+				fmt.Sprint("/api/v1/sellers/", tc.requestUrlParams),
+				nil,
+			)
 			res := httptest.NewRecorder()
 			router.ServeHTTP(res, req)
 
@@ -267,6 +278,8 @@ func TestSellerHandlerRead(t *testing.T) {
 }
 
 func TestSellerHandlerUpdate(t *testing.T) {
+	ctx := context.Background()
+
 	testCases := []testCaseSeller{
 		{name: "Update Seller by Id - Successfully",
 			testCaseServiceMock: testCaseServiceMock{
@@ -334,11 +347,12 @@ func TestSellerHandlerUpdate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockService := new(service_mock.SellerServiceMock)
 
-			mockService.On("UpdateSeller", tc.requestUrlParams, tc.requestServiceMock).Return(tc.responseServiceMock, tc.errorServiceMock)
+			mockService.On("UpdateSeller", tc.requestUrlParams, tc.requestServiceMock).
+				Return(tc.responseServiceMock, tc.errorServiceMock)
 
 			handler := handlers.NewHandlerService(mockService)
 			router := chi.NewRouter()
-			router.Patch("/api/v1/sellers/{id}", handler.UpdateSeller())
+			router.Patch("/api/v1/sellers/{id}", handler.UpdateSeller(&ctx))
 
 			var sellerJSON []byte
 			if tc.requestPayloadBody != nil {
@@ -349,7 +363,11 @@ func TestSellerHandlerUpdate(t *testing.T) {
 				}
 			}
 
-			req := httptest.NewRequest("PATCH", fmt.Sprint("/api/v1/sellers/", tc.requestUrlParams), bytes.NewBuffer(sellerJSON))
+			req := httptest.NewRequest(
+				"PATCH",
+				fmt.Sprint("/api/v1/sellers/", tc.requestUrlParams),
+				bytes.NewBuffer(sellerJSON),
+			)
 			res := httptest.NewRecorder()
 			router.ServeHTTP(res, req)
 
@@ -360,6 +378,8 @@ func TestSellerHandlerUpdate(t *testing.T) {
 }
 
 func TestSellerHandlerDelete(t *testing.T) {
+	ctx := context.Background()
+
 	testCases := []testCaseSeller{
 		{name: "Delete Seller by Id - Successfully",
 			testCaseServiceMock: testCaseServiceMock{
@@ -404,9 +424,13 @@ func TestSellerHandlerDelete(t *testing.T) {
 
 			handler := handlers.NewHandlerService(mockService)
 			router := chi.NewRouter()
-			router.Delete("/api/v1/sellers/{id}", handler.DeleteSeller())
+			router.Delete("/api/v1/sellers/{id}", handler.DeleteSeller(&ctx))
 
-			req := httptest.NewRequest("DELETE", fmt.Sprint("/api/v1/sellers/", tc.requestUrlParams), nil)
+			req := httptest.NewRequest(
+				"DELETE",
+				fmt.Sprint("/api/v1/sellers/", tc.requestUrlParams),
+				nil,
+			)
 			res := httptest.NewRecorder()
 			router.ServeHTTP(res, req)
 

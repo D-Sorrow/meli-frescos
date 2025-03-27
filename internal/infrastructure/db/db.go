@@ -21,12 +21,13 @@ var (
 
 func Connect(cfg *config.Config) *sql.DB {
 	connStr := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?parseTime=true&tls=true",
+		"%s:%s@tcp(%s:%d)/%s?parseTime=true&tls=%t",
 		cfg.User,
 		cfg.Passwd,
 		cfg.Addr,
 		cfg.Port,
 		cfg.DBName,
+		cfg.TLS,
 	)
 
 	db, err := sql.Open("mysql", connStr)

@@ -1,6 +1,7 @@
 package error_management
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -29,6 +30,7 @@ func HandleOrderStatusHandlerError(
 	err error,
 	messages map[string]string,
 	args map[string]interface{},
+	ctx *context.Context,
 ) OrderStatusHandlerError {
 	buyerHandlerErrors := map[error]func() OrderStatusHandlerError{
 		service.ErrOrderStatusNoRegisteredOrderStatusesYet: func() OrderStatusHandlerError {

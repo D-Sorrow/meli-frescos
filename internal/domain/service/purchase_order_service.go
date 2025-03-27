@@ -7,7 +7,6 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service/mappers"
-	"github.com/google/uuid"
 )
 
 type PurchaseOrderService struct {
@@ -35,9 +34,9 @@ func (p *PurchaseOrderService) GetById(id int) (purchaseOrder models.PurchaseOrd
 
 func (p *PurchaseOrderService) Create(
 	buyer models.PurchaseOrderAttributesFKs,
+	utcNow time.Time,
+	newUUID string,
 ) (newPurchaseOrder models.PurchaseOrder, err error) {
-	newUUID := uuid.New().String()
-	utcNow := time.Now().UTC()
 	buyer.PurchaseOrderAttributes.TrackingCode = newUUID
 	buyer.PurchaseOrderAttributes.OrderDate = utcNow.Format("2006-01-02 15:04:05")
 

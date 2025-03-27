@@ -2,6 +2,11 @@ package handlers_test
 
 import (
 	"bytes"
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	handler2 "github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
@@ -9,12 +14,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("Save product record success", func(t *testing.T) {
 		mockProductRecordService := new(service_mock.ProductRecordServiceMock)
 		mockProductRecordService.On("SaveProductRecord",
@@ -38,9 +42,13 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
 		router := chi.NewRouter()
-		router.Post("/api/v1/productRecords", handler.SaveProductRecord())
+		router.Post("/api/v1/productRecords", handler.SaveProductRecord(&ctx))
 
-		rq := httptest.NewRequest(http.MethodPost, "/api/v1/productRecords", bytes.NewBuffer(jsonBytes))
+		rq := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/productRecords",
+			bytes.NewBuffer(jsonBytes),
+		)
 		rc := httptest.NewRecorder()
 
 		router.ServeHTTP(rc, rq)
@@ -65,9 +73,13 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
 		router := chi.NewRouter()
-		router.Post("/api/v1/productRecords", handler.SaveProductRecord())
+		router.Post("/api/v1/productRecords", handler.SaveProductRecord(&ctx))
 
-		rq := httptest.NewRequest(http.MethodPost, "/api/v1/productRecords", bytes.NewBuffer(jsonBytes))
+		rq := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/productRecords",
+			bytes.NewBuffer(jsonBytes),
+		)
 		rc := httptest.NewRecorder()
 
 		router.ServeHTTP(rc, rq)
@@ -86,7 +98,7 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
 		router := chi.NewRouter()
-		router.Post("/api/v1/productRecords", handler.SaveProductRecord())
+		router.Post("/api/v1/productRecords", handler.SaveProductRecord(&ctx))
 
 		rq := httptest.NewRequest(http.MethodPost, "/api/v1/productRecords", nil)
 		rc := httptest.NewRecorder()
@@ -119,9 +131,13 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
 		router := chi.NewRouter()
-		router.Post("/api/v1/productRecords", handler.SaveProductRecord())
+		router.Post("/api/v1/productRecords", handler.SaveProductRecord(&ctx))
 
-		rq := httptest.NewRequest(http.MethodPost, "/api/v1/productRecords", bytes.NewBuffer(jsonBytes))
+		rq := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/productRecords",
+			bytes.NewBuffer(jsonBytes),
+		)
 		rc := httptest.NewRecorder()
 
 		router.ServeHTTP(rc, rq)
@@ -133,6 +149,8 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 }
 
 func TestProductRecordHandler_GetProductRecord(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("Get product record success", func(t *testing.T) {
 		mockProductRecordService := new(service_mock.ProductRecordServiceMock)
 		mockProductRecordService.On("GetProductRecord",
@@ -142,7 +160,7 @@ func TestProductRecordHandler_GetProductRecord(t *testing.T) {
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
 		router := chi.NewRouter()
-		router.Get("/api/v1/productRecords", handler.GetProductRecord())
+		router.Get("/api/v1/productRecords", handler.GetProductRecord(&ctx))
 
 		rq := httptest.NewRequest(http.MethodGet, "/api/v1/productRecords", nil)
 		rc := httptest.NewRecorder()
@@ -155,14 +173,18 @@ func TestProductRecordHandler_GetProductRecord(t *testing.T) {
 	})
 	t.Run("Get product record success", func(t *testing.T) {
 		mockProductRecordService := new(service_mock.ProductRecordServiceMock)
-		mockProductRecordService.On("GetProductRecord",
-			mock.AnythingOfType("int")).Return(map[int]models.ProductRecordResponse{}, service.ErrServiceProductRecordNotFound).Once()
+		mockProductRecordService.On(
+			"GetProductRecord",
+			mock.AnythingOfType(
+				"int",
+			),
+		).Return(map[int]models.ProductRecordResponse{}, service.ErrServiceProductRecordNotFound).Once()
 		bodyExpected := `{"code":409,"message":"product not found","data":null}`
 
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
 		router := chi.NewRouter()
-		router.Get("/api/v1/productRecords", handler.GetProductRecord())
+		router.Get("/api/v1/productRecords", handler.GetProductRecord(&ctx))
 
 		rq := httptest.NewRequest(http.MethodGet, "/api/v1/productRecords", nil)
 		rc := httptest.NewRecorder()

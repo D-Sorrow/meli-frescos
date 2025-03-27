@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -24,19 +25,19 @@ func NewInboundOrderHandler(service service.InboundOrderService) *InboundOrderHa
 	}
 }
 
-func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
+func (handler *InboundOrderHandler) CreateInboundOrder(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var inboundOrderToCreate dto.InboundOrderRequestDTO
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&inboundOrderToCreate); err != nil {
-			handler.handleError(w, error_management.ErrInboundOrderBodyDecoding)
+			handler.handleError(w, error_management.ErrInboundOrderBodyDecoding, ctx)
 			return
 		}
 
 		if err := handler.validator.Struct(inboundOrderToCreate); err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -44,7 +45,7 @@ func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
 		err := handler.service.CreateInboundOrder(inboundOrderModel)
 
 		if err != nil {
-			handler.handleError(w, err)
+			handler.handleError(w, err, ctx)
 			return
 		}
 
@@ -53,7 +54,12 @@ func (handler *InboundOrderHandler) CreateInboundOrder() http.HandlerFunc {
 	}
 }
 
-func (handler *InboundOrderHandler) respondWithJSON(w http.ResponseWriter, code int, msg string, data interface{}) {
+func (handler *InboundOrderHandler) respondWithJSON(
+	w http.ResponseWriter,
+	code int,
+	msg string,
+	data interface{},
+) {
 	response.JSON(w, code, dto.ResponseDTO{
 		Code: code,
 		Msg:  msg,
@@ -61,7 +67,11 @@ func (handler *InboundOrderHandler) respondWithJSON(w http.ResponseWriter, code 
 	})
 }
 
-func (handler *InboundOrderHandler) handleError(w http.ResponseWriter, err error) {
-	inboundOrderError := error_management.HandleErrorInboundOrder(err)
+func (handler *InboundOrderHandler) handleError(
+	w http.ResponseWriter,
+	err error,
+	ctx *context.Context,
+) {
+	inboundOrderError := error_management.HandleErrorInboundOrder(err, ctx)
 	handler.respondWithJSON(w, inboundOrderError.Code, inboundOrderError.Message, nil)
 }

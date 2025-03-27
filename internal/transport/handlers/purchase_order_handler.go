@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
@@ -11,6 +13,7 @@ import (
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type PurchaseOrderHandler struct {
@@ -21,7 +24,7 @@ func NewPurchaseOrderHandler(service service.PurchaseOrderService) *PurchaseOrde
 	return &PurchaseOrderHandler{service: service}
 }
 
-func (b *PurchaseOrderHandler) GetById() http.HandlerFunc {
+func (b *PurchaseOrderHandler) GetById(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
@@ -31,6 +34,7 @@ func (b *PurchaseOrderHandler) GetById() http.HandlerFunc {
 				handler_errors.ErrPurchaseOrderInvalidID,
 				nil,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -49,6 +53,7 @@ func (b *PurchaseOrderHandler) GetById() http.HandlerFunc {
 				map[string]interface{}{
 					"ID": idInt,
 				},
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -66,7 +71,7 @@ func (b *PurchaseOrderHandler) GetById() http.HandlerFunc {
 	}
 }
 
-func (b *PurchaseOrderHandler) Create() http.HandlerFunc {
+func (b *PurchaseOrderHandler) Create(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var purchaseOrderCreateDTO dto.PurchaseOrderCreateDTO
 
@@ -76,6 +81,7 @@ func (b *PurchaseOrderHandler) Create() http.HandlerFunc {
 				handler_errors.ErrPurchaseOrderInvalidJSON,
 				nil,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,
@@ -87,6 +93,8 @@ func (b *PurchaseOrderHandler) Create() http.HandlerFunc {
 
 		newPurchaseOrder, createErr := b.service.Create(
 			*mappers.PurchaseOrderCreateDTOToPurchaseOrderAttributesFKs(&purchaseOrderCreateDTO),
+			time.Now().UTC(),
+			uuid.New().String(),
 		)
 		if createErr != nil {
 			createErr = handler_errors.HandleHandlerError(createErr)
@@ -94,6 +102,7 @@ func (b *PurchaseOrderHandler) Create() http.HandlerFunc {
 				createErr,
 				nil,
 				nil,
+				ctx,
 			)
 			response.JSON(w, handlerErr.Code, dto.ResponseDTO{
 				Code: handlerErr.Code,

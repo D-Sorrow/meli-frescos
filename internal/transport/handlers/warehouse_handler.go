@@ -3,6 +3,7 @@ package handlers
 import (
 	// "encoding/json"
 	// "fmt"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,11 +29,11 @@ func NewWarehouseHandler(sevice service.WarehouseServiceInterface) *WarehouseHan
 	return &WarehouseHandler{service: sevice}
 }
 
-func (wh *WarehouseHandler) GetWarehouses() http.HandlerFunc {
+func (wh *WarehouseHandler) GetWarehouses(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		warehouses, err := wh.service.GetWarehouses()
 		if err != nil {
-			handler_err := handler_errors.HandleErrorWarehouse(err)
+			handler_err := handler_errors.HandleErrorWarehouse(err, ctx)
 			response.JSON(w, handler_err.Code, dto.ResponseDTO{
 				Code: handler_err.Code,
 				Msg:  handler_err.Message,
@@ -51,12 +52,14 @@ func (wh *WarehouseHandler) GetWarehouses() http.HandlerFunc {
 	}
 }
 
-func (wh *WarehouseHandler) GetWarehouseById() http.HandlerFunc {
+func (wh *WarehouseHandler) GetWarehouseById(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
-			handler_err := handler_errors.HandleErrorWarehouse(handler_errors.ErrWarehouseIdNotValid)
+			handler_err := handler_errors.HandleErrorWarehouse(
+				handler_errors.ErrWarehouseIdNotValid, ctx,
+			)
 			response.JSON(w, handler_err.Code, dto.ResponseDTO{
 				Code: handler_err.Code,
 				Msg:  handler_err.Message,
@@ -67,7 +70,7 @@ func (wh *WarehouseHandler) GetWarehouseById() http.HandlerFunc {
 
 		warehouse, err := wh.service.GetWarehouseById(id)
 		if err != nil {
-			handler_err := handler_errors.HandleErrorWarehouse(err)
+			handler_err := handler_errors.HandleErrorWarehouse(err, ctx)
 			response.JSON(w, handler_err.Code, dto.ResponseDTO{
 				Code: handler_err.Code,
 				Msg:  handler_err.Message,
@@ -86,7 +89,7 @@ func (wh *WarehouseHandler) GetWarehouseById() http.HandlerFunc {
 	}
 }
 
-func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
+func (wh *WarehouseHandler) CreateWarehouse(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqBody := dto.WarehouseDto{}
 
@@ -110,7 +113,7 @@ func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
 
 		newWarehouse, err := wh.service.CreateWarehouse(mappers.MapperToWarehouseModel(reqBody))
 		if err != nil {
-			handler_err := handler_errors.HandleErrorWarehouse(err)
+			handler_err := handler_errors.HandleErrorWarehouse(err, ctx)
 			response.JSON(w, handler_err.Code, dto.ResponseDTO{
 				Code: handler_err.Code,
 				Msg:  handler_err.Message,
@@ -126,7 +129,7 @@ func (wh *WarehouseHandler) CreateWarehouse() http.HandlerFunc {
 	}
 }
 
-func (wh *WarehouseHandler) PatchWarehouse() http.HandlerFunc {
+func (wh *WarehouseHandler) PatchWarehouse(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -159,7 +162,7 @@ func (wh *WarehouseHandler) PatchWarehouse() http.HandlerFunc {
 
 		warehouse, err := wh.service.PatchWarehouse(id, jsonBody)
 		if err != nil {
-			handler_err := handler_errors.HandleErrorWarehouse(err)
+			handler_err := handler_errors.HandleErrorWarehouse(err, ctx)
 			response.JSON(w, handler_err.Code, dto.ResponseDTO{
 				Code: handler_err.Code,
 				Msg:  handler_err.Message,
@@ -176,7 +179,7 @@ func (wh *WarehouseHandler) PatchWarehouse() http.HandlerFunc {
 	}
 }
 
-func (wh *WarehouseHandler) DeleteWarehouse() http.HandlerFunc {
+func (wh *WarehouseHandler) DeleteWarehouse(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -190,7 +193,7 @@ func (wh *WarehouseHandler) DeleteWarehouse() http.HandlerFunc {
 
 		err = wh.service.DeleteWarehouse(id)
 		if err != nil {
-			handler_err := handler_errors.HandleErrorWarehouse(err)
+			handler_err := handler_errors.HandleErrorWarehouse(err, ctx)
 			response.JSON(w, handler_err.Code, dto.ResponseDTO{
 				Code: handler_err.Code,
 				Msg:  handler_err.Message,

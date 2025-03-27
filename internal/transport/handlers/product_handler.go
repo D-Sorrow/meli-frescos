@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -21,11 +22,11 @@ func NewProductHandler(serv service.ProductService) *ProductHandler {
 	return &ProductHandler{serv: serv}
 }
 
-func (hand *ProductHandler) GetProducts() http.HandlerFunc {
+func (hand *ProductHandler) GetProducts(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		mapProduct, errGet := hand.serv.GetProducts()
 		if errGet != nil {
-			errSpe := error_management.HandlerErrorProduct(errGet)
+			errSpe := error_management.HandlerErrorProduct(errGet, ctx)
 			response.JSON(writer, errSpe.GetCode(), errSpe)
 			return
 		}
@@ -39,7 +40,7 @@ func (hand *ProductHandler) GetProducts() http.HandlerFunc {
 	}
 }
 
-func (hand *ProductHandler) GetProductByID() http.HandlerFunc {
+func (hand *ProductHandler) GetProductByID(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		id, errConv := strconv.Atoi(chi.URLParam(request, "id"))
 
@@ -56,7 +57,7 @@ func (hand *ProductHandler) GetProductByID() http.HandlerFunc {
 
 		productDto := mapper.MapperToProductDto(product)
 		if err != nil {
-			errSpe := error_management.HandlerErrorProduct(err)
+			errSpe := error_management.HandlerErrorProduct(err, ctx)
 			response.JSON(writer, errSpe.GetCode(), dto.ResponseDTO{
 				Code: errSpe.GetCode(),
 				Msg:  errSpe.Message,
@@ -74,7 +75,7 @@ func (hand *ProductHandler) GetProductByID() http.HandlerFunc {
 	}
 }
 
-func (hand *ProductHandler) SaveProduct() http.HandlerFunc {
+func (hand *ProductHandler) SaveProduct(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		var product dto.ProductDto
 
@@ -99,7 +100,7 @@ func (hand *ProductHandler) SaveProduct() http.HandlerFunc {
 
 		errSave := hand.serv.SaveProduct(mapper.MapperToProductModel(&product))
 		if errSave != nil {
-			errSpe := error_management.HandlerErrorProduct(errSave)
+			errSpe := error_management.HandlerErrorProduct(errSave, ctx)
 			response.JSON(writer, errSpe.GetCode(), dto.ResponseDTO{
 				Code: errSpe.Code,
 				Msg:  errSpe.Message,
@@ -115,7 +116,7 @@ func (hand *ProductHandler) SaveProduct() http.HandlerFunc {
 	}
 }
 
-func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
+func (hand *ProductHandler) UpdateProduct(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		id, errConv := strconv.Atoi(chi.URLParam(request, "id"))
 		if errConv != nil {
@@ -152,7 +153,7 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 		productDto := mapper.MapperToProductDto(product)
 
 		if errUpdate != nil {
-			errSpe := error_management.HandlerErrorProduct(errUpdate)
+			errSpe := error_management.HandlerErrorProduct(errUpdate, ctx)
 			response.JSON(writer, errSpe.Code, dto.ResponseDTO{
 				Code: errSpe.Code,
 				Msg:  errSpe.Error(),
@@ -168,7 +169,7 @@ func (hand *ProductHandler) UpdateProduct() http.HandlerFunc {
 	}
 }
 
-func (hand *ProductHandler) DeleteProduct() http.HandlerFunc {
+func (hand *ProductHandler) DeleteProduct(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		id, errConv := strconv.Atoi(chi.URLParam(request, "id"))
 		if errConv != nil {
@@ -181,7 +182,7 @@ func (hand *ProductHandler) DeleteProduct() http.HandlerFunc {
 		}
 		errDelete := hand.serv.DeleteProduct(id)
 		if errDelete != nil {
-			errSp := error_management.HandlerErrorProduct(errDelete)
+			errSp := error_management.HandlerErrorProduct(errDelete, ctx)
 			response.JSON(writer, errSp.Code, dto.ResponseDTO{
 				Code: errSp.Code,
 				Msg:  errSp.Error(),

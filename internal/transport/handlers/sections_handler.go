@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 
 	"net/http"
@@ -22,7 +23,7 @@ func NewSectionsHandler(serv service.SectionsService) *SectionstHandler {
 	return &SectionstHandler{serv: serv}
 }
 
-func (hand *SectionstHandler) GetSections() http.HandlerFunc {
+func (hand *SectionstHandler) GetSections(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, r *http.Request) {
 		mapSections := hand.serv.GetSections()
 		mapSectionsDto := mapper.MapperToSectionsDto(mapSections)
@@ -34,7 +35,7 @@ func (hand *SectionstHandler) GetSections() http.HandlerFunc {
 	}
 }
 
-func (hand *SectionstHandler) GetSectionsById() http.HandlerFunc {
+func (hand *SectionstHandler) GetSectionsById(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, r *http.Request) {
 		id, errConv := strconv.Atoi(chi.URLParam(r, "id"))
 		if errConv != nil {
@@ -67,7 +68,7 @@ func (hand *SectionstHandler) GetSectionsById() http.HandlerFunc {
 	}
 }
 
-func (hand *SectionstHandler) SaveSections() http.HandlerFunc {
+func (hand *SectionstHandler) SaveSections(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, r *http.Request) {
 		var sections dto.SectionsDto
 
@@ -102,7 +103,7 @@ func (hand *SectionstHandler) SaveSections() http.HandlerFunc {
 	}
 }
 
-func (hand *SectionstHandler) DeleteSections() http.HandlerFunc {
+func (hand *SectionstHandler) DeleteSections(ctx *context.Context) http.HandlerFunc {
 	return func(writer http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -131,7 +132,7 @@ func (hand *SectionstHandler) DeleteSections() http.HandlerFunc {
 	}
 }
 
-//func (hand *SectionstHandler) UpdateSections() http.HandlerFunc {
+//func (hand *SectionstHandler) UpdateSections(ctx *context.Context) http.HandlerFunc {
 /*	return func(writer http.ResponseWriter, r *http.Request) {
 	id, errConv := strconv.Atoi(chi.URLParam(r, "id"))
 	if errConv != nil {

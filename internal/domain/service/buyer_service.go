@@ -1,8 +1,6 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
@@ -108,14 +106,10 @@ func (b *BuyerService) GetReportPurchaseOrders(
 
 	reportEntities, err := b.repo.GetReportPurchaseOrders(buyerID)
 	if err != nil {
-		if errors.Is(err, repository.ErrBuyerHasNoOrders) {
-			err = error_management.HandleServiceError(
-				error_management.HandleBuyerServiceError(err),
-				err,
-			)
-			return
-		}
-
+		err = error_management.HandleServiceError(
+			error_management.HandleBuyerServiceError(err),
+			err,
+		)
 		return
 	}
 

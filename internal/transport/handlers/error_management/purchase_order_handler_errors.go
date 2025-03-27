@@ -1,6 +1,7 @@
 package error_management
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -45,6 +46,7 @@ func HandlePurchaseOrderHandlerError(
 	err error,
 	messages map[string]string,
 	args map[string]interface{},
+	ctx *context.Context,
 ) PurchaseOrderHandlerError {
 	buyerHandlerErrors := map[error]func() PurchaseOrderHandlerError{
 		ErrPurchaseOrderInvalidID: func() PurchaseOrderHandlerError {

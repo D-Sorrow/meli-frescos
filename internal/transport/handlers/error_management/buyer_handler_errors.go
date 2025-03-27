@@ -1,11 +1,13 @@
 package error_management
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 )
 
 var (
@@ -43,7 +45,10 @@ func HandleBuyerHandlerError(
 	err error,
 	messages map[string]string,
 	args map[string]interface{},
+	ctx *context.Context,
 ) BuyerHandlerError {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	var data interface{}
 	if messages != nil {
 		data = messages

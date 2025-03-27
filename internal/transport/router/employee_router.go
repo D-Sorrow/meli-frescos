@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitEmployeeRouter(rt *chi.Mux, db *sql.DB) {
+func InitEmployeeRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 
 	repositoryImp := repository.NewEmployeeRepository(db)
 
@@ -18,11 +19,11 @@ func InitEmployeeRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewEmployeeHandler(serviceImp)
 
 	rt.Route("/api/v1/employees", func(rt chi.Router) {
-		rt.Get("/", handler.GetEmployees())
-		rt.Get("/{id}", handler.GetEmployeeById())
-		rt.Post(("/"), handler.CreateEmployee())
-		rt.Patch("/{id}", handler.UpdateEmployee())
-		rt.Delete("/{id}", handler.DeleteEmployee())
-		rt.Get(("/reportinboundorders"), handler.GetReportInboundOrdersByEmployee())
+		rt.Get("/", handler.GetEmployees(ctx))
+		rt.Get("/{id}", handler.GetEmployeeById(ctx))
+		rt.Post(("/"), handler.CreateEmployee(ctx))
+		rt.Patch("/{id}", handler.UpdateEmployee(ctx))
+		rt.Delete("/{id}", handler.DeleteEmployee(ctx))
+		rt.Get(("/reportinboundorders"), handler.GetReportInboundOrdersByEmployee(ctx))
 	})
 }

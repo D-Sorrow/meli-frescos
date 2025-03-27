@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitProductRouter(rt *chi.Mux, db *sql.DB) {
+func InitProductRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 	repositoryImp := repository.NewProductRepository(db)
 
 	serviceImp := service.NewProductService(repositoryImp)
@@ -17,10 +18,10 @@ func InitProductRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewProductHandler(serviceImp)
 
 	rt.Route("/api/v1/products", func(rt chi.Router) {
-		rt.Get("/", handler.GetProducts())
-		rt.Get("/{id}", handler.GetProductByID())
-		rt.Post("/", handler.SaveProduct())
-		rt.Patch("/{id}", handler.UpdateProduct())
-		rt.Delete("/{id}", handler.DeleteProduct())
+		rt.Get("/", handler.GetProducts(ctx))
+		rt.Get("/{id}", handler.GetProductByID(ctx))
+		rt.Post("/", handler.SaveProduct(ctx))
+		rt.Patch("/{id}", handler.UpdateProduct(ctx))
+		rt.Delete("/{id}", handler.DeleteProduct(ctx))
 	})
 }

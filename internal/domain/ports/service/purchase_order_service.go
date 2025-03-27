@@ -2,13 +2,18 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 )
 
 type PurchaseOrderService interface {
 	GetById(id int) (models.PurchaseOrder, error)
-	Create(purchaseOrder models.PurchaseOrderAttributesFKs) (models.PurchaseOrder, error)
+	Create(
+		purchaseOrder models.PurchaseOrderAttributesFKs,
+		utcNow time.Time,
+		newUUID string,
+	) (models.PurchaseOrder, error)
 }
 
 var (

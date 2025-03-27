@@ -1,6 +1,7 @@
 package error_management
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -24,10 +26,22 @@ type LocalityHandlerErrors struct {
 }
 
 var localityServiceErrors = map[error]LocalityHandlerErrors{
-	service.ErrLocalityAlreadyExists:     {Code: http.StatusConflict, Msg: messageLocalityAlreadyExistsError},
-	service.ErrLocalityNotFound:          {Code: http.StatusNotFound, Msg: messageLocalityIdNotExistsError},
-	service.ErrProvinceNotFound:          {Code: http.StatusNotFound, Msg: messageProvinceNotExistsError},
-	service.ErrLocalityRepositoryGeneric: {Code: http.StatusInternalServerError, Msg: messageLocalityInternalServerError},
+	service.ErrLocalityAlreadyExists: {
+		Code: http.StatusConflict,
+		Msg:  messageLocalityAlreadyExistsError,
+	},
+	service.ErrLocalityNotFound: {
+		Code: http.StatusNotFound,
+		Msg:  messageLocalityIdNotExistsError,
+	},
+	service.ErrProvinceNotFound: {
+		Code: http.StatusNotFound,
+		Msg:  messageProvinceNotExistsError,
+	},
+	service.ErrLocalityRepositoryGeneric: {
+		Code: http.StatusInternalServerError,
+		Msg:  messageLocalityInternalServerError,
+	},
 }
 
 func getLocalityErrorMessage(err error) LocalityHandlerErrors {
@@ -37,7 +51,9 @@ func getLocalityErrorMessage(err error) LocalityHandlerErrors {
 	return localityServiceErrors[service.ErrLocalityRepositoryGeneric]
 }
 
-func HandleErrorLocality(err error) LocalityHandlerErrors {
+func HandleErrorLocality(err error, ctx *context.Context) LocalityHandlerErrors {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	switch e := err.(type) {
 	case *json.UnmarshalTypeError:
 		return LocalityHandlerErrors{Code: http.StatusBadRequest, Msg: fmt.Sprintf("the field '%s' must be a '%s'", err.(*json.UnmarshalTypeError).Field, err.(*json.UnmarshalTypeError).Type)}

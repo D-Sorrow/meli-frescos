@@ -1,14 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
+	"strconv"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
-	"net/http"
-	"strconv"
 )
 
 type ProductRecordHandler struct {
@@ -21,13 +23,13 @@ func NewProductRecordHandler(service service.ProductRecordService) *ProductRecor
 	}
 }
 
-func (hand *ProductRecordHandler) SaveProductRecord() http.HandlerFunc {
+func (hand *ProductRecordHandler) SaveProductRecord(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var data map[string]dto.ProductRecordDto
 
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
-			errSpe := error_management.HandlerErrProductRecord(err)
+			errSpe := error_management.HandlerErrProductRecord(err, ctx)
 			response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
 				Code: http.StatusInternalServerError,
 				Msg:  errSpe.Error(),
@@ -51,9 +53,11 @@ func (hand *ProductRecordHandler) SaveProductRecord() http.HandlerFunc {
 			return
 		}
 
-		record, errSave := hand.service.SaveProductRecord(mappers.ToProductRecordModel(&productRecord))
+		record, errSave := hand.service.SaveProductRecord(
+			mappers.ToProductRecordModel(&productRecord),
+		)
 		if errSave != nil {
-			errSpe := error_management.HandlerErrProductRecord(errSave)
+			errSpe := error_management.HandlerErrProductRecord(errSave, ctx)
 			response.JSON(w, errSpe.Code, dto.ResponseDTO{
 				Code: errSpe.Code,
 				Msg:  errSpe.Error(),
@@ -68,14 +72,14 @@ func (hand *ProductRecordHandler) SaveProductRecord() http.HandlerFunc {
 		})
 	}
 }
-func (hand *ProductRecordHandler) GetProductRecord() http.HandlerFunc {
+func (hand *ProductRecordHandler) GetProductRecord(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 		var productId int
 		productId, _ = strconv.Atoi(id)
 		records, errGet := hand.service.GetProductRecord(productId)
 		if errGet != nil {
-			errSpe := error_management.HandlerErrProductRecord(errGet)
+			errSpe := error_management.HandlerErrProductRecord(errGet, ctx)
 			response.JSON(w, errSpe.Code, dto.ResponseDTO{
 				Code: errSpe.Code,
 				Msg:  errSpe.Error(),
