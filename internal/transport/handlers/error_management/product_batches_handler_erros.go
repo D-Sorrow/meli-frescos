@@ -1,12 +1,14 @@
 package error_management
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
 )
@@ -30,7 +32,9 @@ var LocalityAlreadyExists *ProductBatchesHandlerErr = &ProductBatchesHandlerErr{
 	Msg:  "ProductBatches  already exists",
 }
 
-func ResponseErrorProductBatches(err error, w http.ResponseWriter) {
+func ResponseErrorProductBatches(err error, w http.ResponseWriter, ctx *context.Context) {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	var ProductBatchErr *ProductBatchesHandlerErr
 	if errors.As(err, &ProductBatchErr) {
 		response.JSON(w, ProductBatchErr.Code, dto.ResponseDTO{
@@ -44,7 +48,15 @@ func ResponseErrorProductBatches(err error, w http.ResponseWriter) {
 	if errors.As(err, &validatorErr) {
 		var validationErrors []string
 		for _, validationErr := range err.(validator.ValidationErrors) {
-			validationErrors = append(validationErrors, fmt.Sprintf("%s is %s and must be a %s", validationErr.Field(), validationErr.ActualTag(), validationErr.Kind()))
+			validationErrors = append(
+				validationErrors,
+				fmt.Sprintf(
+					"%s is %s and must be a %s",
+					validationErr.Field(),
+					validationErr.ActualTag(),
+					validationErr.Kind(),
+				),
+			)
 		}
 		response.JSON(w, http.StatusUnprocessableEntity, dto.ResponseDTO{
 			Code: http.StatusUnprocessableEntity,

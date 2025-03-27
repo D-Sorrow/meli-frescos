@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -22,12 +23,12 @@ func NewLocalityHandler(service service.LocalityService) *LocalityHandler {
 	return &LocalityHandler{service: service, validate: validator.New()}
 }
 
-func (hand LocalityHandler) CreateLocality() http.HandlerFunc {
+func (hand LocalityHandler) CreateLocality(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var localityDto dto.LocalityDto
 
 		if err := json.NewDecoder(r.Body).Decode(&localityDto); err != nil {
-			localityError := error_management.HandleErrorLocality(err)
+			localityError := error_management.HandleErrorLocality(err, ctx)
 			response.JSON(w, localityError.Code, dto.ResponseDTO{
 				Code: localityError.Code,
 				Msg:  localityError.Msg,
@@ -37,7 +38,7 @@ func (hand LocalityHandler) CreateLocality() http.HandlerFunc {
 		}
 
 		if err := hand.validate.Struct(localityDto); err != nil {
-			localityError := error_management.HandleErrorLocality(err)
+			localityError := error_management.HandleErrorLocality(err, ctx)
 			response.JSON(w, localityError.Code, dto.ResponseDTO{
 				Code: localityError.Code,
 				Msg:  localityError.Msg,
@@ -48,7 +49,7 @@ func (hand LocalityHandler) CreateLocality() http.HandlerFunc {
 
 		locality, err := hand.service.CreateLocality(mappers.MapperToLocality(localityDto))
 		if err != nil {
-			localityError := error_management.HandleErrorLocality(err)
+			localityError := error_management.HandleErrorLocality(err, ctx)
 			response.JSON(w, localityError.Code, dto.ResponseDTO{
 				Code: localityError.Code,
 				Msg:  localityError.Msg,
@@ -66,7 +67,7 @@ func (hand LocalityHandler) CreateLocality() http.HandlerFunc {
 	}
 }
 
-func (hand LocalityHandler) GetSellersByLocality() http.HandlerFunc {
+func (hand LocalityHandler) GetSellersByLocality(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
@@ -79,7 +80,7 @@ func (hand LocalityHandler) GetSellersByLocality() http.HandlerFunc {
 		}
 		localitySellers, err := hand.service.GetSellersByLocality(id)
 		if err != nil {
-			localityError := error_management.HandleErrorLocality(err)
+			localityError := error_management.HandleErrorLocality(err, ctx)
 			response.JSON(w, localityError.Code, dto.ResponseDTO{
 				Code: localityError.Code,
 				Msg:  localityError.Msg,
@@ -95,13 +96,13 @@ func (hand LocalityHandler) GetSellersByLocality() http.HandlerFunc {
 	}
 }
 
-func (hand LocalityHandler) GetCarriersByLocality() http.HandlerFunc {
+func (hand LocalityHandler) GetCarriersByLocality(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
 		if idStr == "" {
 			carriersByLocalities, err := hand.service.GetCarriersByAllLocalities()
 			if err != nil {
-				localityError := error_management.HandleErrorLocality(err)
+				localityError := error_management.HandleErrorLocality(err, ctx)
 				response.JSON(w, localityError.Code, dto.ResponseDTO{
 					Code: localityError.Code,
 					Msg:  localityError.Msg,
@@ -131,7 +132,7 @@ func (hand LocalityHandler) GetCarriersByLocality() http.HandlerFunc {
 
 		localityCarriers, err := hand.service.GetCarriersByLocality(id)
 		if err != nil {
-			localityError := error_management.HandleErrorLocality(err)
+			localityError := error_management.HandleErrorLocality(err, ctx)
 			response.JSON(w, localityError.Code, dto.ResponseDTO{
 				Code: localityError.Code,
 				Msg:  localityError.Msg,

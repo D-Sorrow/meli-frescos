@@ -1,6 +1,7 @@
 package error_management
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -23,9 +25,18 @@ type SellerHandlerErrors struct {
 }
 
 var sellerServiceErrors = map[error]SellerHandlerErrors{
-	service.ErrSellerAlreadyExists:  {Code: http.StatusConflict, Msg: messageSellerAlreadyExistsError},
-	service.ErrSellerNotFound:       {Code: http.StatusNotFound, Msg: messageSellerIdNotExistsError},
-	service.ErrSellerServiceGeneric: {Code: http.StatusInternalServerError, Msg: messageSellerInternalServerError},
+	service.ErrSellerAlreadyExists: {
+		Code: http.StatusConflict,
+		Msg:  messageSellerAlreadyExistsError,
+	},
+	service.ErrSellerNotFound: {
+		Code: http.StatusNotFound,
+		Msg:  messageSellerIdNotExistsError,
+	},
+	service.ErrSellerServiceGeneric: {
+		Code: http.StatusInternalServerError,
+		Msg:  messageSellerInternalServerError,
+	},
 }
 
 func getSellerErrorMessage(err error) SellerHandlerErrors {
@@ -35,7 +46,9 @@ func getSellerErrorMessage(err error) SellerHandlerErrors {
 	return sellerServiceErrors[service.ErrSellerServiceGeneric]
 }
 
-func HandleErrorSeller(err error) SellerHandlerErrors {
+func HandleErrorSeller(err error, ctx *context.Context) SellerHandlerErrors {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	switch e := err.(type) {
 	case *json.UnmarshalTypeError:
 		return SellerHandlerErrors{Code: http.StatusBadRequest, Msg: fmt.Sprintf("the field '%s' must be a '%s'", err.(*json.UnmarshalTypeError).Field, err.(*json.UnmarshalTypeError).Type)}

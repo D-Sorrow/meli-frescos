@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -18,13 +19,15 @@ import (
 )
 
 func TestGetWarehouses(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("find all warehouses", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		warehousesFake := fakeModels.WarehousesFake
 		serviceMock.On("GetWarehouses").Return(warehousesFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/api/v1/warehouses", handler.GetWarehouses())
+		router.Get("/api/v1/warehouses", handler.GetWarehouses(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/warehouses", nil)
@@ -50,7 +53,7 @@ func TestGetWarehouses(t *testing.T) {
 		serviceMock.On("GetWarehouses").Return(nil, error(serviceErr.ErrWarehouseServiceDefault))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/api/v1/warehouses", handler.GetWarehouses())
+		router.Get("/api/v1/warehouses", handler.GetWarehouses(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/warehouses", nil)
@@ -71,13 +74,15 @@ func TestGetWarehouses(t *testing.T) {
 }
 
 func TestGetWarehouseById(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("find warehouse by id", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("GetWarehouseById", mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById())
+		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/warehouses/1", nil)
@@ -107,10 +112,11 @@ func TestGetWarehouseById(t *testing.T) {
 
 	t.Run("warehouse not found", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
-		serviceMock.On("GetWarehouseById", mock.Anything).Return(models.Warehouse{}, error(serviceErr.ErrWarehouseNotFound))
+		serviceMock.On("GetWarehouseById", mock.Anything).
+			Return(models.Warehouse{}, error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById())
+		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/warehouses/1", nil)
@@ -131,10 +137,11 @@ func TestGetWarehouseById(t *testing.T) {
 
 	t.Run("invalid warehouse id", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
-		serviceMock.On("GetWarehouseById", mock.Anything).Return(models.Warehouse{}, error(handlerErr.ErrWarehouseIdNotValid))
+		serviceMock.On("GetWarehouseById", mock.Anything).
+			Return(models.Warehouse{}, error(handlerErr.ErrWarehouseIdNotValid))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById())
+		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/warehouses/m", nil)
@@ -154,13 +161,15 @@ func TestGetWarehouseById(t *testing.T) {
 }
 
 func TestCreateWarehouse(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("create warehouse ok", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Post("/api/v1/warehouses", handler.CreateWarehouse())
+		router.Post("/api/v1/warehouses", handler.CreateWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 
@@ -172,7 +181,11 @@ func TestCreateWarehouse(t *testing.T) {
 					"minimun_temperature": -14,
 					"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/warehouses", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/warehouses",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusCreated
@@ -202,7 +215,7 @@ func TestCreateWarehouse(t *testing.T) {
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Post("/api/v1/warehouses", handler.CreateWarehouse())
+		router.Post("/api/v1/warehouses", handler.CreateWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 
@@ -213,7 +226,11 @@ func TestCreateWarehouse(t *testing.T) {
 					"minimun_temperature": -14,
 					"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/warehouses", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/warehouses",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusUnprocessableEntity
@@ -233,7 +250,7 @@ func TestCreateWarehouse(t *testing.T) {
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Post("/api/v1/warehouses", handler.CreateWarehouse())
+		router.Post("/api/v1/warehouses", handler.CreateWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 
@@ -245,7 +262,11 @@ func TestCreateWarehouse(t *testing.T) {
 					"minimun_temperature": -14,
 					"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/warehouses", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/warehouses",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusUnprocessableEntity
@@ -262,10 +283,11 @@ func TestCreateWarehouse(t *testing.T) {
 
 	t.Run("create warehouse fail - conflic", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
-		serviceMock.On("CreateWarehouse", mock.Anything).Return(models.Warehouse{}, error(serviceErr.ErrWarehouseCodeDuplicate))
+		serviceMock.On("CreateWarehouse", mock.Anything).
+			Return(models.Warehouse{}, error(serviceErr.ErrWarehouseCodeDuplicate))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Post("/api/v1/warehouses", handler.CreateWarehouse())
+		router.Post("/api/v1/warehouses", handler.CreateWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 
@@ -277,7 +299,11 @@ func TestCreateWarehouse(t *testing.T) {
 					"minimun_temperature": -14,
 					"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/warehouses", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/warehouses",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusConflict
@@ -295,13 +321,16 @@ func TestCreateWarehouse(t *testing.T) {
 }
 
 func TestPatchWarehouse(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("update warehouse ok", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		warehouseFake := fakeModels.WarehousesFake[1]
-		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(warehouseFake, error(nil))
+		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
+			Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse())
+		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 
@@ -313,7 +342,11 @@ func TestPatchWarehouse(t *testing.T) {
 					"minimum_temperature": -14,
 					"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPatch, "/api/v1/warehouses/1", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPatch,
+			"/api/v1/warehouses/1",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusOK
@@ -340,10 +373,11 @@ func TestPatchWarehouse(t *testing.T) {
 
 	t.Run("update warehouse not found", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
-		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(serviceErr.ErrWarehouseNotFound))
+		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
+			Return(models.Warehouse{}, error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse())
+		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 		reqBody := `{
@@ -354,7 +388,11 @@ func TestPatchWarehouse(t *testing.T) {
 			"minimum_temperature": -14,
 			"locality_id": 1
 			}`
-		req := httptest.NewRequest(http.MethodPatch, "/api/v1/warehouses/1", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPatch,
+			"/api/v1/warehouses/1",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusNotFound
@@ -372,10 +410,11 @@ func TestPatchWarehouse(t *testing.T) {
 
 	t.Run("update warehouse- invalid id", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
-		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
+		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
+			Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse())
+		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 		reqBody := `{
@@ -386,7 +425,11 @@ func TestPatchWarehouse(t *testing.T) {
 			"minimum_temperature": -14,
 			"locality_id": 1
 			}`
-		req := httptest.NewRequest(http.MethodPatch, "/api/v1/warehouses/m", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPatch,
+			"/api/v1/warehouses/m",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusBadRequest
@@ -403,10 +446,11 @@ func TestPatchWarehouse(t *testing.T) {
 
 	t.Run("update warehouse - invalid request body", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
-		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
+		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
+			Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse())
+		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 		reqBody := `{
@@ -417,7 +461,11 @@ func TestPatchWarehouse(t *testing.T) {
 			"minimum_temperature": -14,
 			"locality_id": 1
 			}`
-		req := httptest.NewRequest(http.MethodPatch, "/api/v1/warehouses/1", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPatch,
+			"/api/v1/warehouses/1",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusUnprocessableEntity
@@ -434,10 +482,11 @@ func TestPatchWarehouse(t *testing.T) {
 
 	t.Run("update warehouse - empty body values", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
-		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).Return(models.Warehouse{}, error(nil))
+		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
+			Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse())
+		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 		reqBody := `{
@@ -448,7 +497,11 @@ func TestPatchWarehouse(t *testing.T) {
 			"minimum_temperature": -14,
 			"locality_id": 1
 			}`
-		req := httptest.NewRequest(http.MethodPatch, "/api/v1/warehouses/1", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPatch,
+			"/api/v1/warehouses/1",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedStatusCode := http.StatusBadRequest
@@ -465,12 +518,14 @@ func TestPatchWarehouse(t *testing.T) {
 }
 
 func TestDeleteWarehouse(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("delete warehouse ok", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse())
+		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodDelete, "/api/v1/warehouses/1", nil)
@@ -491,10 +546,11 @@ func TestDeleteWarehouse(t *testing.T) {
 
 	t.Run("delete warehouse not found", func(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
-		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(serviceErr.ErrWarehouseNotFound))
+		serviceMock.On("DeleteWarehouse", mock.Anything).
+			Return(error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse())
+		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodDelete, "/api/v1/warehouses/1", nil)
@@ -518,7 +574,7 @@ func TestDeleteWarehouse(t *testing.T) {
 		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(nil))
 		handler := NewWarehouseHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse())
+		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodDelete, "/api/v1/warehouses/m", nil)

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,24 +27,24 @@ func NewProductBatches(s service.ProductBatchesRepository) *ProductBatchesHandle
 	return &ProductBatchesHandler{s: s, validate: validator.New()}
 }
 
-func (h ProductBatchesHandler) AddProductBatches() http.HandlerFunc {
+func (h ProductBatchesHandler) AddProductBatches(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ProductBatchesDto dto.ProductBatchesDto
 
 		if err := json.NewDecoder(r.Body).Decode(&ProductBatchesDto); err != nil {
-			herr.ResponseErrorProductBatches(err, w)
+			herr.ResponseErrorProductBatches(err, w, ctx)
 			return
 		}
 
 		if err := h.validate.Struct(ProductBatchesDto); err != nil {
-			herr.ResponseErrorProductBatches(err, w)
+			herr.ResponseErrorProductBatches(err, w, ctx)
 			return
 		}
 
 		product, err := h.s.AddProductBatches(mappers.MapperToProductBatches(ProductBatchesDto))
 		if err != nil {
 			if errors.Is(err, serr.ErrProductBatchesAlredyExists) {
-				herr.ResponseErrorProductBatches(herr.LocalityAlreadyExists, w)
+				herr.ResponseErrorProductBatches(herr.LocalityAlreadyExists, w, ctx)
 				return
 			}
 		}
@@ -57,7 +58,7 @@ func (h ProductBatchesHandler) AddProductBatches() http.HandlerFunc {
 	}
 }
 
-func (h *ProductBatchesHandler) GetById() http.HandlerFunc {
+func (h *ProductBatchesHandler) GetById(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
@@ -78,7 +79,7 @@ func (h *ProductBatchesHandler) GetById() http.HandlerFunc {
 				}
 			}
 
-			herr.HandlerResponseError(getByIdErr, &w)
+			herr.HandlerResponseError(getByIdErr, &w, ctx)
 			return
 		}
 
@@ -90,7 +91,7 @@ func (h *ProductBatchesHandler) GetById() http.HandlerFunc {
 	}
 }
 
-func (h *ProductBatchesHandler) Create() http.HandlerFunc {
+func (h *ProductBatchesHandler) Create(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ProductBatchesDto dto.ProductBatchesDtoReport
 
@@ -103,7 +104,9 @@ func (h *ProductBatchesHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		ProductBatches, createErr := h.s.Create(*mappers.ProductBatchesCreateDTOToPProductBatchesFKs(&ProductBatchesDto))
+		ProductBatches, createErr := h.s.Create(
+			*mappers.ProductBatchesCreateDTOToPProductBatchesFKs(&ProductBatchesDto),
+		)
 		if createErr != nil {
 			if errors.Is(createErr, service.ErrForeignKeysNotValidProductBatches) {
 				createErr = herr.HandlerError{
@@ -112,7 +115,7 @@ func (h *ProductBatchesHandler) Create() http.HandlerFunc {
 				}
 			}
 
-			herr.HandlerResponseError(createErr, &w)
+			herr.HandlerResponseError(createErr, &w, ctx)
 			return
 		}
 

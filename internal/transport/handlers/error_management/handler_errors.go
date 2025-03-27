@@ -1,11 +1,13 @@
 package error_management
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 	"github.com/bootcamp-go/web/response"
 )
 
@@ -25,7 +27,9 @@ func (e HandlerError) Error() string {
 	return fmt.Sprintf("%d: %s", e.Code, e.Msg)
 }
 
-func HandlerResponseError(err error, w *http.ResponseWriter) {
+func HandlerResponseError(err error, w *http.ResponseWriter, ctx *context.Context) {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	var buyerErr HandlerError
 
 	if errors.As(err, &buyerErr) {

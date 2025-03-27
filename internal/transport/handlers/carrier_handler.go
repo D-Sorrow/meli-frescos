@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -19,7 +20,7 @@ func NewCarryHandler(service service.CarrierServiceInterface) *CarryHandler {
 	return &CarryHandler{service: service}
 }
 
-func (ch *CarryHandler) GetAllCarriers() http.HandlerFunc {
+func (ch *CarryHandler) GetAllCarriers(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		carriers, err := ch.service.GetAllCarriers()
 		if err != nil {
@@ -41,7 +42,7 @@ func (ch *CarryHandler) GetAllCarriers() http.HandlerFunc {
 	}
 }
 
-func (ch *CarryHandler) CreateCarrier() http.HandlerFunc {
+func (ch *CarryHandler) CreateCarrier(ctx *context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqBody := dto.CarrierDto{}
 
@@ -65,7 +66,7 @@ func (ch *CarryHandler) CreateCarrier() http.HandlerFunc {
 
 		newCarrier, err := ch.service.CreateCarrier(mappers.MapperToCarrierModel(reqBody))
 		if err != nil {
-			handler_err := handler_errors.HandleErrorCarrier(err)
+			handler_err := handler_errors.HandleErrorCarrier(err, ctx)
 			response.JSON(w, handler_err.Code, dto.ResponseDTO{
 				Code: handler_err.Code,
 				Msg:  handler_err.Message,

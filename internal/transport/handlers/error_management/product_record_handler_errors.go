@@ -1,8 +1,11 @@
 package error_management
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"context"
 	"net/http"
+
+	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
 )
 
 type ErrHandlerProductRecord struct {
@@ -17,9 +20,18 @@ const (
 )
 
 var productRecordHandlerErrors = map[error]ErrHandlerProductRecord{
-	service.ErrServiceProductRecordNotFound:      {Message: messageProductRecordNotFound, Code: http.StatusConflict},
-	service.ErrServiceProductRecordBusinessRules: {Message: messageProductRecordBusiness, Code: http.StatusUnprocessableEntity},
-	service.ErrServiceProductRecordUnknown:       {Message: messageProductRecordUnknown, Code: http.StatusInternalServerError},
+	service.ErrServiceProductRecordNotFound: {
+		Message: messageProductRecordNotFound,
+		Code:    http.StatusConflict,
+	},
+	service.ErrServiceProductRecordBusinessRules: {
+		Message: messageProductRecordBusiness,
+		Code:    http.StatusUnprocessableEntity,
+	},
+	service.ErrServiceProductRecordUnknown: {
+		Message: messageProductRecordUnknown,
+		Code:    http.StatusInternalServerError,
+	},
 }
 
 func (e *ErrHandlerProductRecord) Error() string {
@@ -40,7 +52,9 @@ func getErrorProductRecord(err error) ErrHandlerProductRecord {
 	}
 	return productRecordHandlerErrors[service.ErrServiceProductRecordUnknown]
 }
-func HandlerErrProductRecord(err error) ErrHandlerProductRecord {
+func HandlerErrProductRecord(err error, ctx *context.Context) ErrHandlerProductRecord {
+	*ctx = context.WithValue(*ctx, middlewares.AppErrorKey, err)
+
 	switch err.(type) {
 	default:
 		return getErrorProductRecord(err)

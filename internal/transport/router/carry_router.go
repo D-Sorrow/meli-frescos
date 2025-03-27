@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitCarryRouter(rt *chi.Mux, db *sql.DB) {
+func InitCarryRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 	repositoryImp := repository.NewCarrierRepository(db)
 
 	serviceImp := service.NewCarryService(repositoryImp)
@@ -17,7 +18,7 @@ func InitCarryRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewCarryHandler(serviceImp)
 
 	rt.Route("/api/v1/carrier", func(rt chi.Router) {
-		rt.Get("/", handler.GetAllCarriers())
-		rt.Post("/", handler.CreateCarrier())
+		rt.Get("/", handler.GetAllCarriers(ctx))
+		rt.Post("/", handler.CreateCarrier(ctx))
 	})
 }

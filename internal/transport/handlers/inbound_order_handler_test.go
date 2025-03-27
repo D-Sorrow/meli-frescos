@@ -2,16 +2,18 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	serviceMock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 type inboundResponseDto[T any] struct {
@@ -21,6 +23,8 @@ type inboundResponseDto[T any] struct {
 }
 
 func TestCreateInboundOrder(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("CreateInboundOrder success with valid request", func(t *testing.T) {
 		mockService := new(serviceMock.MockInboundOrderService)
 		handler := NewInboundOrderHandler(mockService)
@@ -42,7 +46,7 @@ func TestCreateInboundOrder(t *testing.T) {
 		req := httptest.NewRequest("POST", "/api/v1/inboundOrders", bytes.NewBuffer(reqBody))
 		rr := httptest.NewRecorder()
 		router := chi.NewRouter()
-		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder())
+		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, http.StatusCreated, rr.Code)
@@ -64,10 +68,14 @@ func TestCreateInboundOrder(t *testing.T) {
 			Data: nil,
 		}
 
-		req := httptest.NewRequest("POST", "/api/v1/inboundOrders", bytes.NewBuffer([]byte("invalid body")))
+		req := httptest.NewRequest(
+			"POST",
+			"/api/v1/inboundOrders",
+			bytes.NewBuffer([]byte("invalid body")),
+		)
 		rr := httptest.NewRecorder()
 		router := chi.NewRouter()
-		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder())
+		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -101,7 +109,7 @@ func TestCreateInboundOrder(t *testing.T) {
 		req := httptest.NewRequest("POST", "/api/v1/inboundOrders", bytes.NewBuffer(reqBody))
 		rr := httptest.NewRecorder()
 		router := chi.NewRouter()
-		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder())
+		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -133,13 +141,14 @@ func TestCreateInboundOrder(t *testing.T) {
 			Data: nil,
 		}
 
-		mockService.On("CreateInboundOrder", inboundOrderModel).Return(service.ErrInboundOrderServiceGeneric)
+		mockService.On("CreateInboundOrder", inboundOrderModel).
+			Return(service.ErrInboundOrderServiceGeneric)
 
 		reqBody, _ := json.Marshal(inboundOrderRequest)
 		req := httptest.NewRequest("POST", "/api/v1/inboundOrders", bytes.NewBuffer(reqBody))
 		rr := httptest.NewRecorder()
 		router := chi.NewRouter()
-		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder())
+		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)

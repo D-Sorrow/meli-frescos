@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -17,12 +18,14 @@ import (
 )
 
 func TestGetAllCarriers(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("find all carriers", func(t *testing.T) {
 		serviceMock := service_mock.NewCarryServiceMock()
 		serviceMock.On("GetAllCarriers").Return(fakeModels.Carriers, error(nil))
 		handlerImp := NewCarryHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/api/v1/carrier", handlerImp.GetAllCarriers())
+		router.Get("/api/v1/carrier", handlerImp.GetAllCarriers(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/carrier", nil)
@@ -47,7 +50,7 @@ func TestGetAllCarriers(t *testing.T) {
 		serviceMock.On("GetAllCarriers").Return(nil, serviceErr.ErrCarrierServiceDefault)
 		handlerImp := NewCarryHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Get("/api/v1/carrier", handlerImp.GetAllCarriers())
+		router.Get("/api/v1/carrier", handlerImp.GetAllCarriers(&ctx))
 
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/carrier", nil)
@@ -69,13 +72,15 @@ func TestGetAllCarriers(t *testing.T) {
 }
 
 func TestCreateCarrier(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("create warehouse ok", func(t *testing.T) {
 		serviceMock := service_mock.NewCarryServiceMock()
 		fakeCarrier := fakeModels.Carriers[0]
 		serviceMock.On("CreateCarrier", mock.Anything).Return(fakeCarrier, error(nil))
 		handlerImp := NewCarryHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Post("/api/v1/carrier", handlerImp.CreateCarrier())
+		router.Post("/api/v1/carrier", handlerImp.CreateCarrier(&ctx))
 
 		res := httptest.NewRecorder()
 		reqBody := `{
@@ -85,7 +90,11 @@ func TestCreateCarrier(t *testing.T) {
 						"telephone": "374-776-3015",
 						"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/carrier", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/carrier",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedCode := http.StatusCreated
@@ -107,7 +116,7 @@ func TestCreateCarrier(t *testing.T) {
 		serviceMock.On("CreateCarrier", mock.Anything).Return(nil, error(nil))
 		handlerImp := NewCarryHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Post("/api/v1/carrier", handlerImp.CreateCarrier())
+		router.Post("/api/v1/carrier", handlerImp.CreateCarrier(&ctx))
 
 		res := httptest.NewRecorder()
 		reqBody := `{
@@ -116,7 +125,11 @@ func TestCreateCarrier(t *testing.T) {
 						"telephone": "374-776-3015",
 						"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/carrier", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/carrier",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedCode := http.StatusUnprocessableEntity
@@ -138,7 +151,7 @@ func TestCreateCarrier(t *testing.T) {
 		serviceMock.On("CreateCarrier", mock.Anything).Return(nil, error(nil))
 		handlerImp := NewCarryHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Post("/api/v1/carrier", handlerImp.CreateCarrier())
+		router.Post("/api/v1/carrier", handlerImp.CreateCarrier(&ctx))
 
 		res := httptest.NewRecorder()
 		reqBody := `{
@@ -148,7 +161,11 @@ func TestCreateCarrier(t *testing.T) {
 						"telephone": "374-776-3015",
 						"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/carrier", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/carrier",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedCode := http.StatusBadRequest
@@ -167,10 +184,11 @@ func TestCreateCarrier(t *testing.T) {
 
 	t.Run("create warehouse fail - conflict", func(t *testing.T) {
 		serviceMock := service_mock.NewCarryServiceMock()
-		serviceMock.On("CreateCarrier", mock.Anything).Return(models.Carrier{}, serviceErr.ErrCarrierCidDuplicate)
+		serviceMock.On("CreateCarrier", mock.Anything).
+			Return(models.Carrier{}, serviceErr.ErrCarrierCidDuplicate)
 		handlerImp := NewCarryHandler(serviceMock)
 		router := chi.NewRouter()
-		router.Post("/api/v1/carrier", handlerImp.CreateCarrier())
+		router.Post("/api/v1/carrier", handlerImp.CreateCarrier(&ctx))
 
 		res := httptest.NewRecorder()
 		reqBody := `{
@@ -180,7 +198,11 @@ func TestCreateCarrier(t *testing.T) {
 						"telephone": "374-776-3015",
 						"locality_id": 1
 					}`
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/carrier", bytes.NewBuffer([]byte(reqBody)))
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v1/carrier",
+			bytes.NewBuffer([]byte(reqBody)),
+		)
 		router.ServeHTTP(res, req)
 
 		expectedCode := http.StatusConflict

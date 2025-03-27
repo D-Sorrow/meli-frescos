@@ -54,18 +54,18 @@ func (a *ServerChi) Run() (err error) {
 	router.NewBuyerRouter(rt, database.Db, &ctx)
 	router.NewPurchaseOrderRouter(rt, database.Db, &ctx)
 	router.NewOrderStatusRouter(rt, database.Db, &ctx)
-	router.InitLocalityRouter(rt, database.Db)
-	router.InitSellerRouter(rt, database.Db)
-	router.InitWarehouseRouter(rt, database.Db)
-	router.InitEmployeeRouter(rt, database.Db)
-	router.InitInboundOrderRouter(rt, database.Db)
-	router.InitProductBatchesRouter(rt, database.Db)
-	router.InitSectionsRouter(rt, database.Db)
+	router.InitLocalityRouter(rt, database.Db, &ctx)
+	router.InitSellerRouter(rt, database.Db, &ctx)
+	router.InitWarehouseRouter(rt, database.Db, &ctx)
+	router.InitEmployeeRouter(rt, database.Db, &ctx)
+	router.InitInboundOrderRouter(rt, database.Db, &ctx)
+	router.InitProductBatchesRouter(rt, database.Db, &ctx)
+	router.InitSectionsRouter(rt, database.Db, &ctx)
 
-	router.InitProductRouter(rt, database.Db)
-	router.InitProductRecordRouter(rt, database.Db)
+	router.InitProductRouter(rt, database.Db, &ctx)
+	router.InitProductRecordRouter(rt, database.Db, &ctx)
 
-	router.InitCarryRouter(rt, database.Db)
+	router.InitCarryRouter(rt, database.Db, &ctx)
 	err = http.ListenAndServe(a.serverAddress, rt)
 	return
 }

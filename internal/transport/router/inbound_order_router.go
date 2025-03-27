@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitInboundOrderRouter(rt *chi.Mux, db *sql.DB) {
+func InitInboundOrderRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 
 	repositoryImp := repository.NewInboundOrderRepository(db)
 
@@ -18,6 +19,6 @@ func InitInboundOrderRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewInboundOrderHandler(serviceImp)
 
 	rt.Route("/api/v1/inboundOrders", func(rt chi.Router) {
-		rt.Post(("/"), handler.CreateInboundOrder())
+		rt.Post(("/"), handler.CreateInboundOrder(ctx))
 	})
 }

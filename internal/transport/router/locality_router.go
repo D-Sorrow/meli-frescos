@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func InitLocalityRouter(rt *chi.Mux, db *sql.DB) {
+func InitLocalityRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 
 	repositoryImp := repository.NewLocalityRepository(db)
 
@@ -18,8 +19,8 @@ func InitLocalityRouter(rt *chi.Mux, db *sql.DB) {
 	handler := handlers.NewLocalityHandler(serviceImp)
 
 	rt.Route("/api/v1/localities", func(rt chi.Router) {
-		rt.Post("/", handler.CreateLocality())
-		rt.Get("/reportSellers", handler.GetSellersByLocality())
-		rt.Get("/reportCarries", handler.GetCarriersByLocality())
+		rt.Post("/", handler.CreateLocality(ctx))
+		rt.Get("/reportSellers", handler.GetSellersByLocality(ctx))
+		rt.Get("/reportCarries", handler.GetCarriersByLocality(ctx))
 	})
 }
