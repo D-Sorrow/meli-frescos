@@ -16,27 +16,27 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `provinces`
+-- Table structure for table `application_logs`
 --
 
-DROP TABLE IF EXISTS `provinces`;
+DROP TABLE IF EXISTS `application_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `provinces` (
+CREATE TABLE `application_logs` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `province_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `id_country_fk` int NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `id_country_fk` (`id_country_fk`),
-  CONSTRAINT `provinces_ibfk_1` FOREIGN KEY (`id_country_fk`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `level` enum('INFO','ERROR','WARNING','DEBUG') NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `source` varchar(255) NOT NULL,
+  `detail` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `provinces`
+-- Dumping data for table `application_logs`
 --
 
-INSERT INTO `provinces` VALUES (1,'Amazonas',1),(2,'Antioquia',1),(3,'Arauca',1),(4,'Atlántico',1),(5,'Bogotá',1),(6,'Bolívar',1),(7,'Boyacá',1),(8,'Caldas',1),(9,'Caquetá',1),(10,'Casanare',1),(11,'Cauca',1),(12,'Cesar',1),(13,'Chocó',1),(14,'Córdoba',1),(15,'Cundinamarca',1),(16,'Guainía',1),(17,'Guaviare',1),(18,'Huila',1),(19,'La Guajira',1),(20,'Magdalena',1),(21,'Meta',1),(22,'Nariño',1),(23,'Norte de Santander',1),(24,'Putumayo',1),(25,'Quindío',1),(26,'Risaralda',1),(27,'San Andrés y Providencia',1),(28,'Santander',1),(29,'Sucre',1),(30,'Tolima',1),(31,'Valle del Cauca',1),(32,'Vaupés',1),(33,'Vichada',1);
+INSERT INTO `application_logs` VALUES (1,'ERROR','2025-03-26 18:46:07','/api/v1/buyers/NoId','HTTP error occurred with status code: 400'),(2,'ERROR','2025-03-26 20:51:53','/api/v1/buyers/NoId','HTTP error occurred with status code: 400'),(3,'ERROR','2025-03-26 20:53:02','/api/v1/buyers/NoId','Error occurred with status code [400], ERR: Invalid buyer ID format'),(4,'ERROR','2025-03-27 02:16:28','/api/v1/buyers/NoId','Error occurred with status code [400], ERR: Invalid buyer ID format');
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -47,4 +47,4 @@ INSERT INTO `provinces` VALUES (1,'Amazonas',1),(2,'Antioquia',1),(3,'Arauca',1)
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-27 10:34:17
+-- Dump completed on 2025-03-27 10:34:16
