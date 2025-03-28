@@ -3,10 +3,10 @@ package server
 import (
 	"context"
 
-	db_config "github.com/D-Sorrow/meli-frescos/internal/infrastructure/config"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/db"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/router"
+	db_config "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/config"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/db"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/middlewares"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/router"
 	"github.com/melisource/fury_go-platform/pkg/fury"
 )
 
