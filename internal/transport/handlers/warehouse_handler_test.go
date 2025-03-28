@@ -8,12 +8,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	serviceErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	handlerErr "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	fakeModels "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	serviceErr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	handlerErr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	fakeModels "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/models"
+	service_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -26,7 +26,12 @@ func TestGetWarehouses(t *testing.T) {
 		warehousesFake := fakeModels.WarehousesFake
 		serviceMock.On("GetWarehouses").Return(warehousesFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/warehouses", handler.GetWarehouses(&ctx))
 
 		res := httptest.NewRecorder()
@@ -52,7 +57,12 @@ func TestGetWarehouses(t *testing.T) {
 
 		serviceMock.On("GetWarehouses").Return(nil, error(serviceErr.ErrWarehouseServiceDefault))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/warehouses", handler.GetWarehouses(&ctx))
 
 		res := httptest.NewRecorder()
@@ -81,7 +91,12 @@ func TestGetWarehouseById(t *testing.T) {
 		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("GetWarehouseById", mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById(&ctx))
 
 		res := httptest.NewRecorder()
@@ -115,7 +130,12 @@ func TestGetWarehouseById(t *testing.T) {
 		serviceMock.On("GetWarehouseById", mock.Anything).
 			Return(models.Warehouse{}, error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById(&ctx))
 
 		res := httptest.NewRecorder()
@@ -140,7 +160,12 @@ func TestGetWarehouseById(t *testing.T) {
 		serviceMock.On("GetWarehouseById", mock.Anything).
 			Return(models.Warehouse{}, error(handlerErr.ErrWarehouseIdNotValid))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/warehouses/{id}", handler.GetWarehouseById(&ctx))
 
 		res := httptest.NewRecorder()
@@ -168,7 +193,12 @@ func TestCreateWarehouse(t *testing.T) {
 		warehouseFake := fakeModels.WarehousesFake[1]
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/warehouses", handler.CreateWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -214,7 +244,12 @@ func TestCreateWarehouse(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/warehouses", handler.CreateWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -249,7 +284,12 @@ func TestCreateWarehouse(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("CreateWarehouse", mock.Anything).Return(nil, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/warehouses", handler.CreateWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -286,7 +326,12 @@ func TestCreateWarehouse(t *testing.T) {
 		serviceMock.On("CreateWarehouse", mock.Anything).
 			Return(models.Warehouse{}, error(serviceErr.ErrWarehouseCodeDuplicate))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/warehouses", handler.CreateWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -329,7 +374,12 @@ func TestPatchWarehouse(t *testing.T) {
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
 			Return(warehouseFake, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -376,7 +426,12 @@ func TestPatchWarehouse(t *testing.T) {
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
 			Return(models.Warehouse{}, error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -413,7 +468,12 @@ func TestPatchWarehouse(t *testing.T) {
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
 			Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -449,7 +509,12 @@ func TestPatchWarehouse(t *testing.T) {
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
 			Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -485,7 +550,12 @@ func TestPatchWarehouse(t *testing.T) {
 		serviceMock.On("PatchWarehouse", mock.Anything, mock.Anything).
 			Return(models.Warehouse{}, error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Patch("/api/v1/warehouses/{id}", handler.PatchWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -524,7 +594,12 @@ func TestDeleteWarehouse(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -549,7 +624,12 @@ func TestDeleteWarehouse(t *testing.T) {
 		serviceMock.On("DeleteWarehouse", mock.Anything).
 			Return(error(serviceErr.ErrWarehouseNotFound))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse(&ctx))
 
 		res := httptest.NewRecorder()
@@ -573,7 +653,12 @@ func TestDeleteWarehouse(t *testing.T) {
 		serviceMock := service_mock.NewWarehouseServiceMock()
 		serviceMock.On("DeleteWarehouse", mock.Anything).Return(error(nil))
 		handler := NewWarehouseHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Delete("/api/v1/warehouses/{id}", handler.DeleteWarehouse(&ctx))
 
 		res := httptest.NewRecorder()

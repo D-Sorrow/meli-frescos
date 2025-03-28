@@ -4,21 +4,20 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
-func InitProductRecordRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
+func InitProductRecordRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 	repositoryImp := repository.NewProductRecordRepository(db)
 
 	serviceImp := service.NewProductRecordService(repositoryImp)
 
 	handler := handlers.NewProductRecordHandler(serviceImp)
 
-	rt.Route("/api/v1/productRecords", func(rt chi.Router) {
-		rt.Post("/", handler.SaveProductRecord(ctx))
-		rt.Get("/", handler.GetProductRecord(ctx))
-	})
+	group := rt.Group("/api/v1/productRecords")
+	group.Post("/", handler.SaveProductRecord(ctx))
+	group.Get("/", handler.GetProductRecord(ctx))
 }

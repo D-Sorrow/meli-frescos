@@ -3,11 +3,12 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
-	"github.com/go-sql-driver/mysql"
 	"log"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/entities"
 )
 
 type ProductRepository struct {
@@ -30,7 +31,20 @@ func (p ProductRepository) GetProducts() (map[int]models.Product, error) {
 
 	for rows.Next() {
 		var product models.Product
-		err := rows.Scan(&product.Id, &product.Attributes.Description, &product.Attributes.ExpirationRate, &product.Attributes.FreezingRate, &product.Attributes.Dimensions.Height, &product.Attributes.Dimensions.Length, &product.Attributes.NetWeight, &product.Attributes.ProductCode, &product.Attributes.TemperatureFreezing, &product.Attributes.Dimensions.Width, &product.Attributes.ProductTypeId, &product.SellerId)
+		err := rows.Scan(
+			&product.Id,
+			&product.Attributes.Description,
+			&product.Attributes.ExpirationRate,
+			&product.Attributes.FreezingRate,
+			&product.Attributes.Dimensions.Height,
+			&product.Attributes.Dimensions.Length,
+			&product.Attributes.NetWeight,
+			&product.Attributes.ProductCode,
+			&product.Attributes.TemperatureFreezing,
+			&product.Attributes.Dimensions.Width,
+			&product.Attributes.ProductTypeId,
+			&product.SellerId,
+		)
 		if err != nil {
 			return nil, repository.ErrRepositoryProductUnknown
 		}
@@ -44,7 +58,20 @@ func (p ProductRepository) GetProductByID(id int) (models.Product, error) {
 	var product models.Product
 	productEntity := entities.ProductEntity{}
 	row := p.db.QueryRow(productEntity.GetProductById(id))
-	err := row.Scan(&product.Id, &product.Attributes.Description, &product.Attributes.ExpirationRate, &product.Attributes.FreezingRate, &product.Attributes.Dimensions.Height, &product.Attributes.Dimensions.Length, &product.Attributes.NetWeight, &product.Attributes.ProductCode, &product.Attributes.TemperatureFreezing, &product.Attributes.Dimensions.Width, &product.Attributes.ProductTypeId, &product.SellerId)
+	err := row.Scan(
+		&product.Id,
+		&product.Attributes.Description,
+		&product.Attributes.ExpirationRate,
+		&product.Attributes.FreezingRate,
+		&product.Attributes.Dimensions.Height,
+		&product.Attributes.Dimensions.Length,
+		&product.Attributes.NetWeight,
+		&product.Attributes.ProductCode,
+		&product.Attributes.TemperatureFreezing,
+		&product.Attributes.Dimensions.Width,
+		&product.Attributes.ProductTypeId,
+		&product.SellerId,
+	)
 
 	if err != nil {
 		return models.Product{}, repository.ErrRepositoryProductNotFound
@@ -56,11 +83,20 @@ func (p ProductRepository) SaveProduct(productSave models.Product) error {
 
 	var productEntity entities.ProductEntity
 	var errSql *mysql.MySQLError
-	_, err := p.db.Exec(productEntity.SaveProduct(), productSave.Attributes.Description,
-		productSave.Attributes.ExpirationRate, productSave.Attributes.FreezingRate,
-		productSave.Attributes.Dimensions.Height, productSave.Attributes.Dimensions.Length,
-		productSave.Attributes.NetWeight, productSave.Attributes.ProductCode,
-		productSave.Attributes.TemperatureFreezing, productSave.Attributes.Dimensions.Width, productSave.Attributes.ProductTypeId, productSave.SellerId)
+	_, err := p.db.Exec(
+		productEntity.SaveProduct(),
+		productSave.Attributes.Description,
+		productSave.Attributes.ExpirationRate,
+		productSave.Attributes.FreezingRate,
+		productSave.Attributes.Dimensions.Height,
+		productSave.Attributes.Dimensions.Length,
+		productSave.Attributes.NetWeight,
+		productSave.Attributes.ProductCode,
+		productSave.Attributes.TemperatureFreezing,
+		productSave.Attributes.Dimensions.Width,
+		productSave.Attributes.ProductTypeId,
+		productSave.SellerId,
+	)
 	if err != nil {
 		log.Println(err)
 		if errors.As(err, &errSql) {

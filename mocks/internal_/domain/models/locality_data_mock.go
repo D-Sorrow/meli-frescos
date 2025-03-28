@@ -1,10 +1,10 @@
 package models
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	localityModels "github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	//"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	localityModels "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	//"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
 )
 
 var LocalityRequest = models.Locality{

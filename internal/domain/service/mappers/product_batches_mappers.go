@@ -1,11 +1,13 @@
 package mappers
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/entities"
 )
 
-func ProductBatchesToProductBatchesEntity(m *models.ProductBatches3) *entities.ProductBatchesEntity {
+func ProductBatchesToProductBatchesEntity(
+	m *models.ProductBatches3,
+) *entities.ProductBatchesEntity {
 	return &entities.ProductBatchesEntity{
 		Id:                 m.ID,
 		BatchNumber:        m.ProductBatches2Attributes.BatchNumber,
@@ -21,7 +23,9 @@ func ProductBatchesToProductBatchesEntity(m *models.ProductBatches3) *entities.P
 	}
 }
 
-func ProductBatches2AttributesFksToProductBatchesEntity(m *models.ProductBatches2AttributesFks) *entities.ProductBatchesEntity {
+func ProductBatches2AttributesFksToProductBatchesEntity(
+	m *models.ProductBatches2AttributesFks,
+) *entities.ProductBatchesEntity {
 	return &entities.ProductBatchesEntity{
 		Id:                 m.Id,
 		BatchNumber:        m.BatchNumber,
@@ -37,7 +41,9 @@ func ProductBatches2AttributesFksToProductBatchesEntity(m *models.ProductBatches
 	}
 }
 
-func ProductBatchesEntityToProductBatches(m *entities.ProductBatchesEntity) *models.ProductBatches3 {
+func ProductBatchesEntityToProductBatches(
+	m *entities.ProductBatchesEntity,
+) *models.ProductBatches3 {
 	return &models.ProductBatches3{
 		ID: m.Id,
 		ProductBatches2Attributes: models.ProductBatches2Attributes{
@@ -57,7 +63,9 @@ func ProductBatchesEntityToProductBatches(m *entities.ProductBatchesEntity) *mod
 	}
 }
 
-func ReportProductBatchesEntityToReportProductBatches(m *entities.ReportProductBatchEntity) *models.ReportProductBatch {
+func ReportProductBatchesEntityToReportProductBatches(
+	m *entities.ReportProductBatchEntity,
+) *models.ReportProductBatch {
 	return &models.ReportProductBatch{
 		Id:                  m.Id,
 		Warehouse_id:        m.Warehouse_id,

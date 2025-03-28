@@ -8,11 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	serviceErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	fakeModels "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	serviceErr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	fakeModels "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/models"
+	service_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +24,12 @@ func TestGetAllCarriers(t *testing.T) {
 		serviceMock := service_mock.NewCarryServiceMock()
 		serviceMock.On("GetAllCarriers").Return(fakeModels.Carriers, error(nil))
 		handlerImp := NewCarryHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/carrier", handlerImp.GetAllCarriers(&ctx))
 
 		res := httptest.NewRecorder()
@@ -49,7 +54,12 @@ func TestGetAllCarriers(t *testing.T) {
 		serviceMock := service_mock.NewCarryServiceMock()
 		serviceMock.On("GetAllCarriers").Return(nil, serviceErr.ErrCarrierServiceDefault)
 		handlerImp := NewCarryHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/carrier", handlerImp.GetAllCarriers(&ctx))
 
 		res := httptest.NewRecorder()
@@ -79,7 +89,12 @@ func TestCreateCarrier(t *testing.T) {
 		fakeCarrier := fakeModels.Carriers[0]
 		serviceMock.On("CreateCarrier", mock.Anything).Return(fakeCarrier, error(nil))
 		handlerImp := NewCarryHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/carrier", handlerImp.CreateCarrier(&ctx))
 
 		res := httptest.NewRecorder()
@@ -115,7 +130,12 @@ func TestCreateCarrier(t *testing.T) {
 		serviceMock := service_mock.NewCarryServiceMock()
 		serviceMock.On("CreateCarrier", mock.Anything).Return(nil, error(nil))
 		handlerImp := NewCarryHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/carrier", handlerImp.CreateCarrier(&ctx))
 
 		res := httptest.NewRecorder()
@@ -150,7 +170,12 @@ func TestCreateCarrier(t *testing.T) {
 		serviceMock := service_mock.NewCarryServiceMock()
 		serviceMock.On("CreateCarrier", mock.Anything).Return(nil, error(nil))
 		handlerImp := NewCarryHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/carrier", handlerImp.CreateCarrier(&ctx))
 
 		res := httptest.NewRecorder()
@@ -187,7 +212,12 @@ func TestCreateCarrier(t *testing.T) {
 		serviceMock.On("CreateCarrier", mock.Anything).
 			Return(models.Carrier{}, serviceErr.ErrCarrierCidDuplicate)
 		handlerImp := NewCarryHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/carrier", handlerImp.CreateCarrier(&ctx))
 
 		res := httptest.NewRecorder()

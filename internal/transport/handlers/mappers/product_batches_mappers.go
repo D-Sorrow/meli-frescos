@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
 )
 
 func MapperToProductBatches(productBatches dto.ProductBatchesDto) models.ProductBatches {
@@ -53,7 +53,9 @@ func MapperToProductBatchesDTO2(productBatches *models.ProductBatches3) dto.Prod
 	}
 }
 
-func ProductBatchesCreateDTOToPProductBatchesFKs(productBatches *dto.ProductBatchesDtoReport) *models.ProductBatches2AttributesFks {
+func ProductBatchesCreateDTOToPProductBatchesFKs(
+	productBatches *dto.ProductBatchesDtoReport,
+) *models.ProductBatches2AttributesFks {
 	return &models.ProductBatches2AttributesFks{
 		ProductBatches2FKs: models.ProductBatches2FKs{
 

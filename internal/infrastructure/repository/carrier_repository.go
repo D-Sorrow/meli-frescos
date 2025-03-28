@@ -3,9 +3,9 @@ package repository
 import (
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	repoErrors "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	repoErrors "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/error_management"
 )
 
 type CarrierRepository struct {
@@ -66,7 +66,10 @@ func (cr *CarrierRepository) GetCarrierById(id int) (models.Carrier, error) {
 		&carrier.Telephone,
 		&carrier.LocalityId)
 	if err != nil {
-		return models.Carrier{}, repoErrors.HandleRepositoryError(repository.ErrCarrierNotFound, err)
+		return models.Carrier{}, repoErrors.HandleRepositoryError(
+			repository.ErrCarrierNotFound,
+			err,
+		)
 	}
 
 	return carrier, nil
@@ -87,12 +90,18 @@ func (cr *CarrierRepository) CreateCarrier(carrier models.Carrier) (models.Carri
 		carrier.Telephone,
 		carrier.LocalityId)
 	if err != nil {
-		return models.Carrier{}, repoErrors.HandleRepositoryError(repoErrors.HandleCarrierRepositoryError(err), err)
+		return models.Carrier{}, repoErrors.HandleRepositoryError(
+			repoErrors.HandleCarrierRepositoryError(err),
+			err,
+		)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return models.Carrier{}, repoErrors.HandleRepositoryError(repository.ErrCarrierGetUpdatedOrCreatedItem, err)
+		return models.Carrier{}, repoErrors.HandleRepositoryError(
+			repository.ErrCarrierGetUpdatedOrCreatedItem,
+			err,
+		)
 	}
 	newCarrier, _ := cr.GetCarrierById(int(id))
 	return newCarrier, nil

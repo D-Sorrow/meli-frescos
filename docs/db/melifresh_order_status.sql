@@ -1,10 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS `melifresh` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `melifresh`;
 -- MySQL dump 10.13  Distrib 8.0.41, for macos15 (arm64)
 --
--- Host: altergeistsrveastus2.mysql.database.azure.com    Database: melifresh
+-- Host: 127.0.0.1    Database: bgow15s436
 -- ------------------------------------------------------
--- Server version	8.0.39-azure
+-- Server version	9.2.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -26,7 +24,7 @@ DROP TABLE IF EXISTS `order_status`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `order_status` (
   `id` int NOT NULL,
-  `description` varchar(30) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -35,11 +33,7 @@ CREATE TABLE `order_status` (
 -- Dumping data for table `order_status`
 --
 
-LOCK TABLES `order_status` WRITE;
-/*!40000 ALTER TABLE `order_status` DISABLE KEYS */;
 INSERT INTO `order_status` VALUES (1,'Pendiente por pago'),(2,'Pagado'),(3,'En camino'),(4,'Entregado'),(5,'Devuelto'),(6,'Cancelado');
-/*!40000 ALTER TABLE `order_status` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -50,4 +44,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-02-15 11:10:16
+-- Dump completed on 2025-03-27 10:34:16

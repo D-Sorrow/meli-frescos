@@ -7,13 +7,14 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type EmployeeHandler struct {
@@ -28,13 +29,13 @@ func NewEmployeeHandler(service service.EmployeeService) *EmployeeHandler {
 	}
 }
 
-func (handler *EmployeeHandler) GetEmployees(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (handler *EmployeeHandler) GetEmployees(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		employees, err := handler.service.GetEmployees()
 
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 		var employeesDto []dto.EmployeeDTO
 		for _, employee := range employees {
@@ -43,16 +44,17 @@ func (handler *EmployeeHandler) GetEmployees(ctx *context.Context) http.HandlerF
 		}
 
 		respondWithJSON(w, http.StatusOK, "Success", employeesDto)
+		return nil
 	}
 }
 
-func (handler *EmployeeHandler) GetEmployeeById(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (handler *EmployeeHandler) GetEmployeeById(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		employee, err := handler.service.GetEmployeeById(id)
@@ -60,27 +62,28 @@ func (handler *EmployeeHandler) GetEmployeeById(ctx *context.Context) http.Handl
 
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		respondWithJSON(w, http.StatusOK, "Success", employeeDto)
+		return nil
 	}
 }
 
-func (handler *EmployeeHandler) CreateEmployee(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (handler *EmployeeHandler) CreateEmployee(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var employeeToCreate dto.EmployeeRequestDTO
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&employeeToCreate); err != nil {
 			handler.handleError(w, error_management.ErrEmployeeBodyDecoding, ctx)
-			return
+			return nil
 		}
 
 		if err := handler.validator.Struct(employeeToCreate); err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		employeeModel := mappers.EmployeeDTOToModel(employeeToCreate)
@@ -88,21 +91,22 @@ func (handler *EmployeeHandler) CreateEmployee(ctx *context.Context) http.Handle
 
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		employeeDto := mappers.EmployeeModelToDTO(employeeCreated)
 		respondWithJSON(w, http.StatusOK, "Success", employeeDto)
+		return nil
 	}
 }
 
-func (handler *EmployeeHandler) UpdateEmployee(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (handler *EmployeeHandler) UpdateEmployee(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		idString := chi.URLParam(r, "id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		var employeePatchRequestDTO dto.EmployeePatchRequestDTO
@@ -110,7 +114,7 @@ func (handler *EmployeeHandler) UpdateEmployee(ctx *context.Context) http.Handle
 		decoder.DisallowUnknownFields()
 		if err := decoder.Decode(&employeePatchRequestDTO); err != nil {
 			handler.handleError(w, error_management.ErrEmployeeBodyDecoding, ctx)
-			return
+			return nil
 		}
 
 		employeePatchRequestModel := mappers.EmployeePatchRequestDTOToModel(employeePatchRequestDTO)
@@ -118,37 +122,39 @@ func (handler *EmployeeHandler) UpdateEmployee(ctx *context.Context) http.Handle
 
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		employeeDto := mappers.EmployeeModelToDTO(employeeUpdated)
 		respondWithJSON(w, http.StatusOK, "Success", employeeDto)
+		return nil
 	}
 }
 
-func (handler *EmployeeHandler) DeleteEmployee(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (handler *EmployeeHandler) DeleteEmployee(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		employeeIdString := chi.URLParam(r, "id")
 		employeeId, err := strconv.Atoi(employeeIdString)
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		errorService := handler.service.DeleteEmployee(employeeId)
 		if errorService != nil {
 			handler.handleError(w, errorService, ctx)
-			return
+			return nil
 		}
 
 		respondWithJSON(w, http.StatusOK, "Empleado eliminado correctamente", "")
+		return nil
 	}
 }
 
 func (handler *EmployeeHandler) GetReportInboundOrdersByEmployee(
 	ctx *context.Context,
-) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		idString := r.URL.Query().Get("id")
 		fmt.Printf("id: %s", idString)
 
@@ -161,10 +167,11 @@ func (handler *EmployeeHandler) GetReportInboundOrdersByEmployee(
 
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		respondWithJSON(w, http.StatusOK, "Success", employeesDTO)
+		return nil
 	}
 }
 

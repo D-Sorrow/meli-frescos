@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type InboundOrderHandler struct {
@@ -25,20 +26,20 @@ func NewInboundOrderHandler(service service.InboundOrderService) *InboundOrderHa
 	}
 }
 
-func (handler *InboundOrderHandler) CreateInboundOrder(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (handler *InboundOrderHandler) CreateInboundOrder(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var inboundOrderToCreate dto.InboundOrderRequestDTO
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(&inboundOrderToCreate); err != nil {
 			handler.handleError(w, error_management.ErrInboundOrderBodyDecoding, ctx)
-			return
+			return nil
 		}
 
 		if err := handler.validator.Struct(inboundOrderToCreate); err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		inboundOrderModel := mappers.InboundOrderRequestDTOToModel(inboundOrderToCreate)
@@ -46,11 +47,12 @@ func (handler *InboundOrderHandler) CreateInboundOrder(ctx *context.Context) htt
 
 		if err != nil {
 			handler.handleError(w, err, ctx)
-			return
+			return nil
 		}
 
 		inboundOrderResponseDto := mappers.InboundOrderModelToResponseDTO(*inboundOrderModel)
 		handler.respondWithJSON(w, http.StatusCreated, "Success", inboundOrderResponseDto)
+		return nil
 	}
 }
 

@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	entity "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	entity "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/entities"
 )
 
 func ToSectionsEntity(sections models.Sections) entity.SectionsEntity {

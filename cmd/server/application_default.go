@@ -2,42 +2,16 @@ package server
 
 import (
 	"context"
-	"net/http"
 
-	db_config "github.com/D-Sorrow/meli-frescos/internal/infrastructure/config"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/db"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/middlewares"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/router"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	db_config "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/config"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/db"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/middlewares"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/router"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 )
 
-type ConfigServerChi struct {
-	ServerAddress string
-}
-
-func NewServerChi(cfg *ConfigServerChi) *ServerChi {
-	defaultConfig := &ConfigServerChi{
-		ServerAddress: ":8080",
-	}
-	if cfg == nil {
-		cfg = defaultConfig
-	} else if cfg.ServerAddress == "" {
-		cfg.ServerAddress = defaultConfig.ServerAddress
-	}
-
-	return &ServerChi{
-		serverAddress: cfg.ServerAddress,
-	}
-}
-
-type ServerChi struct {
-	serverAddress string
-}
-
-func (a *ServerChi) Run() (err error) {
-	rt := chi.NewRouter()
+func Run(app *fury.Application) (err error) {
+	rt := app.Router
 	ctx := context.Background()
 	dbconf, err := db_config.NewConfig()
 
@@ -47,8 +21,6 @@ func (a *ServerChi) Run() (err error) {
 
 	database := db.NewDataBase(dbconf)
 
-	rt.Use(middleware.Logger)
-	rt.Use(middleware.Recoverer)
 	rt.Use(middlewares.LogErrorMiddleware(database, &ctx))
 
 	router.NewBuyerRouter(rt, database.Db, &ctx)
@@ -61,11 +33,11 @@ func (a *ServerChi) Run() (err error) {
 	router.InitInboundOrderRouter(rt, database.Db, &ctx)
 	router.InitProductBatchesRouter(rt, database.Db, &ctx)
 	router.InitSectionsRouter(rt, database.Db, &ctx)
-
 	router.InitProductRouter(rt, database.Db, &ctx)
 	router.InitProductRecordRouter(rt, database.Db, &ctx)
-
 	router.InitCarryRouter(rt, database.Db, &ctx)
-	err = http.ListenAndServe(a.serverAddress, rt)
+
+	err = app.Run()
+
 	return
 }

@@ -4,27 +4,23 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_go-core/pkg/web"
 
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
 )
 
-func InitSectionsRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
+func InitSectionsRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 
 	repositoryImp := repository.NewSectionsRepository(db)
 	serviceImp := service.NewSectionsService(repositoryImp)
 
 	handler := handlers.NewSectionsHandler(serviceImp)
 
-	rt.Route("/sections", func(rt chi.Router) {
-		rt.Get("/", handler.GetSections(ctx))
-		rt.Get("/{id}", handler.GetSectionsById(ctx))
-		rt.Post("/", handler.SaveSections(ctx))
-		rt.Delete("/{id}", handler.DeleteSections(ctx))
-		//rt.Patch("/id", handler.UpdateSections(ctx))
-
-	})
-
+	group := rt.Group("/sections")
+	group.Get("/", handler.GetSections(ctx))
+	group.Get("/{id}", handler.GetSectionsById(ctx))
+	group.Post("/", handler.SaveSections(ctx))
+	group.Delete("/{id}", handler.DeleteSections(ctx))
 }

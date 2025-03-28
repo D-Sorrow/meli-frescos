@@ -1,10 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS `melifresh` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `melifresh`;
 -- MySQL dump 10.13  Distrib 8.0.41, for macos15 (arm64)
 --
--- Host: altergeistsrveastus2.mysql.database.azure.com    Database: melifresh
+-- Host: 127.0.0.1    Database: bgow15s436
 -- ------------------------------------------------------
--- Server version	8.0.39-azure
+-- Server version	9.2.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -18,11 +16,11 @@ USE `melifresh`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Dumping events for database 'melifresh'
+-- Dumping events for database 'bgow15s436'
 --
 
 --
--- Dumping routines for database 'melifresh'
+-- Dumping routines for database 'bgow15s436'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -34,4 +32,4 @@ USE `melifresh`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-02-15 11:10:23
+-- Dump completed on 2025-03-27 10:34:17

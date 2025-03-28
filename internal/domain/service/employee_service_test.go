@@ -3,10 +3,10 @@ package service
 import (
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	mockRepo "github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	mockRepo "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/require"
 )
 
@@ -201,7 +201,8 @@ func TestCreateEmployee(t *testing.T) {
 		}
 		mockRepo := new(mockRepo.MockEmployeeRepository)
 		mockRepo.On("GetEmployees").Return(nil, nil)
-		mockRepo.On("CreateEmployee", &newEmployee).Return(repository.ErrEmployeeInternalServerError)
+		mockRepo.On("CreateEmployee", &newEmployee).
+			Return(repository.ErrEmployeeInternalServerError)
 
 		serv := NewEmployeeService(mockRepo)
 
@@ -215,58 +216,61 @@ func TestCreateEmployee(t *testing.T) {
 }
 
 func TestUpdateEmployee(t *testing.T) {
-	t.Run("UpdateEmployee success with all the parameters returning the employee updated", func(t *testing.T) {
+	t.Run(
+		"UpdateEmployee success with all the parameters returning the employee updated",
+		func(t *testing.T) {
 
-		cardNumberId := "ABCD001"
-		firstName := "JUANA"
-		lastName := "DE ARCO"
-		warehouseId := 2
+			cardNumberId := "ABCD001"
+			firstName := "JUANA"
+			lastName := "DE ARCO"
+			warehouseId := 2
 
-		employeePatchToUpdate := models.EmployeePatchRequest{
-			CardNumberId: &cardNumberId,
-			FirstName:    &firstName,
-			LastName:     &lastName,
-			WarehouseId:  &warehouseId,
-		}
+			employeePatchToUpdate := models.EmployeePatchRequest{
+				CardNumberId: &cardNumberId,
+				FirstName:    &firstName,
+				LastName:     &lastName,
+				WarehouseId:  &warehouseId,
+			}
 
-		employeeToUpdate := models.Employee{
-			Id:           1,
-			CardNumberId: "ABCD001",
-			FirstName:    "JUANA",
-			LastName:     "DE ARCO",
-			WarehouseId:  2,
-		}
-
-		existingEmployees := map[int]models.Employee{
-			1: {
+			employeeToUpdate := models.Employee{
 				Id:           1,
 				CardNumberId: "ABCD001",
-				FirstName:    "ALEJANDRO",
-				LastName:     "SALAZAR",
-				WarehouseId:  1,
-			},
-		}
+				FirstName:    "JUANA",
+				LastName:     "DE ARCO",
+				WarehouseId:  2,
+			}
 
-		expectedUpdatedEmployee := models.Employee{
-			Id:           1,
-			CardNumberId: "ABCD001",
-			FirstName:    "JUANA",
-			LastName:     "DE ARCO",
-			WarehouseId:  2,
-		}
+			existingEmployees := map[int]models.Employee{
+				1: {
+					Id:           1,
+					CardNumberId: "ABCD001",
+					FirstName:    "ALEJANDRO",
+					LastName:     "SALAZAR",
+					WarehouseId:  1,
+				},
+			}
 
-		mockRepo := new(mockRepo.MockEmployeeRepository)
-		mockRepo.On("GetEmployeeById", 1).Return(existingEmployees[1], nil)
-		mockRepo.On("GetEmployees").Return(existingEmployees, nil)
-		mockRepo.On("UpdateEmployee", &employeeToUpdate).Return(nil)
+			expectedUpdatedEmployee := models.Employee{
+				Id:           1,
+				CardNumberId: "ABCD001",
+				FirstName:    "JUANA",
+				LastName:     "DE ARCO",
+				WarehouseId:  2,
+			}
 
-		serv := NewEmployeeService(mockRepo)
+			mockRepo := new(mockRepo.MockEmployeeRepository)
+			mockRepo.On("GetEmployeeById", 1).Return(existingEmployees[1], nil)
+			mockRepo.On("GetEmployees").Return(existingEmployees, nil)
+			mockRepo.On("UpdateEmployee", &employeeToUpdate).Return(nil)
 
-		employeeUpdated, err := serv.UpdateEmployee(1, employeePatchToUpdate)
+			serv := NewEmployeeService(mockRepo)
 
-		require.NoError(t, err)
-		require.Equal(t, expectedUpdatedEmployee, employeeUpdated)
-	})
+			employeeUpdated, err := serv.UpdateEmployee(1, employeePatchToUpdate)
+
+			require.NoError(t, err)
+			require.Equal(t, expectedUpdatedEmployee, employeeUpdated)
+		},
+	)
 
 	t.Run("UpdateEmployee fails when employee not exists", func(t *testing.T) {
 		cardNumberId := "ABCD001"
@@ -335,52 +339,55 @@ func TestUpdateEmployee(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("UpdateEmployee fails when the CarNumberId already exists in other employee", func(t *testing.T) {
+	t.Run(
+		"UpdateEmployee fails when the CarNumberId already exists in other employee",
+		func(t *testing.T) {
 
-		cardNumberId := "ABCD002"
-		firstName := "JUANA"
-		lastName := "DE ARCO"
-		warehouseId := 2
+			cardNumberId := "ABCD002"
+			firstName := "JUANA"
+			lastName := "DE ARCO"
+			warehouseId := 2
 
-		employeePatchToUpdate := models.EmployeePatchRequest{
-			CardNumberId: &cardNumberId,
-			FirstName:    &firstName,
-			LastName:     &lastName,
-			WarehouseId:  &warehouseId,
-		}
+			employeePatchToUpdate := models.EmployeePatchRequest{
+				CardNumberId: &cardNumberId,
+				FirstName:    &firstName,
+				LastName:     &lastName,
+				WarehouseId:  &warehouseId,
+			}
 
-		existingEmployees := map[int]models.Employee{
-			1: {
-				Id:           1,
-				CardNumberId: "ABCD001",
-				FirstName:    "ALEJANDRO",
-				LastName:     "SALAZAR",
-				WarehouseId:  1,
-			},
-			2: {
-				Id:           2,
-				CardNumberId: "ABCD002",
-				FirstName:    "ALEJANDRA",
-				LastName:     "GARCIA",
-				WarehouseId:  2,
-			},
-		}
+			existingEmployees := map[int]models.Employee{
+				1: {
+					Id:           1,
+					CardNumberId: "ABCD001",
+					FirstName:    "ALEJANDRO",
+					LastName:     "SALAZAR",
+					WarehouseId:  1,
+				},
+				2: {
+					Id:           2,
+					CardNumberId: "ABCD002",
+					FirstName:    "ALEJANDRA",
+					LastName:     "GARCIA",
+					WarehouseId:  2,
+				},
+			}
 
-		mockRepo := new(mockRepo.MockEmployeeRepository)
-		mockRepo.On("GetEmployeeById", 1).Return(existingEmployees[1], nil)
-		mockRepo.On("GetEmployees").Return(existingEmployees, nil)
+			mockRepo := new(mockRepo.MockEmployeeRepository)
+			mockRepo.On("GetEmployeeById", 1).Return(existingEmployees[1], nil)
+			mockRepo.On("GetEmployees").Return(existingEmployees, nil)
 
-		serv := NewEmployeeService(mockRepo)
+			serv := NewEmployeeService(mockRepo)
 
-		employeeUpdated, err := serv.UpdateEmployee(1, employeePatchToUpdate)
+			employeeUpdated, err := serv.UpdateEmployee(1, employeePatchToUpdate)
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, service.ErrEmployeeAlreadyExists)
-		require.Empty(t, employeeUpdated)
+			require.Error(t, err)
+			require.ErrorIs(t, err, service.ErrEmployeeAlreadyExists)
+			require.Empty(t, employeeUpdated)
 
-		mockRepo.AssertNotCalled(t, "UpdateEmployee")
-		mockRepo.AssertExpectations(t)
-	})
+			mockRepo.AssertNotCalled(t, "UpdateEmployee")
+			mockRepo.AssertExpectations(t)
+		},
+	)
 }
 
 func TestDeleteEmployee(t *testing.T) {
@@ -473,31 +480,39 @@ func TestGetReportInboundOrdersByEmployee(t *testing.T) {
 		require.Nil(t, employeesActual)
 	})
 
-	t.Run("GetReportInboundOrdersByEmployee fails when repository returns an error for specific employee", func(t *testing.T) {
-		mockRepo := new(mockRepo.MockEmployeeRepository)
+	t.Run(
+		"GetReportInboundOrdersByEmployee fails when repository returns an error for specific employee",
+		func(t *testing.T) {
+			mockRepo := new(mockRepo.MockEmployeeRepository)
 
-		mockRepo.On("GetInboundOrdersCountByEmployeeId", 1).Return(models.EmployeeReportInboundOrders{}, repository.ErrEmployeeInternalServerError)
+			mockRepo.On("GetInboundOrdersCountByEmployeeId", 1).
+				Return(models.EmployeeReportInboundOrders{}, repository.ErrEmployeeInternalServerError)
 
-		serv := NewEmployeeService(mockRepo)
+			serv := NewEmployeeService(mockRepo)
 
-		employeesActual, err := serv.GetReportInboundOrdersByEmployee("1")
+			employeesActual, err := serv.GetReportInboundOrdersByEmployee("1")
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, service.ErrEmployeeServiceDefault)
-		require.Nil(t, employeesActual)
-	})
+			require.Error(t, err)
+			require.ErrorIs(t, err, service.ErrEmployeeServiceDefault)
+			require.Nil(t, employeesActual)
+		},
+	)
 
-	t.Run("GetReportInboundOrdersByEmployee fails when repository returns an error for all employees", func(t *testing.T) {
-		mockRepo := new(mockRepo.MockEmployeeRepository)
+	t.Run(
+		"GetReportInboundOrdersByEmployee fails when repository returns an error for all employees",
+		func(t *testing.T) {
+			mockRepo := new(mockRepo.MockEmployeeRepository)
 
-		mockRepo.On("GetInboundOrdersCountAllEmployees").Return([]models.EmployeeReportInboundOrders{}, repository.ErrEmployeeInternalServerError)
+			mockRepo.On("GetInboundOrdersCountAllEmployees").
+				Return([]models.EmployeeReportInboundOrders{}, repository.ErrEmployeeInternalServerError)
 
-		serv := NewEmployeeService(mockRepo)
+			serv := NewEmployeeService(mockRepo)
 
-		employeesActual, err := serv.GetReportInboundOrdersByEmployee("")
+			employeesActual, err := serv.GetReportInboundOrdersByEmployee("")
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, service.ErrEmployeeServiceDefault)
-		require.Nil(t, employeesActual)
-	})
+			require.Error(t, err)
+			require.ErrorIs(t, err, service.ErrEmployeeServiceDefault)
+			require.Nil(t, employeesActual)
+		},
+	)
 }

@@ -1,6 +1,6 @@
 package models
 
-import "github.com/D-Sorrow/meli-frescos/internal/domain/models"
+import "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 
 func ReturnAttributesModel() models.ProductAttribute {
 	return models.ProductAttribute{

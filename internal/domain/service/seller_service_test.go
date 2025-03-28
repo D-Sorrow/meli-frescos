@@ -3,11 +3,11 @@ package service_test
 import (
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	repository_errors "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	repository_errors "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	service_errors "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	repository_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/require"
 )
 

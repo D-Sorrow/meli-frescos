@@ -9,12 +9,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	service_errors "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	service_errors "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	service_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -137,7 +137,12 @@ func TestSellerHandlerCreate(t *testing.T) {
 				Return(tc.responseServiceMock, tc.errorServiceMock)
 
 			handler := handlers.NewHandlerService(mockService)
-			router := chi.NewRouter()
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
 			router.Post("/api/v1/sellers", handler.CreateSeller(&ctx))
 
 			var sellerJSON []byte
@@ -197,7 +202,12 @@ func TestSellerHandlerReadAll(t *testing.T) {
 			mockService.On("GetSellers").Return(tc.responseServiceMock, tc.errorServiceMock)
 
 			handler := handlers.NewHandlerService(mockService)
-			router := chi.NewRouter()
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
 			router.Get("/api/v1/sellers", handler.GetSellers(&ctx))
 
 			req := httptest.NewRequest("GET", "/api/v1/sellers", nil)
@@ -259,7 +269,12 @@ func TestSellerHandlerRead(t *testing.T) {
 				Return(tc.responseServiceMock, tc.errorServiceMock)
 
 			handler := handlers.NewHandlerService(mockService)
-			router := chi.NewRouter()
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
 			router.Get("/api/v1/sellers/{id}", handler.GetSeller(&ctx))
 
 			req := httptest.NewRequest(
@@ -351,7 +366,12 @@ func TestSellerHandlerUpdate(t *testing.T) {
 				Return(tc.responseServiceMock, tc.errorServiceMock)
 
 			handler := handlers.NewHandlerService(mockService)
-			router := chi.NewRouter()
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
 			router.Patch("/api/v1/sellers/{id}", handler.UpdateSeller(&ctx))
 
 			var sellerJSON []byte
@@ -423,7 +443,12 @@ func TestSellerHandlerDelete(t *testing.T) {
 			mockService.On("DeleteSeller", tc.requestUrlParams).Return(tc.errorServiceMock)
 
 			handler := handlers.NewHandlerService(mockService)
-			router := chi.NewRouter()
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
 			router.Delete("/api/v1/sellers/{id}", handler.DeleteSeller(&ctx))
 
 			req := httptest.NewRequest(

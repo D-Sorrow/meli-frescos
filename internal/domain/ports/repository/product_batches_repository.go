@@ -3,8 +3,8 @@ package repository
 import (
 	"errors"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/entities"
 )
 
 type ProductBatchesRepository interface {
@@ -16,6 +16,10 @@ type ProductBatchesRepository interface {
 }
 
 var (
-	ErrForeignKeysNotValidProductBatches = errors.New("the foreign keys of the requested Productbatches order are not valid")
-	ErrProductBatchNotFoundWithID        = errors.New("the requested  Productbatches order does not exist with ID provided")
+	ErrForeignKeysNotValidProductBatches = errors.New(
+		"the foreign keys of the requested Productbatches order are not valid",
+	)
+	ErrProductBatchNotFoundWithID = errors.New(
+		"the requested  Productbatches order does not exist with ID provided",
+	)
 )

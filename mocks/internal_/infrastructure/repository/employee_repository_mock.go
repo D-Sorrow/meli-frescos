@@ -1,7 +1,7 @@
 package repository_mock
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -37,7 +37,9 @@ func (m *MockEmployeeRepository) DeleteEmployee(employeeId int) error {
 	return args.Error(0)
 }
 
-func (m *MockEmployeeRepository) GetInboundOrdersCountByEmployeeId(employeeId int) (models.EmployeeReportInboundOrders, error) {
+func (m *MockEmployeeRepository) GetInboundOrdersCountByEmployeeId(
+	employeeId int,
+) (models.EmployeeReportInboundOrders, error) {
 	args := m.Called(employeeId)
 	return args.Get(0).(models.EmployeeReportInboundOrders), args.Error(1)
 }

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	repoErrors "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	repoErrors "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/error_management"
 )
 
 type WarehouseRepository struct {
@@ -78,7 +78,9 @@ func (wr *WarehouseRepository) GetWarehouseById(id int) (models.Warehouse, error
 	return warehouse, nil
 }
 
-func (wr *WarehouseRepository) CreateWarehouse(warehouse models.Warehouse) (models.Warehouse, error) {
+func (wr *WarehouseRepository) CreateWarehouse(
+	warehouse models.Warehouse,
+) (models.Warehouse, error) {
 	query := `INSERT INTO warehouses 
 				(warehouse_code,
 				address,
@@ -109,11 +111,17 @@ func (wr *WarehouseRepository) CreateWarehouse(warehouse models.Warehouse) (mode
 
 }
 
-func (wr *WarehouseRepository) PatchWarehouse(id int, data map[string]interface{}) (models.Warehouse, error) {
+func (wr *WarehouseRepository) PatchWarehouse(
+	id int,
+	data map[string]interface{},
+) (models.Warehouse, error) {
 
 	idExists, err := wr.verifyIdExist(id)
 	if err != nil {
-		return models.Warehouse{}, repoErrors.HandleRepositoryError(repository.ErrWarehouseDataBase, err)
+		return models.Warehouse{}, repoErrors.HandleRepositoryError(
+			repository.ErrWarehouseDataBase,
+			err,
+		)
 	}
 
 	if !idExists {
@@ -146,12 +154,18 @@ func (wr *WarehouseRepository) PatchWarehouse(id int, data map[string]interface{
 
 	result, err := wr.db.Exec(query, args...)
 	if err != nil {
-		return models.Warehouse{}, repoErrors.HandleRepositoryError(repoErrors.HandleWarehouseRepositoryError(err), err)
+		return models.Warehouse{}, repoErrors.HandleRepositoryError(
+			repoErrors.HandleWarehouseRepositoryError(err),
+			err,
+		)
 	}
 
 	rowsAfected, err := result.RowsAffected()
 	if err != nil {
-		return models.Warehouse{}, repoErrors.HandleRepositoryError(repository.ErrWarehouseDataBase, err)
+		return models.Warehouse{}, repoErrors.HandleRepositoryError(
+			repository.ErrWarehouseDataBase,
+			err,
+		)
 	}
 	if rowsAfected == 0 {
 		return models.Warehouse{}, repository.ErrWarehouseUpdateBySameData
@@ -159,7 +173,10 @@ func (wr *WarehouseRepository) PatchWarehouse(id int, data map[string]interface{
 
 	UpdatedWarehouse, err := wr.GetWarehouseById(id)
 	if err != nil {
-		return models.Warehouse{}, repoErrors.HandleRepositoryError(repository.ErrWarehouseGetUpdatedOrCreatedItem, err)
+		return models.Warehouse{}, repoErrors.HandleRepositoryError(
+			repository.ErrWarehouseGetUpdatedOrCreatedItem,
+			err,
+		)
 	}
 	return UpdatedWarehouse, nil
 

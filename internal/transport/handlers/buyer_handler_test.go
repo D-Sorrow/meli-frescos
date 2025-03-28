@@ -5,20 +5,21 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_go-core/pkg/web"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/mocks/helpers"
-	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/helpers"
+	service_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
 )
 
 func switchBuyerTest(
 	t *testing.T,
 	test helpers.HandlerTestStruct,
-	rt *chi.Mux,
+	rt *web.Router,
 	buyerHandler *handlers.BuyerHandler,
 ) {
 	t.Helper()
@@ -71,7 +72,12 @@ func assertBuyerHandler(
 ) {
 	t.Helper()
 
-	rt := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rt := app.Router
 	buyerHandler := handlers.NewBuyerHandler(mockService)
 	switchBuyerTest(t, test, rt, buyerHandler)
 }

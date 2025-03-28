@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"log"
 
-	er "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/mappers"
 	"github.com/go-sql-driver/mysql"
+	er "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/mappers"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 )
 
 type SectionsRepository struct {
@@ -21,7 +21,9 @@ func NewSectionsRepository(db *sql.DB) *SectionsRepository {
 
 func (s SectionsRepository) GetSections() map[int]models.Sections {
 	sectionsMap := make(map[int]models.Sections)
-	rows, err := s.db.Query("SELECT id,section_number,current_temperature,minimum_temperature,current_capacity,minimum_capacity,maximum_capacity,warehouse_id,product_type_id FROM melifresh.sections")
+	rows, err := s.db.Query(
+		"SELECT id,section_number,current_temperature,minimum_temperature,current_capacity,minimum_capacity,maximum_capacity,warehouse_id,product_type_id FROM melifresh.sections",
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +31,17 @@ func (s SectionsRepository) GetSections() map[int]models.Sections {
 
 	for rows.Next() {
 		var sections models.Sections
-		err := rows.Scan(&sections.Id, &sections.Section_number, &sections.Current_temperature, &sections.Minimum_temperature, &sections.Current_capacity, &sections.Minimum_capacity, &sections.Maximum_capacity, &sections.Warehouse_id, &sections.Product_type_id)
+		err := rows.Scan(
+			&sections.Id,
+			&sections.Section_number,
+			&sections.Current_temperature,
+			&sections.Minimum_temperature,
+			&sections.Current_capacity,
+			&sections.Minimum_capacity,
+			&sections.Maximum_capacity,
+			&sections.Warehouse_id,
+			&sections.Product_type_id,
+		)
 		if err != nil {
 			panic(err)
 		}
@@ -41,8 +53,21 @@ func (s SectionsRepository) GetSections() map[int]models.Sections {
 func (s SectionsRepository) GetSectionsById(id int) (models.Sections, error) {
 	var sections models.Sections
 
-	row := s.db.QueryRow("SELECT id,section_number,current_temperature,minimum_temperature,current_capacity,minimum_capacity,maximum_capacity,warehouse_id,product_type_id FROM melifresh.sections WHERE  id = ?", id)
-	err := row.Scan(&sections.Id, &sections.Section_number, &sections.Current_temperature, &sections.Minimum_temperature, &sections.Current_capacity, &sections.Minimum_capacity, &sections.Maximum_capacity, &sections.Warehouse_id, &sections.Product_type_id)
+	row := s.db.QueryRow(
+		"SELECT id,section_number,current_temperature,minimum_temperature,current_capacity,minimum_capacity,maximum_capacity,warehouse_id,product_type_id FROM melifresh.sections WHERE  id = ?",
+		id,
+	)
+	err := row.Scan(
+		&sections.Id,
+		&sections.Section_number,
+		&sections.Current_temperature,
+		&sections.Minimum_temperature,
+		&sections.Current_capacity,
+		&sections.Minimum_capacity,
+		&sections.Maximum_capacity,
+		&sections.Warehouse_id,
+		&sections.Product_type_id,
+	)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -60,7 +85,17 @@ func (s SectionsRepository) SaveSections(sectionsSave models.Sections) error {
 	row := "INSERT INTO melifresh.sections" +
 		"(section_number,current_temperature,minimum_temperature,current_capacity,minimum_capacity,maximum_capacity,warehouse_id,product_type_id)" +
 		"VALUES (?,?,?,?,?,?,?,?)"
-	_, err := s.db.Exec(row, sectionsEntity.Section_number, sectionsEntity.Current_temperature, sectionsEntity.Minimum_temperature, sectionsEntity.Current_temperature, sectionsEntity.Minimum_capacity, sectionsEntity.Maximum_capacity, sectionsEntity.Warehouse_id, sectionsEntity.Product_type_id)
+	_, err := s.db.Exec(
+		row,
+		sectionsEntity.Section_number,
+		sectionsEntity.Current_temperature,
+		sectionsEntity.Minimum_temperature,
+		sectionsEntity.Current_temperature,
+		sectionsEntity.Minimum_capacity,
+		sectionsEntity.Maximum_capacity,
+		sectionsEntity.Warehouse_id,
+		sectionsEntity.Product_type_id,
+	)
 
 	if err != nil {
 		return err
@@ -80,7 +115,10 @@ func (s SectionsRepository) DeleteSections(id int) error {
 	return nil
 }
 
-func (s *SectionsRepository) UpdateSections(id int, sections models.SectionsPatch) (models.Sections, error) {
+func (s *SectionsRepository) UpdateSections(
+	id int,
+	sections models.SectionsPatch,
+) (models.Sections, error) {
 	value, err := s.GetSectionsById(id)
 
 	if err != nil {
@@ -112,7 +150,18 @@ func (s *SectionsRepository) UpdateSections(id int, sections models.SectionsPatc
 		value.Maximum_capacity = *sections.Maximum_capacity
 	}
 
-	_, err = s.db.Exec("UPDATE sections SET section_number=?,current_temperature=?,minimum_temperature=?,current_capacity =?,minimum_capacity =?,maximum_capacity =?,warehouse_id =?, product_type_id=?", value.Section_number, value.Current_temperature, value.Minimum_temperature, value.Current_capacity, value.Minimum_capacity, value.Maximum_capacity, value.Warehouse_id, value.Product_type_id, value.Id)
+	_, err = s.db.Exec(
+		"UPDATE sections SET section_number=?,current_temperature=?,minimum_temperature=?,current_capacity =?,minimum_capacity =?,maximum_capacity =?,warehouse_id =?, product_type_id=?",
+		value.Section_number,
+		value.Current_temperature,
+		value.Minimum_temperature,
+		value.Current_capacity,
+		value.Minimum_capacity,
+		value.Maximum_capacity,
+		value.Warehouse_id,
+		value.Product_type_id,
+		value.Id,
+	)
 
 	if err != nil {
 		log.Print(err)

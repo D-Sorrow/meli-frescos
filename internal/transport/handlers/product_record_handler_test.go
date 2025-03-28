@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	handler2 "github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	handler2 "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	service_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -41,7 +41,12 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/productRecords", handler.SaveProductRecord(&ctx))
 
 		rq := httptest.NewRequest(
@@ -72,7 +77,12 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/productRecords", handler.SaveProductRecord(&ctx))
 
 		rq := httptest.NewRequest(
@@ -97,7 +107,12 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/productRecords", handler.SaveProductRecord(&ctx))
 
 		rq := httptest.NewRequest(http.MethodPost, "/api/v1/productRecords", nil)
@@ -130,7 +145,12 @@ func TestProductRecordHandler_SaveProductRecord(t *testing.T) {
 
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/productRecords", handler.SaveProductRecord(&ctx))
 
 		rq := httptest.NewRequest(
@@ -159,7 +179,12 @@ func TestProductRecordHandler_GetProductRecord(t *testing.T) {
 
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/productRecords", handler.GetProductRecord(&ctx))
 
 		rq := httptest.NewRequest(http.MethodGet, "/api/v1/productRecords", nil)
@@ -183,7 +208,12 @@ func TestProductRecordHandler_GetProductRecord(t *testing.T) {
 
 		handler := handler2.NewProductRecordHandler(mockProductRecordService)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/productRecords", handler.GetProductRecord(&ctx))
 
 		rq := httptest.NewRequest(http.MethodGet, "/api/v1/productRecords", nil)

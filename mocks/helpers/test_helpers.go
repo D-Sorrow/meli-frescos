@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_go-core/pkg/web"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -138,7 +138,7 @@ func InitRepositoryMock[T MockInterface](
 
 func GetResult(
 	t *testing.T,
-	rt *chi.Mux,
+	rt *web.Router,
 	path string,
 	httpMethod string,
 	httpBody []byte,

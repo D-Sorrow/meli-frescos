@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 )
 
 type WarehouseServiceInterface interface {
@@ -22,5 +22,7 @@ var (
 	ErrWarehouseLocalityIdNotFound      = errors.New("locality id not found")
 	ErrWarehouseUpdateBySameData        = errors.New("enter different data to update")
 	ErrWarehouseFKConstraintFail        = errors.New("foreign key constraint fails")
-	ErrWarehouseGetUpdatedOrCreatedItem = errors.New("the warehouse was created or updated but could not be displayed")
+	ErrWarehouseGetUpdatedOrCreatedItem = errors.New(
+		"the warehouse was created or updated but could not be displayed",
+	)
 )

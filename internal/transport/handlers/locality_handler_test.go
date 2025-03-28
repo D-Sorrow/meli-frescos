@@ -9,11 +9,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	fakeModels "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	fakeModels "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/models"
+	service_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -27,7 +27,12 @@ func TestCreateLocality(t *testing.T) {
 			Return(fakeModels.LocalityRequest, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/localities/", handlerImp.CreateLocality(&ctx))
 
 		localityJSON, errMarshal := json.Marshal(fakeModels.JsonLocalityCreatedDto)
@@ -63,7 +68,12 @@ func TestCreateLocality(t *testing.T) {
 			Return(fakeModels.LocalityBadRequest, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/localities/", handlerImp.CreateLocality(&ctx))
 
 		localityJSON, errMarshal := json.Marshal(fakeModels.JsonBadLocalityCreatedDto)
@@ -99,7 +109,12 @@ func TestCreateLocality(t *testing.T) {
 			Return(fakeModels.LocalityBadRequest, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/localities/", handlerImp.CreateLocality(&ctx))
 
 		localityJSON, errMarshal := json.Marshal("{,make:'dsad',}")
@@ -128,7 +143,12 @@ func TestCreateLocality(t *testing.T) {
 			Return(models.Locality{}, service.ErrLocalityAlreadyExists)
 		handlerImp := NewLocalityHandler(serviceMock)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Post("/api/v1/localities/", handlerImp.CreateLocality(&ctx))
 
 		localityJSON, errMarshal := json.Marshal(fakeModels.JsonLocalityCreatedDto)
@@ -171,7 +191,12 @@ func TestGetSellersByLocality(t *testing.T) {
 			Return(fakeModels.LocalitySellersResponse, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
@@ -204,7 +229,12 @@ func TestGetSellersByLocality(t *testing.T) {
 			Return(fakeModels.LocalitySellersResponse, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
@@ -237,7 +267,12 @@ func TestGetSellersByLocality(t *testing.T) {
 			Return(models.LocalitySellers{}, service.ErrLocalityNotFound)
 		handlerImp := NewLocalityHandler(serviceMock)
 
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/api/v1/localities/reportSellers", handlerImp.GetSellersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
@@ -271,7 +306,12 @@ func TestGetCarriersByLocality(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
 		serviceMock.On("GetCarriersByAllLocalities").Return(fakeModels.LocalityCarriers, error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
@@ -295,7 +335,12 @@ func TestGetCarriersByLocality(t *testing.T) {
 		serviceMock := service_mock.NewLocalityServiceMock()
 		serviceMock.On("GetCarriersByAllLocalities").Return(nil, service.ErrGetAllLocalities)
 		handlerImp := NewLocalityHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
@@ -320,7 +365,12 @@ func TestGetCarriersByLocality(t *testing.T) {
 		serviceMock.On("GetCarriersByLocality", mock.Anything).
 			Return(fakeModels.LocalityCarriers[0], error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
@@ -345,7 +395,12 @@ func TestGetCarriersByLocality(t *testing.T) {
 		serviceMock.On("GetCarriersByLocality", mock.Anything).
 			Return(fakeModels.LocalityCarriers[0], error(nil))
 		handlerImp := NewLocalityHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()
@@ -369,7 +424,12 @@ func TestGetCarriersByLocality(t *testing.T) {
 		serviceMock.On("GetCarriersByLocality", mock.Anything).
 			Return(models.LocalityCarriers{}, service.ErrLocalityNotFound)
 		handlerImp := NewLocalityHandler(serviceMock)
-		router := chi.NewRouter()
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
 		router.Get("/reportCarries", handlerImp.GetCarriersByLocality(&ctx))
 
 		res := httptest.NewRecorder()

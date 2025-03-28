@@ -1,7 +1,7 @@
 package service_mock
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -13,12 +13,16 @@ func NewLocalityServiceMock() *LocalityServiceMock {
 	return &LocalityServiceMock{}
 }
 
-func (_l *LocalityServiceMock) CreateLocality(locality models.Locality) (l models.Locality, err error) {
+func (_l *LocalityServiceMock) CreateLocality(
+	locality models.Locality,
+) (l models.Locality, err error) {
 	args := _l.Called(locality)
 	return args.Get(0).(models.Locality), args.Error(1)
 }
 
-func (_l *LocalityServiceMock) GetSellersByLocality(localityId int) (ls models.LocalitySellers, err error) {
+func (_l *LocalityServiceMock) GetSellersByLocality(
+	localityId int,
+) (ls models.LocalitySellers, err error) {
 	args := _l.Called(localityId)
 	return args.Get(0).(models.LocalitySellers), args.Error(1)
 }

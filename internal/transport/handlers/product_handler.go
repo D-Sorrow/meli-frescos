@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	dto "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	mapper "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	dto "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	mapper "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type ProductHandler struct {
@@ -22,13 +23,13 @@ func NewProductHandler(serv service.ProductService) *ProductHandler {
 	return &ProductHandler{serv: serv}
 }
 
-func (hand *ProductHandler) GetProducts(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
+func (hand *ProductHandler) GetProducts(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
 		mapProduct, errGet := hand.serv.GetProducts()
 		if errGet != nil {
 			errSpe := error_management.HandlerErrorProduct(errGet, ctx)
 			response.JSON(writer, errSpe.GetCode(), errSpe)
-			return
+			return nil
 		}
 		mapProductDto := mapper.MapperToProductsDto(mapProduct)
 
@@ -37,12 +38,14 @@ func (hand *ProductHandler) GetProducts(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Products successfully retrieved",
 			Data: mapProductDto,
 		})
+
+		return nil
 	}
 }
 
-func (hand *ProductHandler) GetProductByID(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		id, errConv := strconv.Atoi(chi.URLParam(request, "id"))
+func (hand *ProductHandler) GetProductByID(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
+		id, errConv := strconv.Atoi(chi.URLParam(r, "id"))
 
 		if errConv != nil {
 			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
@@ -50,7 +53,7 @@ func (hand *ProductHandler) GetProductByID(ctx *context.Context) http.HandlerFun
 				Msg:  errConv.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		product, err := hand.serv.GetProductByID(id)
@@ -63,7 +66,7 @@ func (hand *ProductHandler) GetProductByID(ctx *context.Context) http.HandlerFun
 				Msg:  errSpe.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(writer, http.StatusOK, dto.ResponseDTO{
@@ -72,20 +75,21 @@ func (hand *ProductHandler) GetProductByID(ctx *context.Context) http.HandlerFun
 			Data: productDto,
 		})
 
+		return nil
 	}
 }
 
-func (hand *ProductHandler) SaveProduct(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
+func (hand *ProductHandler) SaveProduct(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
 		var product dto.ProductDto
 
-		if err := json.NewDecoder(request.Body).Decode(&product); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 			response.JSON(writer, http.StatusUnprocessableEntity, dto.ResponseDTO{
 				Code: http.StatusUnprocessableEntity,
 				Msg:  err.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		errValidate := product.Validate()
@@ -95,7 +99,7 @@ func (hand *ProductHandler) SaveProduct(ctx *context.Context) http.HandlerFunc {
 				Msg:  errValidate.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		errSave := hand.serv.SaveProduct(mapper.MapperToProductModel(&product))
@@ -106,38 +110,40 @@ func (hand *ProductHandler) SaveProduct(ctx *context.Context) http.HandlerFunc {
 				Msg:  errSpe.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		response.JSON(writer, http.StatusCreated, dto.ResponseDTO{
 			Code: http.StatusCreated,
 			Msg:  "Product successfully saved",
 			Data: nil,
 		})
+
+		return nil
 	}
 }
 
-func (hand *ProductHandler) UpdateProduct(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		id, errConv := strconv.Atoi(chi.URLParam(request, "id"))
+func (hand *ProductHandler) UpdateProduct(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
+		id, errConv := strconv.Atoi(chi.URLParam(r, "id"))
 		if errConv != nil {
 			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
 				Code: http.StatusBadRequest,
 				Msg:  errConv.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		var att dto.AttributeDto
 
-		decoder := json.NewDecoder(request.Body)
+		decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(&att); err != nil {
 			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
 				Code: http.StatusBadRequest,
 				Msg:  err.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		if errValidation := att.Validation(); errValidation != nil {
@@ -146,7 +152,7 @@ func (hand *ProductHandler) UpdateProduct(ctx *context.Context) http.HandlerFunc
 				Msg:  errValidation.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		product, errUpdate := hand.serv.UpdateProduct(id, mapper.ModelToMap(att))
@@ -159,26 +165,28 @@ func (hand *ProductHandler) UpdateProduct(ctx *context.Context) http.HandlerFunc
 				Msg:  errSpe.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		response.JSON(writer, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
 			Msg:  "Product successfully updated",
 			Data: productDto,
 		})
+
+		return nil
 	}
 }
 
-func (hand *ProductHandler) DeleteProduct(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		id, errConv := strconv.Atoi(chi.URLParam(request, "id"))
+func (hand *ProductHandler) DeleteProduct(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
+		id, errConv := strconv.Atoi(chi.URLParam(r, "id"))
 		if errConv != nil {
 			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
 				Code: http.StatusBadRequest,
 				Msg:  errConv.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		errDelete := hand.serv.DeleteProduct(id)
 		if errDelete != nil {
@@ -188,7 +196,7 @@ func (hand *ProductHandler) DeleteProduct(ctx *context.Context) http.HandlerFunc
 				Msg:  errSp.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(writer, http.StatusNoContent, dto.ResponseDTO{
@@ -196,5 +204,7 @@ func (hand *ProductHandler) DeleteProduct(ctx *context.Context) http.HandlerFunc
 			Msg:  "Product successfully deleted",
 			Data: nil,
 		})
+
+		return nil
 	}
 }

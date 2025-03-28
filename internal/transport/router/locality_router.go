@@ -4,23 +4,21 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
-func InitLocalityRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
-
+func InitLocalityRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 	repositoryImp := repository.NewLocalityRepository(db)
 
 	serviceImp := service.NewLocalityService(repositoryImp)
 
 	handler := handlers.NewLocalityHandler(serviceImp)
 
-	rt.Route("/api/v1/localities", func(rt chi.Router) {
-		rt.Post("/", handler.CreateLocality(ctx))
-		rt.Get("/reportSellers", handler.GetSellersByLocality(ctx))
-		rt.Get("/reportCarries", handler.GetCarriersByLocality(ctx))
-	})
+	group := rt.Group("/api/v1/localities")
+	group.Post("/", handler.CreateLocality(ctx))
+	group.Get("/reportSellers", handler.GetSellersByLocality(ctx))
+	group.Get("/reportCarries", handler.GetCarriersByLocality(ctx))
 }

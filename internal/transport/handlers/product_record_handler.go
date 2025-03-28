@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type ProductRecordHandler struct {
@@ -23,8 +24,8 @@ func NewProductRecordHandler(service service.ProductRecordService) *ProductRecor
 	}
 }
 
-func (hand *ProductRecordHandler) SaveProductRecord(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (hand *ProductRecordHandler) SaveProductRecord(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var data map[string]dto.ProductRecordDto
 
 		err := json.NewDecoder(r.Body).Decode(&data)
@@ -35,7 +36,7 @@ func (hand *ProductRecordHandler) SaveProductRecord(ctx *context.Context) http.H
 				Msg:  errSpe.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		var productRecord = dto.ProductRecordDto{
 			ProductId:      data["data"].ProductId,
@@ -50,7 +51,7 @@ func (hand *ProductRecordHandler) SaveProductRecord(ctx *context.Context) http.H
 				Msg:  errValidate.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		record, errSave := hand.service.SaveProductRecord(
@@ -63,17 +64,19 @@ func (hand *ProductRecordHandler) SaveProductRecord(ctx *context.Context) http.H
 				Msg:  errSpe.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
 			Code: http.StatusCreated,
 			Msg:  "Product record saved",
 			Data: record,
 		})
+
+		return nil
 	}
 }
-func (hand *ProductRecordHandler) GetProductRecord(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (hand *ProductRecordHandler) GetProductRecord(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id := r.URL.Query().Get("id")
 		var productId int
 		productId, _ = strconv.Atoi(id)
@@ -85,12 +88,14 @@ func (hand *ProductRecordHandler) GetProductRecord(ctx *context.Context) http.Ha
 				Msg:  errSpe.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
 			Data: records,
 		})
+
+		return nil
 	}
 }

@@ -2,12 +2,10 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"sync"
 
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/config"
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 )
 
 type DataBase struct {
@@ -19,37 +17,20 @@ var (
 	once     sync.Once
 )
 
-func Connect(cfg *config.Config) *sql.DB {
-	connStr := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?parseTime=true&tls=%t",
-		cfg.User,
-		cfg.Passwd,
-		cfg.Addr,
-		cfg.Port,
-		cfg.DBName,
-		cfg.TLS,
-	)
-
-	db, err := sql.Open("mysql", connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Successfully connected to DB")
-	return db
-}
-
-func NewDataBase(cfg *config.Config) *DataBase {
+func NewDataBase(cfg *mysql.Config) *DataBase {
 	once.Do(func() {
-		instance = &DataBase{Db: Connect(cfg)}
-		instance.Db.SetMaxOpenConns(10)
-		instance.Db.SetMaxIdleConns(5)
-		instance.Db.SetConnMaxLifetime(0)
+		dsn := cfg.FormatDSN()
+
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := db.Ping(); err != nil {
+			log.Fatal(err)
+		}
+
+		instance = &DataBase{Db: db}
 	})
 
 	return instance

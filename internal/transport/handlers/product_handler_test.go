@@ -9,12 +9,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	service2 "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	modelsMock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	service_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	service2 "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	modelsMock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/models"
+	service_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -81,7 +81,12 @@ func TestProductHandler_SaveProduct(t *testing.T) {
 			}
 
 			handler := handlers.NewProductHandler(mockService)
-			router := chi.NewRouter()
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
 			router.Post("/api/v1/products", handler.SaveProduct(&ctx))
 
 			var productJSON []byte
@@ -144,7 +149,12 @@ func TestProductHandler_GetProductByID(t *testing.T) {
 
 			handler := handlers.NewProductHandler(mockService)
 
-			router := chi.NewRouter()
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
 			router.Get("/api/v1/products/{id}", handler.GetProductByID(&ctx))
 
 			req := httptest.NewRequest(
@@ -168,7 +178,12 @@ func TestProductHandler_GetProducts(t *testing.T) {
 
 	handler := handlers.NewProductHandler(mockService)
 
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 	router.Get("/api/v1/products", handler.GetProducts(&ctx))
 
 	req := httptest.NewRequest("GET", "/api/v1/products", nil)
@@ -187,7 +202,12 @@ func TestProductHandler_GetProducts_Err(t *testing.T) {
 
 	handler := handlers.NewProductHandler(mockService)
 
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 	router.Get("/api/v1/products", handler.GetProducts(&ctx))
 
 	req := httptest.NewRequest("GET", "/api/v1/products", nil)
@@ -206,7 +226,12 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 		Return(modelsMock.ReturnMockProductModel(), nil)
 
 	handler := handlers.NewProductHandler(mockService)
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 
 	attributeJSON, _ := json.Marshal(modelsMock.ReturnAttributesModel())
 	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
@@ -226,7 +251,12 @@ func TestProductHandler_UpdateProduct_NonExistent(t *testing.T) {
 		Return(modelsMock.ReturnMockProductModel(), service2.ErrServiceProductNotFound)
 
 	handler := handlers.NewProductHandler(mockService)
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 
 	attributeJSON, _ := json.Marshal(modelsMock.ReturnAttributesModel())
 	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
@@ -243,7 +273,12 @@ func TestProductHandler_UpdateProduct_IdInvalid(t *testing.T) {
 	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 
 	attributeJSON, _ := json.Marshal(modelsMock.ReturnAttributesModel())
 	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
@@ -260,7 +295,12 @@ func TestProductHandler_UpdateProduct_DecoderErr(t *testing.T) {
 	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 
 	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
 	req := httptest.NewRequest(
@@ -283,7 +323,12 @@ func TestProductHandler_UpdateProduct_ErrValidation(t *testing.T) {
 	att.FreezingRate = 10
 
 	handler := handlers.NewProductHandler(mockService)
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 
 	attributeJSON, _ := json.Marshal(att)
 	router.Patch("/api/v1/products/{id}", handler.UpdateProduct(&ctx))
@@ -302,7 +347,12 @@ func TestProductHandler_DeleteProduct_NonExistent(t *testing.T) {
 	mockService.On("DeleteProduct", 1).Return(service2.ErrServiceProductNotFound)
 
 	handler := handlers.NewProductHandler(mockService)
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 
 	router.Delete("/api/v1/products/{id}", handler.DeleteProduct(&ctx))
 	req := httptest.NewRequest("DELETE", "/api/v1/products/1", nil)
@@ -319,7 +369,12 @@ func TestProductHandler_DeleteProduct_Existent(t *testing.T) {
 	mockService.On("DeleteProduct", 1).Return(nil)
 
 	handler := handlers.NewProductHandler(mockService)
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 
 	router.Delete("/api/v1/products/{id}", handler.DeleteProduct(&ctx))
 	req := httptest.NewRequest("DELETE", "/api/v1/products/1", nil)
@@ -336,7 +391,12 @@ func TestProductHandler_DeleteProduct_IdInvalid(t *testing.T) {
 	mockService := new(service_mock.ProductServiceMock)
 
 	handler := handlers.NewProductHandler(mockService)
-	router := chi.NewRouter()
+	app, err := fury.NewWebApplication()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := app.Router
 
 	router.Delete("/api/v1/products/{id}", handler.DeleteProduct(&ctx))
 	req := httptest.NewRequest("DELETE", "/api/v1/products/1A", nil)

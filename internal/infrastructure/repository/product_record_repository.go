@@ -3,11 +3,12 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	recordRepo "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
-	"github.com/go-sql-driver/mysql"
 	"log"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	recordRepo "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/entities"
 )
 
 type ProductRecordRepository struct {
@@ -20,10 +21,18 @@ func NewProductRecordRepository(db *sql.DB) *ProductRecordRepository {
 	}
 }
 
-func (repository *ProductRecordRepository) SaveProductRecord(productRecord models.ProductRecord) (models.ProductRecord, error) {
+func (repository *ProductRecordRepository) SaveProductRecord(
+	productRecord models.ProductRecord,
+) (models.ProductRecord, error) {
 	var productRecordEntity entities.ProductRecordEntity
 	var sqlErr *mysql.MySQLError
-	_, err := repository.db.Exec(productRecordEntity.SaveProductRecord(), productRecord.LastUpdateTime, productRecord.PurchasePrice, productRecord.SalePrice, productRecord.ProductId)
+	_, err := repository.db.Exec(
+		productRecordEntity.SaveProductRecord(),
+		productRecord.LastUpdateTime,
+		productRecord.PurchasePrice,
+		productRecord.SalePrice,
+		productRecord.ProductId,
+	)
 	if err != nil {
 		errors.As(err, &sqlErr)
 		switch sqlErr.Number {
@@ -33,7 +42,10 @@ func (repository *ProductRecordRepository) SaveProductRecord(productRecord model
 	}
 	return productRecord, nil
 }
-func (repository *ProductRecordRepository) GetProductRecord(productId int) (map[int]models.ProductRecordResponse, error) {
+
+func (repository *ProductRecordRepository) GetProductRecord(
+	productId int,
+) (map[int]models.ProductRecordResponse, error) {
 	var productRecordEntity entities.ProductRecordEntity
 	productRecordMap := make(map[int]models.ProductRecordResponse)
 
@@ -46,7 +58,11 @@ func (repository *ProductRecordRepository) GetProductRecord(productId int) (map[
 
 	for rows.Next() {
 		var productRecord models.ProductRecordResponse
-		err := rows.Scan(&productRecord.ProductId, &productRecord.Description, &productRecord.RecordsCount)
+		err := rows.Scan(
+			&productRecord.ProductId,
+			&productRecord.Description,
+			&productRecord.RecordsCount,
+		)
 		if err != nil {
 			return nil, recordRepo.ErrRepositoryProductRecordNotFound
 		}

@@ -3,10 +3,10 @@ package service
 import (
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service/error_management"
 )
 
 type EmployeeService struct {
@@ -33,7 +33,9 @@ func (_service *EmployeeService) GetEmployees() (employees []models.Employee, er
 	return
 }
 
-func (_service *EmployeeService) GetEmployeeById(employeeId int) (employee models.Employee, err error) {
+func (_service *EmployeeService) GetEmployeeById(
+	employeeId int,
+) (employee models.Employee, err error) {
 	employee, err = _service.repository.GetEmployeeById(employeeId)
 
 	if err != nil {
@@ -59,7 +61,10 @@ func (_service *EmployeeService) CreateEmployee(employee models.Employee) (model
 	return employee, nil
 }
 
-func (_service *EmployeeService) UpdateEmployee(employeeId int, employee models.EmployeePatchRequest) (employeeUpdated models.Employee, err error) {
+func (_service *EmployeeService) UpdateEmployee(
+	employeeId int,
+	employee models.EmployeePatchRequest,
+) (employeeUpdated models.Employee, err error) {
 	allEmployees, errorAll := _service.repository.GetEmployees()
 	if errorAll != nil {
 		return models.Employee{}, error_management.HandleErrorEmployeeService(errorAll)
@@ -104,7 +109,9 @@ func (_service *EmployeeService) DeleteEmployee(employeeId int) (err error) {
 	return
 }
 
-func (_service *EmployeeService) GetReportInboundOrdersByEmployee(employeeId string) (employees []models.EmployeeReportInboundOrders, err error) {
+func (_service *EmployeeService) GetReportInboundOrdersByEmployee(
+	employeeId string,
+) (employees []models.EmployeeReportInboundOrders, err error) {
 	if employeeId != "" {
 		id, err := strconv.Atoi(employeeId)
 		if err != nil {

@@ -8,11 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	serviceMock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	serviceMock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -68,8 +68,13 @@ func TestGetEmployees(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/api/v1/employees", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees", handler.GetEmployees(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Get("/api/v1/employees", handler.GetEmployees(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -95,8 +100,13 @@ func TestGetEmployees(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/api/v1/employees", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees", handler.GetEmployees(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Get("/api/v1/employees", handler.GetEmployees(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -142,8 +152,13 @@ func TestGetEmployeeById(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/api/v1/employees/1", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.GetEmployeeById(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Get("/api/v1/employees/{id}", handler.GetEmployeeById(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -167,8 +182,13 @@ func TestGetEmployeeById(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/api/v1/employees/1a", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.GetEmployeeById(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Get("/api/v1/employees/{id}", handler.GetEmployeeById(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -194,8 +214,13 @@ func TestGetEmployeeById(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/api/v1/employees/1", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.GetEmployeeById(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Get("/api/v1/employees/{id}", handler.GetEmployeeById(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -249,8 +274,13 @@ func TestCreateEmployee(t *testing.T) {
 		body, _ := json.Marshal(employeeToCreate)
 		req := httptest.NewRequest("POST", "/api/v1/employees", bytes.NewReader(body))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees", handler.CreateEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Post("/api/v1/employees", handler.CreateEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -279,8 +309,13 @@ func TestCreateEmployee(t *testing.T) {
 			}   `)
 		req := httptest.NewRequest("POST", "/api/v1/employees", bytes.NewReader(body))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees", handler.CreateEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Post("/api/v1/employees", handler.CreateEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -311,8 +346,13 @@ func TestCreateEmployee(t *testing.T) {
 			}   `)
 			req := httptest.NewRequest("POST", "/api/v1/employees", bytes.NewReader(body))
 			rr := httptest.NewRecorder()
-			router := chi.NewRouter()
-			router.Handle("/api/v1/employees", handler.CreateEmployee(&ctx))
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
+			router.Post("/api/v1/employees", handler.CreateEmployee(&ctx))
 			router.ServeHTTP(rr, req)
 
 			require.Equal(t, expectedResponse.Code, rr.Code)
@@ -349,8 +389,13 @@ func TestCreateEmployee(t *testing.T) {
 			body, _ := json.Marshal(employeeToCreate)
 			req := httptest.NewRequest("POST", "/api/v1/employees", bytes.NewReader(body))
 			rr := httptest.NewRecorder()
-			router := chi.NewRouter()
-			router.Handle("/api/v1/employees", handler.CreateEmployee(&ctx))
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
+			router.Post("/api/v1/employees", handler.CreateEmployee(&ctx))
 			router.ServeHTTP(rr, req)
 
 			require.Equal(t, expectedResponse.Code, rr.Code)
@@ -410,8 +455,13 @@ func TestUpdateEmployee(t *testing.T) {
 		body, _ := json.Marshal(employeeToUpdate)
 		req := httptest.NewRequest("PATCH", "/api/v1/employees/1", bytes.NewReader(body))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.UpdateEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Patch("/api/v1/employees/{id}", handler.UpdateEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -451,8 +501,13 @@ func TestUpdateEmployee(t *testing.T) {
 		body, _ := json.Marshal(employeeToUpdate)
 		req := httptest.NewRequest("PATCH", "/api/v1/employees/1", bytes.NewReader(body))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.UpdateEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Patch("/api/v1/employees/{id}", handler.UpdateEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -489,8 +544,13 @@ func TestUpdateEmployee(t *testing.T) {
 		body, _ := json.Marshal(employeeToUpdate)
 		req := httptest.NewRequest("PATCH", "/api/v1/employees/1a", bytes.NewReader(body))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.UpdateEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Patch("/api/v1/employees/{id}", handler.UpdateEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -520,8 +580,13 @@ func TestUpdateEmployee(t *testing.T) {
 
 		req := httptest.NewRequest("PATCH", "/api/v1/employees/1", bytes.NewReader(body))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.UpdateEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Patch("/api/v1/employees/{id}", handler.UpdateEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -551,8 +616,13 @@ func TestDeleteEmployee(t *testing.T) {
 
 		req := httptest.NewRequest("DELETE", "/api/v1/employees/1", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.DeleteEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Delete("/api/v1/employees/{id}", handler.DeleteEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -578,8 +648,13 @@ func TestDeleteEmployee(t *testing.T) {
 
 		req := httptest.NewRequest("DELETE", "/api/v1/employees/1", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.DeleteEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Delete("/api/v1/employees/{id}", handler.DeleteEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -603,8 +678,13 @@ func TestDeleteEmployee(t *testing.T) {
 
 		req := httptest.NewRequest("DELETE", "/api/v1/employees/1a", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/employees/{id}", handler.DeleteEmployee(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Delete("/api/v1/employees/{id}", handler.DeleteEmployee(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -656,8 +736,13 @@ func TestGetReportInboundOrdersByEmployee(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders?id=1", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle(
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Get(
 			"/api/v1/employees/reportInboundOrders",
 			handler.GetReportInboundOrdersByEmployee(&ctx),
 		)
@@ -724,8 +809,13 @@ func TestGetReportInboundOrdersByEmployee(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle(
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Get(
 			"/api/v1/employees/reportInboundOrders",
 			handler.GetReportInboundOrdersByEmployee(&ctx),
 		)
@@ -754,8 +844,13 @@ func TestGetReportInboundOrdersByEmployee(t *testing.T) {
 			Return([]models.EmployeeReportInboundOrders{}, service.ErrEmployeeDecodingError)
 		req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders?id=invalid", nil)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle(
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Get(
 			"/api/v1/employees/reportInboundOrders",
 			handler.GetReportInboundOrdersByEmployee(&ctx),
 		)
@@ -787,8 +882,13 @@ func TestGetReportInboundOrdersByEmployee(t *testing.T) {
 
 			req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders?id=1", nil)
 			rr := httptest.NewRecorder()
-			router := chi.NewRouter()
-			router.Handle(
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
+			router.Get(
 				"/api/v1/employees/reportInboundOrders",
 				handler.GetReportInboundOrdersByEmployee(&ctx),
 			)
@@ -821,8 +921,13 @@ func TestGetReportInboundOrdersByEmployee(t *testing.T) {
 
 			req := httptest.NewRequest("GET", "/api/v1/employees/reportInboundOrders", nil)
 			rr := httptest.NewRecorder()
-			router := chi.NewRouter()
-			router.Handle(
+			app, err := fury.NewWebApplication()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			router := app.Router
+			router.Get(
 				"/api/v1/employees/reportInboundOrders",
 				handler.GetReportInboundOrdersByEmployee(&ctx),
 			)

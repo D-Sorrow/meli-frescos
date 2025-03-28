@@ -1,15 +1,16 @@
 package service_test
 
 import (
-	models2 "github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	repository2 "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	service2 "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	"github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
+	"testing"
+
+	models2 "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	repository2 "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	service2 "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/models"
+	repository_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func TestProductService_SaveProduct_Create(t *testing.T) {
@@ -27,7 +28,8 @@ func TestProductService_SaveProduct_Create(t *testing.T) {
 
 func TestProductService_SaveProduct_Conflict(t *testing.T) {
 	mockRepository := new(repository_mock.ProductRepositoryMock)
-	mockRepository.On("SaveProduct", mock.Anything).Return(repository2.ErrRepositoryProductAlreadyExists)
+	mockRepository.On("SaveProduct", mock.Anything).
+		Return(repository2.ErrRepositoryProductAlreadyExists)
 
 	serviceTest := service.NewProductService(mockRepository)
 
@@ -62,7 +64,8 @@ func TestProductService_GetProducts(t *testing.T) {
 }
 func TestProductService_GetProductByID_NonExistent(t *testing.T) {
 	mockRepository := new(repository_mock.ProductRepositoryMock)
-	mockRepository.On("GetProductByID", 1).Return(models2.Product{}, repository2.ErrRepositoryProductNotFound)
+	mockRepository.On("GetProductByID", 1).
+		Return(models2.Product{}, repository2.ErrRepositoryProductNotFound)
 
 	serviceTest := service.NewProductService(mockRepository)
 	_, err := serviceTest.GetProductByID(1)
@@ -101,7 +104,8 @@ func TestProductService_UpdateProduct_Existent(t *testing.T) {
 func TestProductService_UpdateProduct_NonExistent(t *testing.T) {
 	mockRepository := new(repository_mock.ProductRepositoryMock)
 	mockRepository.On("UpdateProduct", 1, mock.Anything).Return(nil)
-	mockRepository.On("GetProductByID", 1).Return(models2.Product{}, repository2.ErrRepositoryProductNotFound)
+	mockRepository.On("GetProductByID", 1).
+		Return(models2.Product{}, repository2.ErrRepositoryProductNotFound)
 	att := models.ReturnMockProductModel()
 
 	serviceTest := service.NewProductService(mockRepository)
@@ -115,7 +119,8 @@ func TestProductService_UpdateProduct_NonExistent(t *testing.T) {
 
 func TestProductService_UpdateProduct_ErrUpdate(t *testing.T) {
 	mockRepository := new(repository_mock.ProductRepositoryMock)
-	mockRepository.On("UpdateProduct", 1, mock.Anything).Return(repository2.ErrRepositoryProductNotFound)
+	mockRepository.On("UpdateProduct", 1, mock.Anything).
+		Return(repository2.ErrRepositoryProductNotFound)
 	mockRepository.On("GetProductByID", 1).Return(models2.Product{}, nil)
 	att := models.ReturnMockProductModel()
 

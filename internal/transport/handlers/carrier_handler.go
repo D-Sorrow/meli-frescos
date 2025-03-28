@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	handler_errors "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type CarryHandler struct {
@@ -20,8 +21,8 @@ func NewCarryHandler(service service.CarrierServiceInterface) *CarryHandler {
 	return &CarryHandler{service: service}
 }
 
-func (ch *CarryHandler) GetAllCarriers(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (ch *CarryHandler) GetAllCarriers(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		carriers, err := ch.service.GetAllCarriers()
 		if err != nil {
 			response.JSON(w, http.StatusInternalServerError, dto.ResponseDTO{
@@ -29,7 +30,7 @@ func (ch *CarryHandler) GetAllCarriers(ctx *context.Context) http.HandlerFunc {
 				Msg:  "Server Error",
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		carriersDto := mappers.MapperToCarriersDto(carriers)
@@ -39,11 +40,13 @@ func (ch *CarryHandler) GetAllCarriers(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Carriers got successfully",
 			Data: carriersDto,
 		})
+
+		return nil
 	}
 }
 
-func (ch *CarryHandler) CreateCarrier(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (ch *CarryHandler) CreateCarrier(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		reqBody := dto.CarrierDto{}
 
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
@@ -52,7 +55,7 @@ func (ch *CarryHandler) CreateCarrier(ctx *context.Context) http.HandlerFunc {
 				Msg:  "Bad request",
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		if err := reqBody.Validate(); err != nil {
@@ -61,7 +64,7 @@ func (ch *CarryHandler) CreateCarrier(ctx *context.Context) http.HandlerFunc {
 				Msg:  err.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		newCarrier, err := ch.service.CreateCarrier(mappers.MapperToCarrierModel(reqBody))
@@ -72,7 +75,7 @@ func (ch *CarryHandler) CreateCarrier(ctx *context.Context) http.HandlerFunc {
 				Msg:  handler_err.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
@@ -80,5 +83,7 @@ func (ch *CarryHandler) CreateCarrier(ctx *context.Context) http.HandlerFunc {
 			Msg:  "carrier created successsfully",
 			Data: mappers.MapperToCarrierDto(newCarrier),
 		})
+
+		return nil
 	}
 }

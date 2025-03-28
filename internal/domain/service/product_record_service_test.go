@@ -1,14 +1,15 @@
 package service_test
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	service3 "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	service2 "github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	repository_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
+	"testing"
+
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	service3 "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	service2 "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	repository_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func TestProductRecordService_SaveProductRecord(t *testing.T) {
@@ -54,7 +55,8 @@ func TestProductRecordService_SaveProductRecord(t *testing.T) {
 			LastUpdateTime: "2026-01-02",
 		}
 		mockRepository := new(repository_mock.ProductRecordRepositoryMock)
-		mockRepository.On("SaveProductRecord", productRecordMock).Return(models.ProductRecord{}, repository.ErrRepositoryProductRecordNotFound)
+		mockRepository.On("SaveProductRecord", productRecordMock).
+			Return(models.ProductRecord{}, repository.ErrRepositoryProductRecordNotFound)
 
 		service := service2.NewProductRecordService(mockRepository)
 		record, err := service.SaveProductRecord(productRecordMock)
@@ -82,8 +84,12 @@ func TestProductRecordService_GetProductRecord(t *testing.T) {
 
 	t.Run("get product record error", func(t *testing.T) {
 		mockRepository := new(repository_mock.ProductRecordRepositoryMock)
-		mockRepository.On("GetProductRecord",
-			mock.AnythingOfType("int")).Return(map[int]models.ProductRecordResponse{}, repository.ErrRepositoryProductRecordNotFound)
+		mockRepository.On(
+			"GetProductRecord",
+			mock.AnythingOfType(
+				"int",
+			),
+		).Return(map[int]models.ProductRecordResponse{}, repository.ErrRepositoryProductRecordNotFound)
 
 		service := service2.NewProductRecordService(mockRepository)
 		mapProductRecord, err := service.GetProductRecord(1)

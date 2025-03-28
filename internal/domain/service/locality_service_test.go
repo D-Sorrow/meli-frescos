@@ -3,12 +3,12 @@ package service
 import (
 	"testing"
 
-	LocalityModels "github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	models_app "github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	repository_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
+	LocalityModels "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	models_app "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/models"
+	repository_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +16,8 @@ import (
 func TestCreateLocality(t *testing.T) {
 	t.Run("create a new locality", func(t *testing.T) {
 		repositoryMock := repository_mock.NewLocalityRepositoryMock()
-		repositoryMock.On("CreateLocality", models.LocalityRequest).Return(models.LocalityRequest, error(nil))
+		repositoryMock.On("CreateLocality", models.LocalityRequest).
+			Return(models.LocalityRequest, error(nil))
 		serviceImp := NewLocalityService(repositoryMock)
 
 		res, err := serviceImp.CreateLocality(models.LocalityRequest)
@@ -30,7 +31,8 @@ func TestCreateLocality(t *testing.T) {
 
 	t.Run("create a new locality fail - locality already exist", func(t *testing.T) {
 		repositoryMock := repository_mock.NewLocalityRepositoryMock()
-		repositoryMock.On("CreateLocality", models.LocalityRequest).Return(models_app.Locality{}, repository.ErrLocalityAlreadyExists)
+		repositoryMock.On("CreateLocality", models.LocalityRequest).
+			Return(models_app.Locality{}, repository.ErrLocalityAlreadyExists)
 		serviceImp := NewLocalityService(repositoryMock)
 
 		res, err := serviceImp.CreateLocality(models.LocalityRequest)
@@ -44,7 +46,8 @@ func TestCreateLocality(t *testing.T) {
 
 	t.Run("create a new locality fail - province not found ", func(t *testing.T) {
 		repositoryMock := repository_mock.NewLocalityRepositoryMock()
-		repositoryMock.On("CreateLocality", models.LocalityRequest).Return(models_app.Locality{}, repository.ErrProvinceNotFound)
+		repositoryMock.On("CreateLocality", models.LocalityRequest).
+			Return(models_app.Locality{}, repository.ErrProvinceNotFound)
 		serviceImp := NewLocalityService(repositoryMock)
 
 		res, err := serviceImp.CreateLocality(models.LocalityRequest)
@@ -60,7 +63,8 @@ func TestCreateLocality(t *testing.T) {
 func TestGetSellersByLocality(t *testing.T) {
 	t.Run("get all carriers by localities", func(t *testing.T) {
 		repositoryMock := repository_mock.NewLocalityRepositoryMock()
-		repositoryMock.On("GetSellersByLocality", 1).Return(models.LocalitySellersResponse, error(nil))
+		repositoryMock.On("GetSellersByLocality", 1).
+			Return(models.LocalitySellersResponse, error(nil))
 		serviceImp := NewLocalityService(repositoryMock)
 
 		res, err := serviceImp.GetSellersByLocality(1)
@@ -74,7 +78,8 @@ func TestGetSellersByLocality(t *testing.T) {
 
 	t.Run("get all carriers by localities fail - locality not found", func(t *testing.T) {
 		repositoryMock := repository_mock.NewLocalityRepositoryMock()
-		repositoryMock.On("GetSellersByLocality", 1).Return(models_app.LocalitySellers{}, repository.ErrLocalityNotFound)
+		repositoryMock.On("GetSellersByLocality", 1).
+			Return(models_app.LocalitySellers{}, repository.ErrLocalityNotFound)
 		serviceImp := NewLocalityService(repositoryMock)
 
 		res, err := serviceImp.GetSellersByLocality(1)
@@ -104,7 +109,8 @@ func TestGetCarriersByAllLocalities(t *testing.T) {
 
 	t.Run("get all carriers by localities fail", func(t *testing.T) {
 		repositoryMock := repository_mock.NewLocalityRepositoryMock()
-		repositoryMock.On("GetCarriersByAllLocalities").Return(nil, error(repository.ErrGetAllLocalities))
+		repositoryMock.On("GetCarriersByAllLocalities").
+			Return(nil, error(repository.ErrGetAllLocalities))
 		serviceImp := NewLocalityService(repositoryMock)
 
 		carriersByLocalities, err := serviceImp.GetCarriersByAllLocalities()
@@ -119,7 +125,8 @@ func TestGetCarriersByAllLocalities(t *testing.T) {
 func TestGetCarriersByLocality(t *testing.T) {
 	t.Run("get carrier by locality id", func(t *testing.T) {
 		repositoryMock := repository_mock.NewLocalityRepositoryMock()
-		repositoryMock.On("GetCarriersByLocality", mock.Anything).Return(models.LocalityCarriers[0], error(nil))
+		repositoryMock.On("GetCarriersByLocality", mock.Anything).
+			Return(models.LocalityCarriers[0], error(nil))
 		serviceImp := NewLocalityService(repositoryMock)
 
 		carrier, err := serviceImp.GetCarriersByLocality(1)
@@ -132,7 +139,8 @@ func TestGetCarriersByLocality(t *testing.T) {
 
 	t.Run("get carrier by locality id fail", func(t *testing.T) {
 		repositoryMock := repository_mock.NewLocalityRepositoryMock()
-		repositoryMock.On("GetCarriersByLocality", mock.Anything).Return(LocalityModels.LocalityCarriers{}, repository.ErrLocalityNotFound)
+		repositoryMock.On("GetCarriersByLocality", mock.Anything).
+			Return(LocalityModels.LocalityCarriers{}, repository.ErrLocalityNotFound)
 		serviceImp := NewLocalityService(repositoryMock)
 
 		carrier, err := serviceImp.GetCarriersByLocality(1)

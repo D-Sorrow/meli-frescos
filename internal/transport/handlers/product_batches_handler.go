@@ -8,14 +8,15 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	serr "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	herr "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	serr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	herr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type ProductBatchesHandler struct {
@@ -27,25 +28,25 @@ func NewProductBatches(s service.ProductBatchesRepository) *ProductBatchesHandle
 	return &ProductBatchesHandler{s: s, validate: validator.New()}
 }
 
-func (h ProductBatchesHandler) AddProductBatches(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h ProductBatchesHandler) AddProductBatches(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var ProductBatchesDto dto.ProductBatchesDto
 
 		if err := json.NewDecoder(r.Body).Decode(&ProductBatchesDto); err != nil {
 			herr.ResponseErrorProductBatches(err, w, ctx)
-			return
+			return nil
 		}
 
 		if err := h.validate.Struct(ProductBatchesDto); err != nil {
 			herr.ResponseErrorProductBatches(err, w, ctx)
-			return
+			return nil
 		}
 
 		product, err := h.s.AddProductBatches(mappers.MapperToProductBatches(ProductBatchesDto))
 		if err != nil {
 			if errors.Is(err, serr.ErrProductBatchesAlredyExists) {
 				herr.ResponseErrorProductBatches(herr.LocalityAlreadyExists, w, ctx)
-				return
+				return nil
 			}
 		}
 
@@ -55,11 +56,12 @@ func (h ProductBatchesHandler) AddProductBatches(ctx *context.Context) http.Hand
 			Data: mappers.MapperToProductBatchesDTO(product),
 		})
 
+		return nil
 	}
 }
 
-func (h *ProductBatchesHandler) GetById(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *ProductBatchesHandler) GetById(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id := chi.URLParam(r, "id")
 		idInt, idErr := strconv.Atoi(id)
 		if idErr != nil {
@@ -67,7 +69,7 @@ func (h *ProductBatchesHandler) GetById(ctx *context.Context) http.HandlerFunc {
 				Code: http.StatusBadRequest,
 				Msg:  herr.InvalidID,
 			})
-			return
+			return nil
 		}
 
 		productBatch, getByIdErr := h.s.GetById(idInt)
@@ -80,7 +82,7 @@ func (h *ProductBatchesHandler) GetById(ctx *context.Context) http.HandlerFunc {
 			}
 
 			herr.HandlerResponseError(getByIdErr, &w, ctx)
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
@@ -88,11 +90,13 @@ func (h *ProductBatchesHandler) GetById(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Get product by ID successful",
 			Data: mappers.MapperToProductBatchesDTO2(&productBatch),
 		})
+
+		return nil
 	}
 }
 
-func (h *ProductBatchesHandler) Create(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *ProductBatchesHandler) Create(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var ProductBatchesDto dto.ProductBatchesDtoReport
 
 		if jsonErr := json.NewDecoder(r.Body).Decode(&ProductBatchesDto); jsonErr != nil {
@@ -101,7 +105,7 @@ func (h *ProductBatchesHandler) Create(ctx *context.Context) http.HandlerFunc {
 					Code: http.StatusBadRequest,
 					Msg:  herr.InvalidJSON,
 				})
-			return
+			return nil
 		}
 
 		ProductBatches, createErr := h.s.Create(
@@ -116,7 +120,7 @@ func (h *ProductBatchesHandler) Create(ctx *context.Context) http.HandlerFunc {
 			}
 
 			herr.HandlerResponseError(createErr, &w, ctx)
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
@@ -124,5 +128,7 @@ func (h *ProductBatchesHandler) Create(ctx *context.Context) http.HandlerFunc {
 			Msg:  "Create ProductBatch order successful",
 			Data: mappers.MapperToProductBatchesDTO2(&ProductBatches),
 		})
+
+		return nil
 	}
 }

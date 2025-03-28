@@ -6,10 +6,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/db"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
+	"github.com/melisource/fury_go-core/pkg/web"
+
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/db"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
 )
 
 type contextKey string
@@ -40,12 +42,11 @@ func (rr *ResponseRecorder) Write(b []byte) (int, error) {
 func LogErrorMiddleware(
 	db *db.DataBase,
 	ctx *context.Context,
-) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+) web.Middleware {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
 			rr := NewResponseRecorder(w)
 			next.ServeHTTP(rr, r)
-
 			if err := (*ctx).Value(AppErrorKey); err != nil {
 				logRepo := repository.NewLogRepository(db.Db)
 				logService := service.NewLogService(logRepo)
@@ -64,6 +65,6 @@ func LogErrorMiddleware(
 					log.Println("Error al registrar el log:", err)
 				}
 			}
-		})
+		}
 	}
 }

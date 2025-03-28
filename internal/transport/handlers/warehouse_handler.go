@@ -1,24 +1,21 @@
 package handlers
 
 import (
-	// "encoding/json"
-	// "fmt"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/validation"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/validation"
+	"github.com/melisource/fury_go-core/pkg/web"
 
-	// "github.com/D-Sorrow/meli-frescos/internal/domain/validation"
-
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	handler_errors "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	handler_errors "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
 )
 
 type WarehouseHandler struct {
@@ -29,8 +26,8 @@ func NewWarehouseHandler(sevice service.WarehouseServiceInterface) *WarehouseHan
 	return &WarehouseHandler{service: sevice}
 }
 
-func (wh *WarehouseHandler) GetWarehouses(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wh *WarehouseHandler) GetWarehouses(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		warehouses, err := wh.service.GetWarehouses()
 		if err != nil {
 			handler_err := handler_errors.HandleErrorWarehouse(err, ctx)
@@ -39,7 +36,7 @@ func (wh *WarehouseHandler) GetWarehouses(ctx *context.Context) http.HandlerFunc
 				Msg:  handler_err.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		warehousesDto := mappers.MapperToWarehousesDto(warehouses)
@@ -49,11 +46,13 @@ func (wh *WarehouseHandler) GetWarehouses(ctx *context.Context) http.HandlerFunc
 			Msg:  "Warehouses got successfully",
 			Data: warehousesDto,
 		})
+
+		return nil
 	}
 }
 
-func (wh *WarehouseHandler) GetWarehouseById(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wh *WarehouseHandler) GetWarehouseById(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -65,7 +64,7 @@ func (wh *WarehouseHandler) GetWarehouseById(ctx *context.Context) http.HandlerF
 				Msg:  handler_err.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		warehouse, err := wh.service.GetWarehouseById(id)
@@ -76,7 +75,7 @@ func (wh *WarehouseHandler) GetWarehouseById(ctx *context.Context) http.HandlerF
 				Msg:  handler_err.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		warehouseJSON := mappers.MapperToWarehouseDto(warehouse)
@@ -86,11 +85,13 @@ func (wh *WarehouseHandler) GetWarehouseById(ctx *context.Context) http.HandlerF
 			Msg:  "Warehouse got successfully",
 			Data: warehouseJSON,
 		})
+
+		return nil
 	}
 }
 
-func (wh *WarehouseHandler) CreateWarehouse(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wh *WarehouseHandler) CreateWarehouse(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		reqBody := dto.WarehouseDto{}
 
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
@@ -99,7 +100,7 @@ func (wh *WarehouseHandler) CreateWarehouse(ctx *context.Context) http.HandlerFu
 				Msg:  "Unprocessable Entity",
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		if err := reqBody.Validate(); err != nil {
@@ -108,7 +109,7 @@ func (wh *WarehouseHandler) CreateWarehouse(ctx *context.Context) http.HandlerFu
 				Msg:  err.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		newWarehouse, err := wh.service.CreateWarehouse(mappers.MapperToWarehouseModel(reqBody))
@@ -119,18 +120,20 @@ func (wh *WarehouseHandler) CreateWarehouse(ctx *context.Context) http.HandlerFu
 				Msg:  handler_err.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
 			Code: http.StatusCreated,
 			Msg:  "Warehouse created successsfully",
 			Data: mappers.MapperToWarehouseDto(newWarehouse),
 		})
+
+		return nil
 	}
 }
 
-func (wh *WarehouseHandler) PatchWarehouse(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wh *WarehouseHandler) PatchWarehouse(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
@@ -138,7 +141,7 @@ func (wh *WarehouseHandler) PatchWarehouse(ctx *context.Context) http.HandlerFun
 				Msg:  "invalid id",
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		jsonBody, err := validation.ValidatePatchRequestBody(r)
@@ -148,7 +151,7 @@ func (wh *WarehouseHandler) PatchWarehouse(ctx *context.Context) http.HandlerFun
 				Msg:  err.Error(),
 				Data: jsonBody,
 			})
-			return
+			return nil
 		}
 		err = validation.ValidatePatchValues(jsonBody)
 		if err != nil {
@@ -157,7 +160,7 @@ func (wh *WarehouseHandler) PatchWarehouse(ctx *context.Context) http.HandlerFun
 				Msg:  err.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		warehouse, err := wh.service.PatchWarehouse(id, jsonBody)
@@ -168,7 +171,7 @@ func (wh *WarehouseHandler) PatchWarehouse(ctx *context.Context) http.HandlerFun
 				Msg:  handler_err.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
@@ -176,11 +179,13 @@ func (wh *WarehouseHandler) PatchWarehouse(ctx *context.Context) http.HandlerFun
 			Msg:  "Warehouse updated",
 			Data: mappers.MapperToWarehouseDto(warehouse),
 		})
+
+		return nil
 	}
 }
 
-func (wh *WarehouseHandler) DeleteWarehouse(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wh *WarehouseHandler) DeleteWarehouse(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
@@ -188,7 +193,7 @@ func (wh *WarehouseHandler) DeleteWarehouse(ctx *context.Context) http.HandlerFu
 				Msg:  "invalid id",
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		err = wh.service.DeleteWarehouse(id)
@@ -199,7 +204,7 @@ func (wh *WarehouseHandler) DeleteWarehouse(ctx *context.Context) http.HandlerFu
 				Msg:  handler_err.Message,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
@@ -207,5 +212,7 @@ func (wh *WarehouseHandler) DeleteWarehouse(ctx *context.Context) http.HandlerFu
 			Msg:  fmt.Sprintf("Werehouse with id %d deleted", id),
 			Data: nil,
 		})
+
+		return nil
 	}
 }

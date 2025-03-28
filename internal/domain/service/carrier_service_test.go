@@ -3,11 +3,11 @@ package service
 import (
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	repositoryErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	serviceErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	fakeModels "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	repository_mock "github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	repositoryErr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	serviceErr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	fakeModels "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/models"
+	repository_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -55,7 +55,8 @@ func TestCreateCarrier(t *testing.T) {
 
 	t.Run("create carriers fail", func(t *testing.T) {
 		repositoryMock := repository_mock.NewCarrierRepositoryMock()
-		repositoryMock.On("CreateCarrier", mock.Anything).Return(models.Carrier{}, repositoryErr.ErrCarrierCidDuplicate)
+		repositoryMock.On("CreateCarrier", mock.Anything).
+			Return(models.Carrier{}, repositoryErr.ErrCarrierCidDuplicate)
 		serviceImp := NewCarryService(repositoryMock)
 
 		carrier, err := serviceImp.CreateCarrier(fakeModels.Carriers[0])

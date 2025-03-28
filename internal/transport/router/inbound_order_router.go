@@ -4,21 +4,19 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
-func InitInboundOrderRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
-
+func InitInboundOrderRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 	repositoryImp := repository.NewInboundOrderRepository(db)
 
 	serviceImp := service.NewInboundOrderService(repositoryImp)
 
 	handler := handlers.NewInboundOrderHandler(serviceImp)
 
-	rt.Route("/api/v1/inboundOrders", func(rt chi.Router) {
-		rt.Post(("/"), handler.CreateInboundOrder(ctx))
-	})
+	group := rt.Group("/api/v1/inboundOrders")
+	group.Post(("/"), handler.CreateInboundOrder(ctx))
 }

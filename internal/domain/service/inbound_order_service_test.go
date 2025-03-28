@@ -3,10 +3,10 @@ package service
 import (
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	repoMock "github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	repoMock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,7 +42,8 @@ func TestCreateInboundOrder(t *testing.T) {
 			WarehouseId:    3,
 		}
 
-		mockRepo.On("CreateInboundOrder", inboundOrder).Return(repository.ErrInboundOrderDateInvalid)
+		mockRepo.On("CreateInboundOrder", inboundOrder).
+			Return(repository.ErrInboundOrderDateInvalid)
 
 		serv := NewInboundOrderService(mockRepo)
 

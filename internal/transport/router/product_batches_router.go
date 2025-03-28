@@ -4,24 +4,21 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
-func InitProductBatchesRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
-
+func InitProductBatchesRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 	repositoryImp := repository.NewProductBatchesRepository(db)
 
 	serviceImp := service.NewProductBatches(repositoryImp)
 
 	handler := handlers.NewProductBatches(serviceImp)
 
-	rt.Route("/api/v1/probatch", func(rt chi.Router) {
-		rt.Post("/", handler.AddProductBatches(ctx))
-		rt.Get("/{id}", handler.GetById(ctx))
-		rt.Post("/2", handler.Create(ctx))
-
-	})
+	group := rt.Group("/api/v1/probatch")
+	group.Post("/", handler.AddProductBatches(ctx))
+	group.Get("/{id}", handler.GetById(ctx))
+	group.Post("/2", handler.Create(ctx))
 }

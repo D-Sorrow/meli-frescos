@@ -8,11 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
-	serviceMock "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/service"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	serviceMock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/service"
+	"github.com/melisource/fury_go-platform/pkg/fury"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,8 +45,13 @@ func TestCreateInboundOrder(t *testing.T) {
 		reqBody, _ := json.Marshal(inboundOrderRequest)
 		req := httptest.NewRequest("POST", "/api/v1/inboundOrders", bytes.NewBuffer(reqBody))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Post("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, http.StatusCreated, rr.Code)
@@ -74,8 +79,13 @@ func TestCreateInboundOrder(t *testing.T) {
 			bytes.NewBuffer([]byte("invalid body")),
 		)
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Post("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -108,8 +118,13 @@ func TestCreateInboundOrder(t *testing.T) {
 		reqBody, _ := json.Marshal(inboundOrderRequest)
 		req := httptest.NewRequest("POST", "/api/v1/inboundOrders", bytes.NewBuffer(reqBody))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Post("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)
@@ -147,8 +162,13 @@ func TestCreateInboundOrder(t *testing.T) {
 		reqBody, _ := json.Marshal(inboundOrderRequest)
 		req := httptest.NewRequest("POST", "/api/v1/inboundOrders", bytes.NewBuffer(reqBody))
 		rr := httptest.NewRecorder()
-		router := chi.NewRouter()
-		router.Handle("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
+		app, err := fury.NewWebApplication()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := app.Router
+		router.Post("/api/v1/inboundOrders", handler.CreateInboundOrder(&ctx))
 		router.ServeHTTP(rr, req)
 
 		require.Equal(t, expectedResponse.Code, rr.Code)

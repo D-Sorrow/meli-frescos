@@ -1,7 +1,7 @@
 package service_mock
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -24,7 +24,10 @@ func (_m *SellerServiceMock) CreateSeller(seller models.Seller) (models.Seller, 
 	return args.Get(0).(models.Seller), args.Error(1)
 }
 
-func (_m *SellerServiceMock) UpdateSeller(id int, seller models.SellerPatch) (models.Seller, error) {
+func (_m *SellerServiceMock) UpdateSeller(
+	id int,
+	seller models.SellerPatch,
+) (models.Seller, error) {
 	args := _m.Called(id, seller)
 	return args.Get(0).(models.Seller), args.Error(1)
 }

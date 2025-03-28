@@ -3,8 +3,8 @@ package repository
 import (
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 	"github.com/stretchr/testify/require"
 )
 

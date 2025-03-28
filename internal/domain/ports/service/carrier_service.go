@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 )
 
 type CarrierServiceInterface interface {
@@ -17,5 +17,7 @@ var (
 	ErrCarrierNotFound                = errors.New("carrier id not found")
 	ErrCarrierLocalityIdNotFound      = errors.New("locality id not found")
 	ErrCarrierFKConstraintFail        = errors.New("foreign key constraint fails")
-	ErrCarrierGetUpdatedOrCreatedItem = errors.New("the carrier was created or updated but could not be displayed")
+	ErrCarrierGetUpdatedOrCreatedItem = errors.New(
+		"the carrier was created or updated but could not be displayed",
+	)
 )

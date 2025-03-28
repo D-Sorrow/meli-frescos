@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-playground/validator/v10"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
 type LocalityHandler struct {
@@ -23,8 +24,8 @@ func NewLocalityHandler(service service.LocalityService) *LocalityHandler {
 	return &LocalityHandler{service: service, validate: validator.New()}
 }
 
-func (hand LocalityHandler) CreateLocality(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (hand LocalityHandler) CreateLocality(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var localityDto dto.LocalityDto
 
 		if err := json.NewDecoder(r.Body).Decode(&localityDto); err != nil {
@@ -34,7 +35,7 @@ func (hand LocalityHandler) CreateLocality(ctx *context.Context) http.HandlerFun
 				Msg:  localityError.Msg,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		if err := hand.validate.Struct(localityDto); err != nil {
@@ -44,7 +45,7 @@ func (hand LocalityHandler) CreateLocality(ctx *context.Context) http.HandlerFun
 				Msg:  localityError.Msg,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		locality, err := hand.service.CreateLocality(mappers.MapperToLocality(localityDto))
@@ -55,7 +56,7 @@ func (hand LocalityHandler) CreateLocality(ctx *context.Context) http.HandlerFun
 				Msg:  localityError.Msg,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(w, http.StatusCreated, dto.ResponseDTO{
@@ -64,11 +65,12 @@ func (hand LocalityHandler) CreateLocality(ctx *context.Context) http.HandlerFun
 			Data: mappers.MapperToLocalityDTO(locality),
 		})
 
+		return nil
 	}
 }
 
-func (hand LocalityHandler) GetSellersByLocality(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (hand LocalityHandler) GetSellersByLocality(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, dto.ResponseDTO{
@@ -76,7 +78,7 @@ func (hand LocalityHandler) GetSellersByLocality(ctx *context.Context) http.Hand
 				Msg:  "id must be a number",
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		localitySellers, err := hand.service.GetSellersByLocality(id)
 		if err != nil {
@@ -86,18 +88,20 @@ func (hand LocalityHandler) GetSellersByLocality(ctx *context.Context) http.Hand
 				Msg:  localityError.Msg,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
 			Msg:  "success",
 			Data: mappers.MapperToLocalitySellersDTO(localitySellers),
 		})
+
+		return nil
 	}
 }
 
-func (hand LocalityHandler) GetCarriersByLocality(ctx *context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (hand LocalityHandler) GetCarriersByLocality(ctx *context.Context) web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		idStr := r.URL.Query().Get("id")
 		if idStr == "" {
 			carriersByLocalities, err := hand.service.GetCarriersByAllLocalities()
@@ -108,7 +112,7 @@ func (hand LocalityHandler) GetCarriersByLocality(ctx *context.Context) http.Han
 					Msg:  localityError.Msg,
 					Data: nil,
 				})
-				return
+				return nil
 			}
 
 			carriersByLocalitiesDto := mappers.MapperToLocalitiesCarriersDTO(carriersByLocalities)
@@ -117,7 +121,7 @@ func (hand LocalityHandler) GetCarriersByLocality(ctx *context.Context) http.Han
 				Msg:  "success",
 				Data: carriersByLocalitiesDto,
 			})
-			return
+			return nil
 		}
 
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
@@ -127,7 +131,7 @@ func (hand LocalityHandler) GetCarriersByLocality(ctx *context.Context) http.Han
 				Msg:  "id must be a number",
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		localityCarriers, err := hand.service.GetCarriersByLocality(id)
@@ -138,12 +142,14 @@ func (hand LocalityHandler) GetCarriersByLocality(ctx *context.Context) http.Han
 				Msg:  localityError.Msg,
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		response.JSON(w, http.StatusOK, dto.ResponseDTO{
 			Code: http.StatusOK,
 			Msg:  "success",
 			Data: mappers.MapperToLocalityCarrierDTO(localityCarriers),
 		})
+
+		return nil
 	}
 }

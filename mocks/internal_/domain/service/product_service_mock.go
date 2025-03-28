@@ -1,7 +1,7 @@
 package service_mock
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -19,7 +19,10 @@ func (_m *ProductServiceMock) GetProductByID(id int) (models.Product, error) {
 	return args.Get(0).(models.Product), args.Error(1)
 }
 
-func (_m *ProductServiceMock) UpdateProduct(id int, attributes map[string]any) (models.Product, error) {
+func (_m *ProductServiceMock) UpdateProduct(
+	id int,
+	attributes map[string]any,
+) (models.Product, error) {
 	args := _m.Called(id, attributes)
 	return args.Get(0).(models.Product), args.Error(1)
 }

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"log"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/entities"
-	er "github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository/error_management"
 	"github.com/go-sql-driver/mysql"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/entities"
+	er "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository/error_management"
 )
 
 type ProductBatchesRepository struct {
@@ -20,9 +20,23 @@ func NewProductBatchesRepository(db *sql.DB) *ProductBatchesRepository {
 	return &ProductBatchesRepository{db: db}
 }
 
-func (p *ProductBatchesRepository) AddProductBatches(productBatches models.ProductBatches) (models.ProductBatches, error) {
+func (p *ProductBatchesRepository) AddProductBatches(
+	productBatches models.ProductBatches,
+) (models.ProductBatches, error) {
 
-	result, err := p.db.Exec("INSERT INTO product_batches (batch_number,current_quantity,current_temperature,due_date,initial_quantity,manufacturing_date,manufacturing_hour,minimum_temperature,product_id,section_id) values (?,?,?,?,?,?,?,?,?,?)", productBatches.BatchNumber, productBatches.CurrentQuantity, productBatches.CurrentTemperature, productBatches.DueDate, productBatches.InitialQuantity, productBatches.ManufacturingDate, productBatches.ManufacturingHour, productBatches.MinumumTemperature, productBatches.ProductId, productBatches.SectionId)
+	result, err := p.db.Exec(
+		"INSERT INTO product_batches (batch_number,current_quantity,current_temperature,due_date,initial_quantity,manufacturing_date,manufacturing_hour,minimum_temperature,product_id,section_id) values (?,?,?,?,?,?,?,?,?,?)",
+		productBatches.BatchNumber,
+		productBatches.CurrentQuantity,
+		productBatches.CurrentTemperature,
+		productBatches.DueDate,
+		productBatches.InitialQuantity,
+		productBatches.ManufacturingDate,
+		productBatches.ManufacturingHour,
+		productBatches.MinumumTemperature,
+		productBatches.ProductId,
+		productBatches.SectionId,
+	)
 
 	if err != nil {
 		log.Print(err)
@@ -42,7 +56,9 @@ func (p *ProductBatchesRepository) AddProductBatches(productBatches models.Produ
 	return productBatches, nil
 }
 
-func (p *ProductBatchesRepository) GetById(id int) (productBatches entities.ProductBatchesEntity, err error) {
+func (p *ProductBatchesRepository) GetById(
+	id int,
+) (productBatches entities.ProductBatchesEntity, err error) {
 	query, args := productBatches.GetByIdQuery(id)
 
 	err = p.db.QueryRow(query, args...).Scan(
@@ -69,7 +85,9 @@ func (p *ProductBatchesRepository) GetById(id int) (productBatches entities.Prod
 	return
 }
 
-func (b *ProductBatchesRepository) Create(productBatches entities.ProductBatchesEntity) (newProductBatches entities.ProductBatchesEntity, err error) {
+func (b *ProductBatchesRepository) Create(
+	productBatches entities.ProductBatchesEntity,
+) (newProductBatches entities.ProductBatchesEntity, err error) {
 	query, args := productBatches.GetCreateQuery()
 	result, err := b.db.Exec(query, args...)
 

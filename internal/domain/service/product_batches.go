@@ -3,13 +3,13 @@ package service
 import (
 	"errors"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	er "github.com/D-Sorrow/meli-frescos/internal/domain/service/error_management"
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service/mappers"
 	"github.com/google/uuid"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	er "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service/error_management"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service/mappers"
 )
 
 type productBatchesService struct {
@@ -20,7 +20,9 @@ func NewProductBatches(repo repository.ProductBatchesRepository) *productBatches
 	return &productBatchesService{repo: repo}
 }
 
-func (s *productBatchesService) AddProductBatches(productBatches models.ProductBatches) (models.ProductBatches, error) {
+func (s *productBatchesService) AddProductBatches(
+	productBatches models.ProductBatches,
+) (models.ProductBatches, error) {
 	productBatches, err := s.repo.AddProductBatches(productBatches)
 	if errors.Is(err, er.ErrProductBatchesAlredyExists) {
 		return models.ProductBatches{}, er.ErrProductBatchesAlredyExists
@@ -44,7 +46,9 @@ func (p *productBatchesService) GetById(id int) (productBatches models.ProductBa
 	return
 }
 
-func (p *productBatchesService) Create(product models.ProductBatches2AttributesFks) (newProductBatch models.ProductBatches3, err error) {
+func (p *productBatchesService) Create(
+	product models.ProductBatches2AttributesFks,
+) (newProductBatch models.ProductBatches3, err error) {
 	newUUID := uuid.New().String()
 
 	product.ProductBatches2Attributes.BatchNumber = newUUID

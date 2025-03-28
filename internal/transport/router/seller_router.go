@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
-func InitSellerRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
+func InitSellerRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 
 	repositoryImp := repository.NewSellerRepository(db)
 
@@ -18,11 +18,10 @@ func InitSellerRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
 
 	handler := handlers.NewHandlerService(serviceImp)
 
-	rt.Route("/api/v1/sellers", func(rt chi.Router) {
-		rt.Get("/", handler.GetSellers(ctx))
-		rt.Get("/{id}", handler.GetSeller(ctx))
-		rt.Post("/", handler.CreateSeller(ctx))
-		rt.Patch("/{id}", handler.UpdateSeller(ctx))
-		rt.Delete("/{id}", handler.DeleteSeller(ctx))
-	})
+	group := rt.Group("/api/v1/sellers")
+	group.Get("/", handler.GetSellers(ctx))
+	group.Get("/{id}", handler.GetSeller(ctx))
+	group.Post("/", handler.CreateSeller(ctx))
+	group.Patch("/{id}", handler.UpdateSeller(ctx))
+	group.Delete("/{id}", handler.DeleteSeller(ctx))
 }

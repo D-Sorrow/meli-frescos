@@ -4,24 +4,23 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
-func InitProductRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
+func InitProductRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 	repositoryImp := repository.NewProductRepository(db)
 
 	serviceImp := service.NewProductService(repositoryImp)
 
 	handler := handlers.NewProductHandler(serviceImp)
 
-	rt.Route("/api/v1/products", func(rt chi.Router) {
-		rt.Get("/", handler.GetProducts(ctx))
-		rt.Get("/{id}", handler.GetProductByID(ctx))
-		rt.Post("/", handler.SaveProduct(ctx))
-		rt.Patch("/{id}", handler.UpdateProduct(ctx))
-		rt.Delete("/{id}", handler.DeleteProduct(ctx))
-	})
+	group := rt.Group("/api/v1/products")
+	group.Get("/", handler.GetProducts(ctx))
+	group.Get("/{id}", handler.GetProductByID(ctx))
+	group.Post("/", handler.SaveProduct(ctx))
+	group.Patch("/{id}", handler.UpdateProduct(ctx))
+	group.Delete("/{id}", handler.DeleteProduct(ctx))
 }

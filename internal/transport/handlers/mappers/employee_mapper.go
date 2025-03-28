@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
 )
 
 func EmployeeModelToDTO(employeeModel models.Employee) *dto.EmployeeDTO {
@@ -24,7 +24,9 @@ func EmployeeDTOToModel(employeeDTO dto.EmployeeRequestDTO) *models.Employee {
 	}
 }
 
-func EmployeePatchRequestDTOToModel(employeePatchRequestDTO dto.EmployeePatchRequestDTO) *models.EmployeePatchRequest {
+func EmployeePatchRequestDTOToModel(
+	employeePatchRequestDTO dto.EmployeePatchRequestDTO,
+) *models.EmployeePatchRequest {
 	return &models.EmployeePatchRequest{
 		CardNumberId: employeePatchRequestDTO.CardNumberId,
 		FirstName:    employeePatchRequestDTO.FirstName,
@@ -33,7 +35,9 @@ func EmployeePatchRequestDTOToModel(employeePatchRequestDTO dto.EmployeePatchReq
 	}
 }
 
-func EmployeeReportInboundOrdersModelToDTO(model models.EmployeeReportInboundOrders) *dto.EmployeeReportInboundOrdersDTO {
+func EmployeeReportInboundOrdersModelToDTO(
+	model models.EmployeeReportInboundOrders,
+) *dto.EmployeeReportInboundOrdersDTO {
 	return &dto.EmployeeReportInboundOrdersDTO{
 		Id:                 model.Id,
 		CardNumberId:       model.CardNumberId,

@@ -3,7 +3,7 @@ package service_mock
 import (
 	"time"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 	"github.com/stretchr/testify/mock"
 )
 

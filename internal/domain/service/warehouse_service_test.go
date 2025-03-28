@@ -3,11 +3,11 @@ package service
 import (
 	"testing"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
-	repositoryErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/repository"
-	serviceErr "github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	fakeModels "github.com/D-Sorrow/meli-frescos/mocks/internal_/domain/models"
-	"github.com/D-Sorrow/meli-frescos/mocks/internal_/infrastructure/repository"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
+	repositoryErr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/repository"
+	serviceErr "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	fakeModels "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/domain/models"
+	repository_mock "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/mocks/internal_/infrastructure/repository"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -55,7 +55,8 @@ func TestGetWarehouseById(t *testing.T) {
 
 	t.Run("warehouse not found", func(t *testing.T) {
 		mockRepository := repository_mock.NewWarehouseRepositoryMock()
-		mockRepository.On("GetWarehouseById", 2).Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
+		mockRepository.On("GetWarehouseById", 2).
+			Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
 		serviceImp := NewWarehouseService(mockRepository)
 
 		response, err := serviceImp.GetWarehouseById(2)
@@ -83,7 +84,8 @@ func TestCreateWarehouse(t *testing.T) {
 
 	t.Run("create warehouse conflict", func(t *testing.T) {
 		mockRepository := repository_mock.NewWarehouseRepositoryMock()
-		mockRepository.On("CreateWarehouse", models.Warehouse{}).Return(models.Warehouse{}, repositoryErr.ErrWarehouseCodeDuplicate)
+		mockRepository.On("CreateWarehouse", models.Warehouse{}).
+			Return(models.Warehouse{}, repositoryErr.ErrWarehouseCodeDuplicate)
 		serviceImp := NewWarehouseService(mockRepository)
 
 		response, err := serviceImp.CreateWarehouse(models.Warehouse{})
@@ -112,7 +114,8 @@ func TestPatchWarehouse(t *testing.T) {
 	t.Run("update warehouse not found", func(t *testing.T) {
 		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		warehouseFakeMap := fakeModels.WarehouseFakeMap
-		mockRepository.On("PatchWarehouse", 1, mock.Anything).Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
+		mockRepository.On("PatchWarehouse", 1, mock.Anything).
+			Return(models.Warehouse{}, repositoryErr.ErrWarehouseNotFound)
 		serviceImp := NewWarehouseService(mockRepository)
 
 		response, err := serviceImp.PatchWarehouse(1, warehouseFakeMap)
@@ -125,7 +128,8 @@ func TestPatchWarehouse(t *testing.T) {
 	t.Run("update warehouse conflict", func(t *testing.T) {
 		mockRepository := repository_mock.NewWarehouseRepositoryMock()
 		warehouseFakeMap := fakeModels.WarehouseFakeMap
-		mockRepository.On("PatchWarehouse", 1, mock.Anything).Return(models.Warehouse{}, repositoryErr.ErrWarehouseCodeDuplicate)
+		mockRepository.On("PatchWarehouse", 1, mock.Anything).
+			Return(models.Warehouse{}, repositoryErr.ErrWarehouseCodeDuplicate)
 		serviceImp := NewWarehouseService(mockRepository)
 
 		response, err := serviceImp.PatchWarehouse(1, warehouseFakeMap)

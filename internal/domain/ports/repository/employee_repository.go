@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 )
 
 type EmployeeRepository interface {
@@ -17,6 +17,8 @@ type EmployeeRepository interface {
 }
 
 var (
-	ErrEmployeeNotFound            = errors.New("employee not found in the database with the id provided")
+	ErrEmployeeNotFound = errors.New(
+		"employee not found in the database with the id provided",
+	)
 	ErrEmployeeInternalServerError = errors.New("repository internal server error")
 )

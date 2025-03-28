@@ -1,7 +1,7 @@
 package service_mock
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -27,7 +27,10 @@ func (m *MockEmployeeService) CreateEmployee(employee models.Employee) (models.E
 	return args.Get(0).(models.Employee), args.Error(1)
 }
 
-func (m *MockEmployeeService) UpdateEmployee(employeeId int, employee models.EmployeePatchRequest) (models.Employee, error) {
+func (m *MockEmployeeService) UpdateEmployee(
+	employeeId int,
+	employee models.EmployeePatchRequest,
+) (models.Employee, error) {
 	args := m.Called(employeeId, employee)
 	return args.Get(0).(models.Employee), args.Error(1)
 }
@@ -37,7 +40,9 @@ func (m *MockEmployeeService) DeleteEmployee(id int) error {
 	return args.Error(0)
 }
 
-func (m *MockEmployeeService) GetReportInboundOrdersByEmployee(employeeId string) ([]models.EmployeeReportInboundOrders, error) {
+func (m *MockEmployeeService) GetReportInboundOrdersByEmployee(
+	employeeId string,
+) ([]models.EmployeeReportInboundOrders, error) {
 	args := m.Called(employeeId)
 	return args.Get(0).([]models.EmployeeReportInboundOrders), args.Error(1)
 }

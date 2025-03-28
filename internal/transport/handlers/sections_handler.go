@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/ports/service"
-	mapper "github.com/D-Sorrow/meli-frescos/internal/transport/handlers/mappers"
 	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/ports/service"
+	mapper "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/mappers"
+	"github.com/melisource/fury_go-core/pkg/web"
 
-	"github.com/D-Sorrow/meli-frescos/internal/transport/handlers/dto"
 	"github.com/bootcamp-go/web/response"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers/dto"
 )
 
 type SectionstHandler struct {
@@ -23,8 +24,8 @@ func NewSectionsHandler(serv service.SectionsService) *SectionstHandler {
 	return &SectionstHandler{serv: serv}
 }
 
-func (hand *SectionstHandler) GetSections(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, r *http.Request) {
+func (hand *SectionstHandler) GetSections(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
 		mapSections := hand.serv.GetSections()
 		mapSectionsDto := mapper.MapperToSectionsDto(mapSections)
 		response.JSON(writer, http.StatusOK, dto.ResponseDTO{
@@ -32,11 +33,13 @@ func (hand *SectionstHandler) GetSections(ctx *context.Context) http.HandlerFunc
 			Msg:  "Products successfully retrieved",
 			Data: mapSectionsDto,
 		})
+
+		return nil
 	}
 }
 
-func (hand *SectionstHandler) GetSectionsById(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, r *http.Request) {
+func (hand *SectionstHandler) GetSectionsById(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
 		id, errConv := strconv.Atoi(chi.URLParam(r, "id"))
 		if errConv != nil {
 			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
@@ -44,7 +47,7 @@ func (hand *SectionstHandler) GetSectionsById(ctx *context.Context) http.Handler
 				Msg:  errConv.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		sections, err := hand.serv.GetSectionsById(id)
@@ -56,7 +59,7 @@ func (hand *SectionstHandler) GetSectionsById(ctx *context.Context) http.Handler
 				Msg:  err.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(writer, http.StatusOK, dto.ResponseDTO{
@@ -65,11 +68,12 @@ func (hand *SectionstHandler) GetSectionsById(ctx *context.Context) http.Handler
 			Data: sectionsDto,
 		})
 
+		return nil
 	}
 }
 
-func (hand *SectionstHandler) SaveSections(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, r *http.Request) {
+func (hand *SectionstHandler) SaveSections(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
 		var sections dto.SectionsDto
 
 		if err := json.NewDecoder(r.Body).Decode(&sections); err != nil {
@@ -78,7 +82,7 @@ func (hand *SectionstHandler) SaveSections(ctx *context.Context) http.HandlerFun
 				Msg:  err.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		errValidate := sections.Validate()
@@ -88,7 +92,7 @@ func (hand *SectionstHandler) SaveSections(ctx *context.Context) http.HandlerFun
 				Msg:  errValidate.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		errSave := hand.serv.SaveSections(mapper.MapperToSectionsModel(sections))
@@ -98,13 +102,15 @@ func (hand *SectionstHandler) SaveSections(ctx *context.Context) http.HandlerFun
 				Msg:  errSave.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
+
+		return nil
 	}
 }
 
-func (hand *SectionstHandler) DeleteSections(ctx *context.Context) http.HandlerFunc {
-	return func(writer http.ResponseWriter, r *http.Request) {
+func (hand *SectionstHandler) DeleteSections(ctx *context.Context) web.Handler {
+	return func(writer http.ResponseWriter, r *http.Request) error {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
 			response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
@@ -112,7 +118,7 @@ func (hand *SectionstHandler) DeleteSections(ctx *context.Context) http.HandlerF
 				Msg:  err.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 		errD := hand.serv.DeleteSections(id)
 		if errD != nil {
@@ -121,7 +127,7 @@ func (hand *SectionstHandler) DeleteSections(ctx *context.Context) http.HandlerF
 				Msg:  errD.Error(),
 				Data: nil,
 			})
-			return
+			return nil
 		}
 
 		response.JSON(writer, http.StatusNoContent, dto.ResponseDTO{
@@ -129,28 +135,7 @@ func (hand *SectionstHandler) DeleteSections(ctx *context.Context) http.HandlerF
 			Msg:  "Product successfully deleted",
 			Data: nil,
 		})
+
+		return nil
 	}
 }
-
-//func (hand *SectionstHandler) UpdateSections(ctx *context.Context) http.HandlerFunc {
-/*	return func(writer http.ResponseWriter, r *http.Request) {
-	id, errConv := strconv.Atoi(chi.URLParam(r, "id"))
-	if errConv != nil {
-
-		response.JSON(writer, http.StatusBadRequest, dto.ResponseDTO{
-			Code: http.StatusBadRequest,
-			Msg:  "id must be a number",
-			Data: nil,
-		})
-		return
-	}
-
-	var sectionsDto dto.SectionsUpdateDto
-
-	if errConv := json.NewDecoder(r.Body).Decode(&sectionsDto); errConv != nil {
-		response.JSON(w)
-		return
-	}
-}*/
-//	panic("impl")
-//}

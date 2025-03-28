@@ -1,7 +1,7 @@
 package repository_mock
 
 import (
-	"github.com/D-Sorrow/meli-frescos/internal/domain/models"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/models"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -13,12 +13,16 @@ func NewLocalityRepositoryMock() *LocalityRepositoryMock {
 	return &LocalityRepositoryMock{}
 }
 
-func (_r *LocalityRepositoryMock) CreateLocality(locality models.Locality) (l models.Locality, err error) {
+func (_r *LocalityRepositoryMock) CreateLocality(
+	locality models.Locality,
+) (l models.Locality, err error) {
 	args := _r.Called(locality)
 	return args.Get(0).(models.Locality), args.Error(1)
 }
 
-func (_r *LocalityRepositoryMock) GetSellersByLocality(localityId int) (ls models.LocalitySellers, err error) {
+func (_r *LocalityRepositoryMock) GetSellersByLocality(
+	localityId int,
+) (ls models.LocalitySellers, err error) {
 	args := _r.Called(localityId)
 	return args.Get(0).(models.LocalitySellers), args.Error(1)
 }

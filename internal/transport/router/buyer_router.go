@@ -4,25 +4,24 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	handler "github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
-	"github.com/go-chi/chi/v5"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	handler "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
+	"github.com/melisource/fury_go-core/pkg/web"
 )
 
-func NewBuyerRouter(rt *chi.Mux, db *sql.DB, ctx *context.Context) {
+func NewBuyerRouter(rt *web.Router, db *sql.DB, ctx *context.Context) {
 	buyerRepo := repository.NewBuyerRepository(db)
 
 	buyerService := service.NewBuyerService(buyerRepo)
 
 	buyerHandler := handler.NewBuyerHandler(buyerService)
 
-	rt.Route("/api/v1/buyers", func(rt chi.Router) {
-		rt.Get("/", buyerHandler.GetAll(ctx))
-		rt.Get("/{id}", buyerHandler.GetById(ctx))
-		rt.Post("/", buyerHandler.Create(ctx))
-		rt.Patch("/{id}", buyerHandler.Patch(ctx))
-		rt.Delete("/{id}", buyerHandler.Delete(ctx))
-		rt.Get("/reportPurchaseOrders", buyerHandler.GetReportPurchaseOrders(ctx))
-	})
+	group := rt.Group("/api/v1/buyers")
+	group.Get("/", buyerHandler.GetAll(ctx))
+	group.Get("/{id}", buyerHandler.GetById(ctx))
+	group.Post("/", buyerHandler.Create(ctx))
+	group.Patch("/{id}", buyerHandler.Patch(ctx))
+	group.Delete("/{id}", buyerHandler.Delete(ctx))
+	group.Get("/reportPurchaseOrders", buyerHandler.GetReportPurchaseOrders(ctx))
 }
