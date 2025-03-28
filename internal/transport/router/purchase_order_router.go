@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/D-Sorrow/meli-frescos/internal/domain/service"
-	"github.com/D-Sorrow/meli-frescos/internal/infrastructure/repository"
-	handler "github.com/D-Sorrow/meli-frescos/internal/transport/handlers"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/domain/service"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/infrastructure/repository"
+	handler "github.com/melisource/fury_bootcamp-go-w15-s4-3-6/internal/transport/handlers"
 	"github.com/melisource/fury_go-core/pkg/web"
 )
 

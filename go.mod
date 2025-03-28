@@ -1,4 +1,4 @@
-module github.com/D-Sorrow/meli-frescos
+module github.com/melisource/fury_bootcamp-go-w15-s4-3-6
 
 go 1.23.4
 

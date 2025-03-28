@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/D-Sorrow/meli-frescos/cmd/server"
+	"github.com/melisource/fury_bootcamp-go-w15-s4-3-6/cmd/server"
 	"github.com/melisource/fury_go-platform/pkg/fury"
 )
 
