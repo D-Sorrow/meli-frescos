@@ -26,6 +26,16 @@ func Run(app *fury.Application) (err error) {
 	router.NewBuyerRouter(rt, database.Db, &ctx)
 	router.NewPurchaseOrderRouter(rt, database.Db, &ctx)
 	router.NewOrderStatusRouter(rt, database.Db, &ctx)
+	router.InitLocalityRouter(rt, database.Db, &ctx)
+	router.InitSellerRouter(rt, database.Db, &ctx)
+	router.InitWarehouseRouter(rt, database.Db, &ctx)
+	router.InitEmployeeRouter(rt, database.Db, &ctx)
+	router.InitInboundOrderRouter(rt, database.Db, &ctx)
+	router.InitProductBatchesRouter(rt, database.Db, &ctx)
+	router.InitSectionsRouter(rt, database.Db, &ctx)
+	router.InitProductRouter(rt, database.Db, &ctx)
+	router.InitProductRecordRouter(rt, database.Db, &ctx)
+	router.InitCarryRouter(rt, database.Db, &ctx)
 
 	err = app.Run()
 
